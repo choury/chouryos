@@ -14,21 +14,33 @@
 
 
 typedef struct{
-    u16 offset15_0;
-    u16 dts;
-    u16 attr;
-    u16 offset31_16;
-}__attribute__ ((packed)) idt;
+    u16 offset0_15;
+    u16 tcss;               //target code segment selector
+    u8  reserved;
+    u8  Type:4;
+    u8  S:1;                //must be 0
+    u8  DPL:2;
+    u8  P:1;
+    u16 offset16_31;
+}__attribute__ ((packed)) gate;
 
 
 typedef struct{
-    u8 base31_24;
-    u8 flag2_limit19_16;
-    u8 flag2_type;
-    u8 base23_16;
-    u16 base15_0;
-    u16 limit15_0;
-}__attribute__ ((packed)) dt;
+    u16 limit0_15;
+    u16 base0_15;
+    u8 base16_23;
+    u8 Type:4;
+    u8 S:1;
+    u8 DPL:2;
+    u8 P:1;
+    u8 limit16_19:4;
+    u8 AVL:1;
+    u8 L:1;
+    u8 D_B:1;
+    u8 G:1;
+    u8 base24_31;
+
+}__attribute__ ((packed)) ss;
 
 
 

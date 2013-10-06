@@ -12,7 +12,7 @@ export CPPFLAGS=-m32 -Wall -fno-leading-underscore -I$(ROOT)/include -I$(ROOT)/n
 
 .PHONY : all kernel boot asm clean
 
-all: boot.img
+all: boot asm kernel
 
 boot:
 	$(MAKE) -C boot

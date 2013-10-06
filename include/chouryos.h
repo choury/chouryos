@@ -13,8 +13,8 @@
 #define Floppybuff      (unsigned char *)4096
 
 
-#define IDT     ((idt *)0)
-#define GDT     ((dt *)2048)
+#define IDT     ((gate *)0)
+#define GDT     ((ss *)2048)
 
 #define charbuff ((u16 *)0xB8000)
 
