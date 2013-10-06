@@ -3,14 +3,14 @@
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
+typedef unsigned char  uint8;
+typedef unsigned short uint16;
+typedef unsigned int   uint32;
 
-#define uint8  unsigned char
-#define uint16 unsigned short
-#define uint32 unsigned int
+typedef uint8   u8;
+typedef uint16 u16;
+typedef uint32 u32;
 
-#define u8      uint8
-#define u16     uint16
-#define u32     uint32
 
 
 typedef struct{

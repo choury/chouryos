@@ -30,8 +30,8 @@ typedef struct{
     u32 pid;
     u32 ppid;
     u16 ldt;
-    dt  cdt;
-    dt  ddt;
+    ss  cdt;
+    ss  ddt;
     fileindex file[MAX_FD];
     u8 isused;
 }__attribute__ ((packed))process;
