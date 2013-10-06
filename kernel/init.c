@@ -22,6 +22,12 @@ void TimerInitHandler(){
     charbuff[0]++;
 }
 
+
+void process1(){
+    charbuff[2]=0x0700 | 'P';
+    while(1);
+}
+
 void init(){
     int i;
     set8253(0xffff);
