@@ -50,8 +50,8 @@ typedef struct {
 
 /*非系统段中 type 字段 即S=1*/
 #define DA_A    1           //是否被访问过
-#define DA_WR   2           //数据段：是否可写  代码段：是否可读
-#define DA_EDC  4           //数据段：向低扩展  代码段：是否是一致性代码段
+#define DA_WR   2           //数据段：是否可写         代码段：是否可读
+#define DA_EDC  4           //数据段：向低扩展(很少用)  代码段：是否是一致性代码段
 #define DA_E    8           //是否可执行
 
 /*系统段中 type 字段 即S=0 */
@@ -66,7 +66,7 @@ typedef struct {
     u32 Type:4;
     u32 S:1;                //S=0 为系统段
     u32 DPL:2;
-    u32 P:1;
+    u32 P:1;                //是否存在
     u8 limit16_19:4;
     u8 AVL:1;               //操作系统使用
     u8 L:1;                 //用于x64
@@ -78,30 +78,30 @@ typedef struct {
 
 
 typedef struct {
-    long    back_link;  /*16 high bits zero */
-    long    esp0;
-    long    ss0;        /*16 high bits zero */
-    long    esp1;
-    long    ss1;        /*16 high bits zero */
-    long    esp2;
-    long    ss2;        /*16 high bits zero */
-    long    cr3;
-    long    eip;
-    long    eflags;
-    long    eax,ecx,edx,ebx;
-    long    esp;
-    long    ebp;
-    long    esi;
-    long    edi;
-    long    es;         /*16 high bits zero */
-    long    cs;         /*16 high bits zero */
-    long    ss;         /*16 high bits zero */
-    long    ds;         /*16 high bits zero */
-    long    fs;         /*16 high bits zero */
-    long    gs;
-    long    ldt;
-    long    trace_bitmap;/*trace 0, bitmap16-31 */
-} __attribute__ ((packed)) tss;
+    u32    back_link;  /*16 high bits zero */
+    u32    esp0;
+    u32    ss0;        /*16 high bits zero */
+    u32    esp1;
+    u32    ss1;        /*16 high bits zero */
+    u32    esp2;
+    u32    ss2;        /*16 high bits zero */
+    u32    cr3;
+    u32    eip;
+    u32    eflags;
+    u32    eax,ecx,edx,ebx;
+    u32    esp;
+    u32    ebp;
+    u32    esi;
+    u32    edi;
+    u32    es;         /*16 high bits zero */
+    u32    cs;         /*16 high bits zero */
+    u32    ss;         /*16 high bits zero */
+    u32    ds;         /*16 high bits zero */
+    u32    fs;         /*16 high bits zero */
+    u32    gs;
+    u32    ldt;
+    u32    trace_bitmap;/*trace 0, bitmap16-31 */
+} __attribute__ ((packed)) tss_struct;
 
 
 

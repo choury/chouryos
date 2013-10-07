@@ -15,6 +15,12 @@
 
 #define IDT     ((gate *)0)
 #define GDT     ((ss *)2048)
+#define TSS     (*(tss_struct *)5000)
+
+#define KERNELCODE_DT  1
+#define KERNELDATA_DT  2
+#define TSS_DT         3
+#define LDT_START      4
 
 #define charbuff ((u16 *)0xB8000)
 
@@ -33,7 +39,7 @@
 void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);
 unsigned char inp(unsigned int port);
-
+void movetouse(process *);
 
 void setpoint(int x,int y,int color);
 void setinterrupt(int into,void f());

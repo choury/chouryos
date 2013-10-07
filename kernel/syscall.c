@@ -6,7 +6,6 @@
  *      Author: nanoage.co.uk
  */
 
-#include <errno.h>
 #include <sys/stat.h>
 #include <sys/times.h>
 #include <sys/unistd.h>
@@ -25,6 +24,8 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return sys_open((const char*)ebx,(int)ecx,edx);
     case 4:
         return sys_close((int)ebx);
+    case 5:
+        return (int)sys_sbrk((int)ebx);
     }
     return 0;
 }
@@ -100,16 +101,6 @@ off_t sys_lseek(int file, off_t ptr, int dir) {
     return 0;
 }
 
-/*
- sbrk
- Increase program data space.
- Malloc and related functions depend on this
- */
-void * sys_sbrk(ptrdiff_t incr) {
-    errno = ENOMEM;
-    return  NULL;
-
-}
 
 
 /*

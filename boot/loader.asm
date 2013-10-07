@@ -10,10 +10,12 @@
 ;         4622~~~~~~~   keyboad head
 ;         4623~~~~~~~   keyboad tail
 ;         4624~~~~~~~   floppy status
-;         4624---10239  reserved
+;         4625---4999   reserved
+;         5000---5103   tss
 ;         10240--11264  realinthandler table
 ;         12000--12003  current pid
-;         1M------   loader (it will be process table after found kernel)
+;         0xB8000       console buffer
+;         1M------   process table
 ;         2M------   kernel
 
 
@@ -144,7 +146,7 @@ section .data
     
 section .vdt
 LABEL_GDT:          Descriptor  0,                  0,       0
-LABEL_DESC_CODE32:  Descriptor  0x10000,            0xfffff, DA_C + DA_32 + DA_G
+LABEL_DESC_CODE32:  Descriptor  0x10000,            0xfffff, DA_CCO +DA_32 + DA_G
 LABEL_DESC_DATA:    Descriptor  0x10000,            0xfffff, DA_DRWA+DA_32+ DA_G
 LABEL_DESC_ORG:     Descriptor  0,                  0xff,    DA_DRWA+DA_32+ DA_G
 LABEL_DESC_VGA:     Descriptor  0,                  0xea,    DA_DRW +DA_G

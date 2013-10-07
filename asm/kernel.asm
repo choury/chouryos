@@ -5,13 +5,16 @@ INTHER    equ 10240
 
 KERNELCODE_DT equ 8
 KERNELDATA_DT equ 16
+TSS_DT        equ 24
+LDT_START     equ 32
 
-LDT_START equ 4
+
 
     extern init
     global inp
     global outp
     global outpw
+    global movetouse
 use32
 start:
     cli
@@ -29,7 +32,10 @@ start:
     mov ax,KERNELDATA_DT
     mov ds,ax
     mov ss,ax
-    mov esp,0x1fffe
+    mov es,ax
+    mov fs,ax
+    mov gs,ax
+    mov esp,0x1ffffe
     jmp KERNELCODE_DT:next
 next:
     call setinterrupt
@@ -107,13 +113,13 @@ setinterrupt:
 %assign i 0
 %rep 80
 int%+i:
-    push eax
-    push ecx
-    push edx
+    pushad
+    push ds
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     call [INTHER+i*4]
-    pop edx
-    pop ecx
-    pop eax
+    pop ds
+    popad
     iret
 %assign i i+1
 %endrep
@@ -126,6 +132,8 @@ int80:
     push ecx
     push ebx
     push eax
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     call [INTHER+80*4]
     add esp, 24
     iret
@@ -133,17 +141,27 @@ int80:
 %assign i 81
 %rep 174
 int%+i:
-    push eax
-    push ecx
-    push edx
+    pushad
+    push ds
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     call [INTHER+i*4]
-    pop edx
-    pop ecx
-    pop eax
+    pop ds
+    popad
+    iret
 %assign i i+1
 %endrep
 
 
 movetouse:
+    push ebp
+    mov ebp,esp
+    mov ax, TSS_DT
+    ltr  ax
+    mov ax, LDT_START
+    lldt ax
+    mov esp, [ebp+0x8]
+    pop ds
+    popad
     iret
 

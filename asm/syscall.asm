@@ -75,6 +75,15 @@ close:
     ret
 
 sbrk:
+    push ebp
+    mov ebp, esp
+    push ebx
+    mov eax, 5
+    mov ebx, [ebp+8]
+    int 80
+    pop ebx
+    leave
+    ret
 fstat:
 isatty:
 lseek:

@@ -6,27 +6,28 @@
 
 #define MAX_PROCESS 10
 
-typedef struct{
-    u32 eax;
-    u32 ebx;
-    u32 ecx;
-    u32 edx;
-    u32 esi;
-    u32 edi;
-    u32 esp;
-    u32 ebp;
-    u32 eip;
-    u32 eflags;
-    u16 cs;
-    u16 ds;
-    u16 ss;
-    u16 es;
-    u16 fs;
-    u16 gs;
-}__attribute__ ((packed)) register_status;
 
 typedef struct{
-    register_status regs;
+    u32 ds;
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
+    u32 eax;
+    u32 eip;
+    u32 cs;
+    u32 eflags;
+    u32 oesp;
+    u32 ss;
+}__attribute__ ((packed)) register_status;
+
+
+
+typedef struct{
+    register_status reg;
     u32 pid;
     u32 ppid;
     u16 ldt;

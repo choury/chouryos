@@ -69,13 +69,13 @@ loadkernel:
     jl  __exece1
     mov ebx,eax
     mov [esp],eax
-    mov dword [esp+4],0x20000
+    mov dword [esp+4],0x200000
     call readtocalldst
     push ds
     mov  ax,DATA-LDT
     or   ax,4
     mov  ds,ax
-    call  (CODE-LDT)|4:0x20000
+    call  (CODE-LDT)|4:0x200000
     pop ds
     jmp __execr
 __exece1:
