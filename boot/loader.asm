@@ -1,23 +1,6 @@
 %include "pm.h"
 
 
-;mem map  0---2047      idt  
-;         2048---4095   gdt
-;         4096---4607   floopy buffer
-;         4608---4609   console line number
-;         4610---4611   console colume number
-;         4612---4621   keyboad buffer
-;         4622~~~~~~~   keyboad head
-;         4623~~~~~~~   keyboad tail
-;         4624~~~~~~~   floppy status
-;         4625---4999   reserved
-;         5000---5103   tss
-;         10240--11264  realinthandler table
-;         12000--12003  current pid
-;         0xB8000       console buffer
-;         1M------   process table
-;         2M------   kernel
-
 
 use16
     extern  Init8259
@@ -146,7 +129,7 @@ section .data
     
 section .vdt
 LABEL_GDT:          Descriptor  0,                  0,       0
-LABEL_DESC_CODE32:  Descriptor  0x10000,            0xfffff, DA_CCO +DA_32 + DA_G
+LABEL_DESC_CODE32:  Descriptor  0x10000,            0xfffff, DA_C +DA_32 + DA_G
 LABEL_DESC_DATA:    Descriptor  0x10000,            0xfffff, DA_DRWA+DA_32+ DA_G
 LABEL_DESC_ORG:     Descriptor  0,                  0xff,    DA_DRWA+DA_32+ DA_G
 LABEL_DESC_VGA:     Descriptor  0,                  0xea,    DA_DRW +DA_G

@@ -19,9 +19,7 @@
 #define islower(c)  ((c)>='a' && (c)<='z')
 #define toupper(c)  ((c)-32)
 
-
 #define Floppybuff      (unsigned char *)4096           //if you changed this,you should change the addr in copyfloppydata also
-
 
 
 void sti();

@@ -20,12 +20,18 @@ void set8253(u16 time) {
 void TimerInitHandler() {
     outp(0x20,0x20);
     charbuff[0]++;
+    TSS.esp0=(u32)&(PROTABLE[CURPID].pid);
+    STACKTOP=PROTABLE+CURPID;
 }
 
 
 void process1() {
     charbuff[2]=0x0700 | 'P';
-    while(1);
+    while(1) {
+        char a;
+        read(0,&a,1);
+        write(1,&a,1);
+    }
 }
 
 void init() {
@@ -36,12 +42,12 @@ void init() {
     setinterrupt(0x26,FloppyInitHandler);
     setinterrupt(80,(void (*)())syscall);
     outp(0x21,inp(0x21)&0xfd);
-//    outp(0x21,inp(0x21)&0xfe);
+    outp(0x21,inp(0x21)&0xfe);
     keytail=keyhead=0;
     line=1;
     colume=0;
     floppystatus=0;
-
+    reenter=0;
     CURPID=0;
     PROTABLE[CURPID].isused=1;
     PROTABLE[CURPID].pid=0;
@@ -78,11 +84,21 @@ void init() {
     PROTABLE[CURPID].reg.eip=(u32)process1;
     PROTABLE[CURPID].reg.eflags=0x1202;
     PROTABLE[CURPID].reg.ds=(1<<3)|7;
-
+    PROTABLE[CURPID].reg.es=(1<<3)|7;
+    PROTABLE[CURPID].reg.fs=(1<<3)|7;
+    PROTABLE[CURPID].reg.gs=(1<<3)|7;
 
     for(i=1; i<MAX_PROCESS; ++i) {
         PROTABLE[i].isused=0;
     }
+
+    PROTABLE[CURPID].file[0].isused=1;               //for standard input
+    PROTABLE[CURPID].file[1].isused=1;               //for standard output
+    PROTABLE[CURPID].file[2].isused=1;               //for standard errer
+    for(i=3;i<MAX_FD;i=i+1){
+        PROTABLE[CURPID].file[i].isused=0;
+    }
+
     GDT[LDT_START].base0_23=((u32)&PROTABLE[CURPID].cdt)&0xffffff;
     GDT[LDT_START].base24_31=(u32)&PROTABLE[CURPID].cdt >> 24;
     GDT[LDT_START].limit0_15=16;
@@ -96,7 +112,7 @@ void init() {
     GDT[LDT_START].Type=DA_LDT;
 
 
-    TSS.ss0=KERNELDATA_DT;
+    TSS.ss0=KERNELDATA_DT<<3;
     TSS.esp0=(u32)&(PROTABLE[CURPID].pid);
 
 
@@ -112,16 +128,11 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
-
     sti();
     initfs();
     puts("Init secceed!");
     printf("hello newlib\n");
 
     movetouse(&(PROTABLE[CURPID]));
-    while(1) {
-        char a;
-        read(0,&a,1);
-        write(1,&a,1);
-    }
+
 }

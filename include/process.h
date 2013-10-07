@@ -8,6 +8,9 @@
 
 
 typedef struct{
+    u32 gs;
+    u32 fs;
+    u32 es;
     u32 ds;
     u32 edi;
     u32 esi;

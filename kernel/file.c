@@ -8,15 +8,7 @@
 
 
 void initfs(){
-    int i;
-    reset_floppy_controller(0);         //init floppy
     FAT_Init();                         //get fat infomation struct
-    PROTABLE[CURPID].file[0].isused=1;               //for standard input
-    PROTABLE[CURPID].file[1].isused=1;               //for standard output
-    PROTABLE[CURPID].file[2].isused=1;               //for standard errer
-    for(i=3;i<MAX_FD;i=i+1){
-        PROTABLE[CURPID].file[i].isused=0;
-    }
 }
 
 

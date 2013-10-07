@@ -34,8 +34,8 @@ void ReadBlock(uint32 LBA)
 void ReadBPB(void)
 //********************************************************************************************
 {
-    FAT_BPB* BPB = (FAT_BPB*)BUFFER_FAT;
     ReadBlock(0);
+    FAT_BPB* BPB = (FAT_BPB*)BUFFER_FAT;
 
     //缓存相关参数
     BPB_SecPerClus  =  BPB->BPB_SecPerClus;
