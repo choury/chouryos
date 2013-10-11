@@ -6,6 +6,7 @@ global fstat
 global lseek
 global isatty
 global sbrk
+global fork
 global setpoint
 
 
@@ -84,6 +85,15 @@ sbrk:
     pop ebx
     leave
     ret
+
+fork:
+    push ebp
+    mov ebp, esp
+    mov eax, 6
+    int 80
+    leave
+    ret
+
 fstat:
 isatty:
 lseek:

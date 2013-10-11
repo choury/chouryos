@@ -26,6 +26,8 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return sys_close((int)ebx);
     case 5:
         return (int)sys_sbrk((int)ebx);
+    case 6:
+        return sys_fork();
     }
     return 0;
 }

@@ -12,6 +12,7 @@
 ;         10240--11264  realinthandler table
 ;         12000--12003  current pid
 ;         12004--12007  return statck top
+;         12008--12009  ldt selector
 ;         0xB8000       console buffer
 ;         1M------      process table
 ;         2M------      kernel
@@ -29,7 +30,7 @@ LDT_START     equ 32
 
 REENTER         equ 4625
 STACKTOP        equ 12004
-
+LDT             equ 12008
 
     extern init
     global inp
@@ -150,6 +151,7 @@ int%+i:
     mov gs, ax
     mov esp, 0x2ffffe
     call [INTHER+i*4]
+    cli
     mov esp, [STACKTOP]
     pop gs
     pop fs
@@ -157,6 +159,7 @@ int%+i:
     pop ds
     popad
     dec byte [REENTER]
+    lldt [LDT]
     iret
 rein%+i:
     call [INTHER+i*4]
@@ -175,7 +178,6 @@ int80:
     push es
     push fs
     push gs
-    sti
     mov ax, KERNELDATA_DT
     mov ds, ax
     mov es, ax
@@ -183,6 +185,7 @@ int80:
     mov gs, ax
     mov eax, [esp+44]
     mov esp, 0x2ffffe
+    sti
     push edi
     push esi
     push edx
@@ -190,6 +193,7 @@ int80:
     push ebx
     push eax
     call [INTHER+80*4]
+    cli
     mov esp, [STACKTOP]
     mov [esp+44], eax
     pop gs
@@ -233,6 +237,7 @@ int%+i:
     mov ds, ax
     mov esp, 0x2ffffe
     call [INTHER+i*4]
+    cli
     mov esp, [STACKTOP]
     pop gs
     pop fs

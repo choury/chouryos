@@ -35,6 +35,7 @@
 #define PROTABLE    ((process *)0x100000)
 #define CURPID      (*(u32 *)12000)
 #define STACKTOP    (*(process **)12004)
+#define LDT         (*(u16 *)12008)
 
 #define sti()     __asm__("sti\n")
 #define cli()     __asm__("cli\n")
