@@ -4,7 +4,6 @@
 ;         5000---5103   tss
 ;         10240--11264  realinthandler table
 ;         12004--12007  return statck top
-;         12008--12009  ldt selector
 ;         0xB8000       console buffer
 ;         1M------      process table
 ;         2M------      kernel

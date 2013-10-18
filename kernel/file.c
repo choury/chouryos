@@ -190,7 +190,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
     }
     file->curnode=startnode;
     file->offset=startoffset+tmpoffset;
-    if(offset > file->length) {            //文件长度被扩展
+    if(file->offset > file->length) {            //文件长度被扩展
         file->length=offset;
     }
     return file->offset;

@@ -10,6 +10,7 @@
 int reenter=0;
 u32 curpid;
 process *stacktop;
+static struct _reent libc;
 
 void setinterrupt(int into,void f()) {
     INTHER[into]=f;
@@ -34,6 +35,7 @@ void TimerInitHandler() {
 
 void init() {
     int i;
+    _impure_ptr=&libc;
     set8253(0xffff);
     setinterrupt(0x20,TimerInitHandler);
     setinterrupt(0x21,KeyBoadHandler);
@@ -134,17 +136,15 @@ void init() {
 }
 
 void process0(void){
-    struct _reent libc;
-    _impure_ptr=&libc;
     char buff[10];
     printf("Move to use mode,pid:%d\n",curpid);
     FILE *in=fopen("aaa","r");
     if(!in){
         perror("open file faild");
     }else{
-        fseek(in,5,SEEK_SET);
-        fread(buff,1,10,in);
-        write(1,buff,10);
+        fseek(in,-5,SEEK_END);
+        int n=fread(buff,1,10,in);
+        write(1,buff,n);
         fclose(in);
     }
     while(1) {
