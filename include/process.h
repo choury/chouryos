@@ -33,12 +33,12 @@ typedef struct{
     register_status reg;
     u32 pid;
     u32 ppid;
+    u8 isused;
     u16 ldt;
     ss  cdt;
     ss  ddt;
     fileindex file[MAX_FD];
-    u8 isused;
-}__attribute__ ((packed))process;
+}process;
 
 
 #endif

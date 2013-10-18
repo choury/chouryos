@@ -38,7 +38,7 @@
 #define STATUS_DIR  0x40        /* 0- cpu->fdc */
 #define STATUS_READY    0x80        /* Data reg ready */
 
-#define floppystatus (*(u8 *)4624)
+
 
 
 void FloppyInitHandler();

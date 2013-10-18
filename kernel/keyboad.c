@@ -1,11 +1,14 @@
 #include <chouryos.h>
 #include <keyboad.h>
 
+static int keyhead=0;
+static int keytail=0;
+static u8  keybuff[10];
 
 void KeyBoadHandler(){
     outp(0x20,0x20);
     u8 a=inp(0x60);
-    u8 h=keyhead;
+    int h=keyhead;
     h=(h+1)%10;
     if(h!=keytail){
         keybuff[keyhead]=a;

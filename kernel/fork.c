@@ -16,12 +16,12 @@ int sys_fork() {
         errno = EAGAIN;
         return -1;
     }
-    memcpy(PROTABLE+i,PROTABLE+CURPID,sizeof(process));
-    memcpy(GDT+LDT_START+i,GDT+LDT_START+CURPID,sizeof(ss));
+    memcpy(PROTABLE+i,PROTABLE+curpid,sizeof(process));
+    memcpy(GDT+LDT_START+i,GDT+LDT_START+curpid,sizeof(ss));
     PROTABLE[i].reg.eax=0;
-    PROTABLE[i].ldt=(LDT_START+CURPID+i)<<3;
+    PROTABLE[i].ldt=(LDT_START+curpid+i)<<3;
     PROTABLE[i].pid=i;
-    PROTABLE[i].ppid=CURPID;
+    PROTABLE[i].ppid=curpid;
 
     GDT[LDT_START+i].base0_23=((u32)&PROTABLE[i].cdt)&0xffffff;
     GDT[LDT_START+i].base24_31=(u32)&PROTABLE[i].cdt >> 24;

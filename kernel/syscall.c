@@ -28,6 +28,8 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return (int)sys_sbrk((int)ebx);
     case 6:
         return sys_fork();
+    case 7:
+        return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
     }
     return 0;
 }
@@ -55,7 +57,7 @@ void sys_exit(int status) {
  */
 
 int sys_getpid() {
-    return CURPID;
+    return curpid;
 }
 
 /*
@@ -63,11 +65,11 @@ int sys_getpid() {
  Query whether output stream is a terminal. For consistency with the other minimal implementations,
  */
 int sys_isatty(int fd) {
-    if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[CURPID].file[fd].isused)){
+    if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
         return 0;
     }
-    if(PROTABLE[CURPID].file[fd].dev==TTY)
+    if(PROTABLE[curpid].file[fd].dev==TTY)
         return 1;
     else{
         errno = ENOTTY;

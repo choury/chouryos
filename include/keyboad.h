@@ -7,9 +7,7 @@
 #define  KEY_CAP   0x10
 
 
-#define keyhead (*(unsigned char*)4622)
-#define keytail (*(unsigned char*)4623)
-#define keybuff ((unsigned char *)4612)
+
 
 void KeyBoadHandler();
 

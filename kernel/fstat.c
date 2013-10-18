@@ -9,8 +9,8 @@
  The `sys/stat.h' header file required is distributed in the `include' subdirectory for this C library.
  */
 int sys_fstat(int fd, struct stat *st) {
-    st->st_size=PROTABLE[CURPID].file[fd].length;
-    st->st_ino=PROTABLE[CURPID].file[fd].startnode;
+    st->st_size=PROTABLE[curpid].file[fd].length;
+    st->st_ino=PROTABLE[curpid].file[fd].startnode;
     st->st_mode = S_IFREG | 0444;
     st->st_uid=0;
     st->st_gid=0;

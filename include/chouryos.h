@@ -27,15 +27,10 @@
 
 #define INTHER  ((void (**)())10240)
 
-#define line    (*(short *) 4608)
-#define colume  (*(short *) 4610)
-
-#define reenter (*(char *)  4625)
 
 #define PROTABLE    ((process *)0x100000)
-#define CURPID      (*(u32 *)12000)
-#define STACKTOP    (*(process **)12004)
-#define LDT         (*(u16 *)12008)
+
+extern u32 curpid;
 
 #define sti()     __asm__("sti\n")
 #define cli()     __asm__("cli\n")
@@ -44,10 +39,10 @@ void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);
 unsigned char inp(unsigned int port);
 void movetouse(process *);
+void process0(void);
 
 void setpoint(int x,int y,int color);
 void setinterrupt(int into,void f());
-
 
 
 

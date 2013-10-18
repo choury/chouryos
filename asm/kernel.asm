@@ -1,16 +1,8 @@
 ;mem map  0---2047      idt
 ;         2048---4095   gdt
 ;         4096---4607   floopy buffer
-;         4608---4609   console line number
-;         4610---4611   console colume number
-;         4612---4621   keyboad buffer
-;         4622~~~~~~~   keyboad head
-;         4623~~~~~~~   keyboad tail
-;         4624~~~~~~~   floppy status
-;         4625~~~~~~~   reenter kernel
 ;         5000---5103   tss
 ;         10240--11264  realinthandler table
-;         12000--12003  current pid
 ;         12004--12007  return statck top
 ;         12008--12009  ldt selector
 ;         0xB8000       console buffer
@@ -28,11 +20,9 @@ KERNELDATA_DT equ 16
 TSS_DT        equ 24
 LDT_START     equ 32
 
-REENTER         equ 4625
-STACKTOP        equ 12004
-LDT             equ 12008
-
     extern init
+    extern reenter
+    extern stacktop
     global inp
     global outp
     global outpw
@@ -138,7 +128,7 @@ setinterrupt:
 %rep 80
 int%+i:
     pushad
-    inc byte [REENTER]
+    inc byte [reenter]
     jnz rein%+i
     push ds
     push es
@@ -152,26 +142,25 @@ int%+i:
     mov esp, 0x2ffffe
     call [INTHER+i*4]
     cli
-    mov esp, [STACKTOP]
+    mov esp, [stacktop]
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec byte [REENTER]
-    lldt [LDT]
+    dec byte [reenter]
     iret
 rein%+i:
     call [INTHER+i*4]
     popad
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 %assign i i+1
 %endrep
 
 
 int80:
-    inc byte [REENTER]
+    inc byte [reenter]
     jnz rein80
     pushad
     push ds
@@ -194,14 +183,14 @@ int80:
     push eax
     call [INTHER+80*4]
     cli
-    mov esp, [STACKTOP]
+    mov esp, [stacktop]
     mov [esp+44], eax
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 rein80:
     sti
@@ -218,7 +207,7 @@ rein80:
     pop edx
     pop esi
     pop edi
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 
 
@@ -227,7 +216,7 @@ rein80:
 %rep 174
 int%+i:
     pushad
-    inc byte [REENTER]
+    inc byte [reenter]
     jnz rein%+i
     push ds
     push es
@@ -238,18 +227,18 @@ int%+i:
     mov esp, 0x2ffffe
     call [INTHER+i*4]
     cli
-    mov esp, [STACKTOP]
+    mov esp, [stacktop]
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 rein%+i:
     call [INTHER+i*4]
     popad
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 %assign i i+1
 %endrep
@@ -268,6 +257,6 @@ movetouse:
     pop es
     pop ds
     popad
-    dec byte [REENTER]
+    dec byte [reenter]
     iret
 

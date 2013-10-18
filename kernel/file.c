@@ -104,7 +104,7 @@ int file_read(fileindex *file,void *buff,size_t len) {
     uint16 DataSec=DataStartSec();
     int c,readlen=0;
     while(len) {
-        if( file->offset%512 == 0 ) {
+        if( (file->offset)&&(file->offset%512 == 0) ) {
             file->curnode=getnextnode(file->curnode);
         }
         ReadBlock(DataSec+file->curnode-2);
@@ -154,27 +154,24 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
     tmpoffset=offset;
     tmpnode=0;
     if(offset>0) {
-        while(tmpoffset>0) {
+        while(1) {
+            tmpoffset-=(512-startoffset%512);
+            startoffset+=(512-startoffset%512);
+            if(tmpoffset<=0){
+                break;
+            }
+            if(tmpnode<0xff8){
+                tmpnode=getnextnode(startnode);
+                if(tmpnode<0xff8) {
+                    startnode=tmpnode;
+                }
+            }
             if(tmpnode>=0xff8) {
                 startnode=getblanknode(startnode);
                 if(startnode<0) {                     //TODO There is a bug,it doesn't release the node it applied.
                     errno=ENOSPC;
                     return -1;
                 }
-            } else {
-                tmpnode=getnextnode(startnode);
-                if(tmpnode<0xff8) {
-                    startnode=tmpnode;
-                } else {
-                    continue;
-                }
-            }
-            if(startnode%512) {
-                tmpoffset-=512;
-                startoffset+=512;
-            } else {
-                tmpoffset-=(512-startoffset%512);
-                startoffset+=(512-startoffset%512);
             }
         }
     } else if(offset<0) {
@@ -182,15 +179,13 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
             errno=EINVAL;
             return -1;
         }
-        while(tmpoffset>0) {
-            startnode=getprenode(startnode);
-            if(startnode%512) {
-                tmpoffset+=512;
-                startoffset-=512;
-            } else {
-                tmpoffset+=startoffset%512;
-                startoffset-=startoffset%512;
+        while(1) {
+            tmpoffset+=startoffset%512;
+            startoffset-=startoffset%512;
+            if(tmpoffset>=0){
+                break;
             }
+            startnode=getprenode(startnode);
         }
     }
     file->curnode=startnode;

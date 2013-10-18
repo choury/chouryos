@@ -12,7 +12,7 @@ int sys_open(const char *path, int flags, ...){
     int i;
     int fd;
     for(i=0;i<MAX_FD;i++){
-        if(!PROTABLE[CURPID].file[i].isused){
+        if(!PROTABLE[curpid].file[i].isused){
             fd=i;
             break;
         }
@@ -21,7 +21,7 @@ int sys_open(const char *path, int flags, ...){
         errno=EMFILE;
         return -1;
     }
-    if(file_open(PROTABLE[CURPID].file+fd,path,flags)<0){
+    if(file_open(PROTABLE[curpid].file+fd,path,flags)<0){
         return -1;
     }else{
         return fd;
