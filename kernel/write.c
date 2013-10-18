@@ -7,27 +7,29 @@
  Returns -1 on error or number of bytes sent
  */
 
-int sys_write(int fd,const void *ptr,size_t len){
+int sys_write(int fd,const void *ptr,size_t len) {
     size_t count=0;
-    switch(fd){
-    case STDIN_FILENO:
-    case STDOUT_FILENO:
-    case STDERR_FILENO:
-        while(count<len){
+    if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[CURPID].file[fd].isused)) {
+        errno=EBADF;
+        return -1;
+    }
+    switch(PROTABLE[CURPID].file[fd].dev) {
+    case TTY:
+        while(count<len) {
             char c=((char *)ptr)[count++];
-            if(c=='\n'){
+            if(c=='\n') {
                 line++;
                 colume=0;
-            }else if(c=='\b'){
+            } else if(c=='\b') {
                 colume--;
-                if(colume<0){
+                if(colume<0) {
                     colume=0;
                 }
                 charbuff[line*80+colume]= 0x0720;
-            }else{
+            } else {
                 charbuff[line*80+colume++]=c | 0x0700;
             }
-            if(colume==80){
+            if(colume==80) {
                 line++;
                 colume=0;
             }
@@ -37,8 +39,10 @@ int sys_write(int fd,const void *ptr,size_t len){
         outp(0x3d4,15);
         outp(0x3d5,line*80+colume);
         return len;
+    case NOMAL_FILE:
+        return file_write(PROTABLE[CURPID].file+fd,ptr,len);
     default:
-        return file_write(fd,ptr,len);
+        return -1;
     }
 }
 

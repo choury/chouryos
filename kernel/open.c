@@ -9,5 +9,21 @@
 
 
 int sys_open(const char *path, int flags, ...){
-    return file_open(path,flags);
+    int i;
+    int fd;
+    for(i=0;i<MAX_FD;i++){
+        if(!PROTABLE[CURPID].file[i].isused){
+            fd=i;
+            break;
+        }
+    }
+    if(fd<0){
+        errno=EMFILE;
+        return -1;
+    }
+    if(file_open(PROTABLE[CURPID].file+fd,path,flags)<0){
+        return -1;
+    }else{
+        return fd;
+    }
 }

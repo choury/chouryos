@@ -62,15 +62,15 @@ int sys_getpid() {
  isatty
  Query whether output stream is a terminal. For consistency with the other minimal implementations,
  */
-int sys_isatty(int file) {
-    switch (file) {
-    case STDOUT_FILENO:
-    case STDERR_FILENO:
-    case STDIN_FILENO:
+int sys_isatty(int fd) {
+    if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[CURPID].file[fd].isused)){
+        errno=EBADF;
+        return 0;
+    }
+    if(PROTABLE[CURPID].file[fd].dev==TTY)
         return 1;
-    default:
-        //errno = ENOTTY;
-        errno = EBADF;
+    else{
+        errno = ENOTTY;
         return 0;
     }
 }
@@ -93,14 +93,6 @@ int sys_kill(int pid, int sig) {
 int sys_link(char *old, char *newname) {
     errno = EMLINK;
     return -1;
-}
-
-/*
- lseek
- Set position in a file. Minimal implementation:
- */
-off_t sys_lseek(int file, off_t ptr, int dir) {
-    return 0;
 }
 
 

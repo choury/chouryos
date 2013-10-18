@@ -12,7 +12,7 @@ typedef struct
 
 uint8           BUFFER_FAT[512];      //512字节的缓冲区
 
-static FATFileIndex    FileIndex;        //当前打开的文件
+
 static uint8           BPB_SecPerClus;
 static uint16          BPB_RsvdSecCnt;
 static uint8           BPB_NumFATs;
@@ -20,13 +20,10 @@ static uint16          BPB_RootEntCnt;
 static uint16          BPB_TotSec16;
 static uint16          BPB_FATSz16;
 static uint32          BPB_HiddSec;
+static int             LastAccess=-1;
 
 
-static uint8    IsEqual          (void* A, void* B, uint8 Size);
 static void     ReadBPB          (void);
-static uint32   ClusConvLBA      (uint16 ClusID);
-static uint16   ReadFAT          (uint16 Index);
-static uint8    GetFileID        (uint8 Name[11], DIR* ID);
 
 void FAT_Init(void)
 {
@@ -38,7 +35,10 @@ void FAT_Init(void)
 void ReadBlock(uint32 LBA)
 //********************************************************************************************
 {
-    readfloppyA(LBA, BUFFER_FAT);
+    if(LBA != LastAccess){
+        readfloppyA(LBA, BUFFER_FAT);
+        LastAccess=LBA;
+    }
 }
 
 
@@ -48,19 +48,10 @@ void WriteBlock(uint32 LBA)
 //********************************************************************************************
 {
     writefloppyA(LBA, BUFFER_FAT);
+    LastAccess=LBA;
 }
 
 
-//********************************************************************************************
-static uint8 IsEqual(void* A, void* B, uint8 Size)
-//********************************************************************************************
-{
-    uint8 i, *a = A, *b = B;
-    for(i = 0; i < Size; i++)
-        if(a[i] != b[i])
-            return 0;
-    return 1;
-}
 
 //********************************************************************************************
 //读取BPB数据结构
@@ -98,102 +89,85 @@ uint32 DataStartSec(void)
 }
 
 
-
-//********************************************************************************************
-//获取一个簇的开始扇区
-static uint32 ClusConvLBA(uint16 ClusID)
-//********************************************************************************************
-{
-    return DataStartSec() + BPB_SecPerClus * (ClusID - 2);
+//获取一个node下一个簇的序号
+int getnextnode(uint32 node) {
+    ReadBlock(node*12/8/512+1);
+    uint16 nextnode=*(uint16 *)(&((uint8 *)BUFFER_FAT)[(node*12/8)%512]);
+    if(node&1) {
+        return nextnode>>4;
+    } else {
+        return nextnode&0x0fff;
+    }
 }
 
-//********************************************************************************************
-//读取文件分配表的指定项
-static uint16 ReadFAT(uint16 Index)
-//********************************************************************************************
-{
-    uint16 *RAM = (uint16*)BUFFER_FAT;
-    ReadBlock(BPB_RsvdSecCnt + Index / 256);
-    return RAM[Index % 256];
-}
 
-//********************************************************************************************
-//获得和文件名对应的目录项
-static uint8 GetFileID(uint8 Name[11], DIR* ID)
-//********************************************************************************************
-{
-    uint16 i, m;
-    for(i = DirStartSec(); i < DataStartSec(); i++)
-    {
+//获取一个node上一个簇的序号 如不存在则返回-1
+int getprenode(uint32 node){
+    int i,n=2;
+    for(i=1; i<=9; ++i) {
         ReadBlock(i);
-        for(m = 0; m <16; m++)
-        {
-            if(IsEqual(Name, &((DIR*)&BUFFER_FAT[m * 32])->FileName, 11))
-            {
-                *ID = *((DIR*)&BUFFER_FAT[m * 32]);
-                return 1; //找到对应的目录项,返回1
+        do{
+            uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
+            if(n&1) {
+                if(t>>4 == node) {
+                    return n;
+                }
+            } else {
+                if((t&0x0fff) == node) {
+                    return n;
+                }
             }
-        }
+            n++;
+            if((n*12/8)%512==0)
+                break;
+        }while(1);
     }
-    return 0; //没有找到对应的目录项,返回0
+    return -1;
 }
 
-//********************************************************************************************
-//打开指定文件
-void FAT_FileOpen(uint8 Name[11], uint32 Start)
-//********************************************************************************************
-{
-    uint16 BytePerClus, ClusNum;
-    DIR FileDir;
-    BytePerClus = BPB_SecPerClus * 512; // 每簇的字节数
-    GetFileID(Name, &FileDir);
 
-    //计算开始位置所在簇的簇号
-    ClusNum = Start / BytePerClus;
-    FileIndex.ClusID = FileDir.FilePosit.Start;
-    for(FileIndex.i = 0; FileIndex.i < ClusNum; FileIndex.i++)
-        FileIndex.ClusID = ReadFAT(FileIndex.ClusID);
-
-
-    FileIndex.i = (Start % BytePerClus) / 512; //开始位置所在扇区簇内偏移
-    FileIndex.m = (Start % BytePerClus) % 512; //开始位置扇区内偏移
-
-    FileIndex.LBA = ClusConvLBA(FileIndex.ClusID) + FileIndex.i; //开始位置所在的扇区号
-    ReadBlock(FileIndex.LBA); //预读取一个扇区的内容
-}
-
-//********************************************************************************************
-//读取文件的数据
-void FAT_FileRead(uint32 Length, void* Data)
-//********************************************************************************************
-{
-    uint8 *data = Data;
-
-    goto FAT_FileRead_Start;
-
-    while(1)
-    {
-        FileIndex.ClusID = ReadFAT(FileIndex.ClusID); //下一簇簇号
-        FileIndex.LBA = ClusConvLBA(FileIndex.ClusID);
-        FileIndex.i = 0;
-        while(FileIndex.i < BPB_SecPerClus)
-        {
-            ReadBlock(FileIndex.LBA);
-            FileIndex.m = 0;
-FAT_FileRead_Start:
-            while(FileIndex.m < 512)
-            {
-                *data++ = BUFFER_FAT[FileIndex.m];
-                FileIndex.m++;
-                //如果读取完成就退出
-                if(--Length == 0)
-                    return;
+//获取一个空白簇，如果node不为0，则会在对应簇号上填入获得的簇号
+int getblanknode(uint32 node) {
+    int i,n=2;
+    for(i=1; i<=9; ++i) {
+        ReadBlock(i);
+        do{
+            uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
+            if(n&1) {
+                if(t>>4 == 0) {
+                    *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0x000f)| 0xfff0;
+                    WriteBlock(i);
+                    goto next;
+                }
+            } else {
+                if((t&0x0fff) == 0) {
+                    *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0xf000)| 0xfff;
+                    WriteBlock(i);
+                    goto next;
+                }
             }
-            FileIndex.LBA++;
-            FileIndex.i++;
-        }
+            n++;
+            if((n*12/8)%512==0)
+                break;
+        }while(1);
     }
+    return -1;
+next:
+    if(node != 0) {
+        ReadBlock(node*12/8/512+1);
+        uint16 t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
+        if(node&1) {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0x000f) | (n <<4));
+        } else {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0xf000) | (n & 0xfff));
+        }
+        WriteBlock(node*12/8/512+1);
+        WriteBlock(node*12/8/512+10);
+    }
+    return n;
 }
+
+#if 0
 
 //********************************************************************************************
 //写文件的数据
@@ -233,3 +207,4 @@ FAT_FileWrite_Start:
 
 //---------------------------------------------------------------------------------------------------------------------------------
 
+#endif

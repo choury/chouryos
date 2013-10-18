@@ -1,21 +1,21 @@
 #include <stdio.h>
+#include <string.h>
 #include <file.h>
 #include <ctype.h>
-#include <floppy.h>
 #include <fat.h>
 #include <errno.h>
 
 
 
-void initfs(){
+void initfs() {
     FAT_Init();                         //get fat infomation struct
 }
 
 
-int cmpname(const char *namea,const char *nameb){
+int cmpname(const char *namea,const char *nameb) {
     int i=0;
-    for(i=0;i<11;i=i+1){
-        if(namea[i]!=nameb[i]){
+    for(i=0; i<11; i=i+1) {
+        if(namea[i]!=nameb[i]) {
             return 0;
         }
     }
@@ -23,66 +23,56 @@ int cmpname(const char *namea,const char *nameb){
 }
 
 
-void splitpath(const char *path,char name[]){
+void splitpath(const char *path,char name[]) {
     int len=0,i;
     const char *tmp=path;
-    while((*tmp)&&(*tmp!='.')){
+    while((*tmp)&&(*tmp!='.')) {
         len++;
         tmp++;
     }
-    if(len>8){
-        for(i=0;i<6;++i){
+    if(len>8) {
+        for(i=0; i<6; ++i) {
             name[i]=path[i];
         }
         name[6]='~';
         name[7]='1';
-    }else{
-        for(i=0;i<len;++i){
-            if(islower((int)path[i])){
+    } else {
+        for(i=0; i<len; ++i) {
+            if(islower((int)path[i])) {
                 name[i]=toupper((int)path[i]);
-            }else{
+            } else {
                 name[i]=path[i];
             }
         }
-        for(;i<8;++i){
+        for(; i<8; ++i) {
             name[i]=' ';
         }
     }
     i=0;
-    if(*tmp){
+    if(*tmp) {
         path=++tmp;
         len=0;
-        while(*tmp){
+        while(*tmp) {
             len++;
             tmp++;
         }
-        for(;(i<len)&&(i<3);++i){
-            if(islower((int)path[i])){
+        for(; (i<len)&&(i<3); ++i) {
+            if(islower((int)path[i])) {
                 name[i+8]=toupper((int)path[i]);
-            }else{
+            } else {
                 name[i+8]=path[i];
             }
         }
     }
-    for(;i<3;++i){
+    for(; i<3; ++i) {
         name[i+8]=' ';
     }
 }
 
-int file_open(const char *path, int flags, ...){
+int file_open(fileindex *file,const char *path, int flags, ...) {
     (void)flags;
     uint16 DirSecCut, DirStart, i, j;
-    int cur_index=-1;
-    for(i=0;i<MAX_FD;i++){
-        if(!PROTABLE[CURPID].file[i].isused){
-            cur_index=i;
-            break;
-        }
-    }
-    if(cur_index<0){
-        errno=EMFILE;
-        return -1;
-    }
+
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
     char name[11];
@@ -92,15 +82,16 @@ int file_open(const char *path, int flags, ...){
         ReadBlock(i);
         for(j = 0; j <16; j++)
         {
-            if(cmpname(name, (char *)&((DIR*)&BUFFER_FAT[j * 32])->FileName))
+            if(cmpname(name, (char *)&((DIR*)&BUFFER_FAT[j * 32])->Name))
             {
-                PROTABLE[CURPID].file[cur_index].isused=1;
-                PROTABLE[CURPID].file[cur_index].indexno=(i-DirStart)*16+j;
-                PROTABLE[CURPID].file[cur_index].offset=0;
-                PROTABLE[CURPID].file[cur_index].startnode=((DIR*)&BUFFER_FAT[j * 32])->FilePosit.Start;
-                PROTABLE[CURPID].file[cur_index].curnode=PROTABLE[CURPID].file[cur_index].startnode;
-                PROTABLE[CURPID].file[cur_index].length=((DIR*)&BUFFER_FAT[j * 32])->FilePosit.Size;
-                return cur_index; //找到对应的目录项,返回
+                file->isused=1;
+                file->indexno=(i-DirStart)*16+j;
+                file->offset=0;
+                file->startnode=((DIR*)&BUFFER_FAT[j * 32])->Start;
+                file->curnode=file->startnode;
+                file->length=((DIR*)&BUFFER_FAT[j * 32])->Length;
+                file->dev=NOMAL_FILE;
+                return 0; //找到对应的目录项,返回
             }
         }
     }
@@ -108,53 +99,108 @@ int file_open(const char *path, int flags, ...){
     return -1; //没有找到对应的目录项,返回
 }
 
-uint16 getnextnode(int node){
-    ReadBlock(node*12/8/512+1);
-    uint16 nextnode=*(uint16 *)(&((uint8 *)BUFFER_FAT)[(node*12/8)%512]);
-    if(node&1){
-        return nextnode>>4;
-    }else{
-        return nextnode&0x0fff;
-    }
-}
 
-
-int file_read(int fd,void *buff,size_t len){
-//    printf("fd:%d,count:%x\n",fd,count);
+int file_read(fileindex *file,void *buff,size_t len) {
     uint16 DataSec=DataStartSec();
-    int i,readlen=0;
-    if((fd<0)||(fd>=MAX_FD)||!PROTABLE[CURPID].file[fd].isused){
-        return -1;
-    }
-//    printf("File length:%d,offset:%d\n",filedesc[fd].length,filedesc[fd].offset);
-    while(PROTABLE[CURPID].file[fd].offset%512+len>=512){
-        if(PROTABLE[CURPID].file[fd].curnode>0xff8){
-            return -1;
+    int c,readlen=0;
+    while(len) {
+        if( file->offset%512 == 0 ) {
+            file->curnode=getnextnode(file->curnode);
         }
-        ReadBlock(DataSec+PROTABLE[CURPID].file[fd].curnode-2);
-        for(i=0;(i+PROTABLE[CURPID].file[fd].offset%512<512)&&(i+PROTABLE[CURPID].file[fd].offset
-            <PROTABLE[CURPID].file[fd].length);i=i+1,readlen=readlen+1){
-            ((char*)buff)[readlen]=BUFFER_FAT[PROTABLE[CURPID].file[fd].offset%512+i];
-        }
-        PROTABLE[CURPID].file[fd].offset+=i;
-        if(PROTABLE[CURPID].file[fd].offset%512){
+        ReadBlock(DataSec+file->curnode-2);
+        c=(512-file->offset%512)<(file->length-file->offset)?
+          (512-file->offset%512):
+          (file->length-file->offset);
+        memcpy(buff+readlen,BUFFER_FAT+file->offset%512,c);
+        readlen+=c;
+        file->offset+=c;
+        if(file->offset==file->length) {
             return readlen;
         }
-        PROTABLE[CURPID].file[fd].curnode=getnextnode(PROTABLE[CURPID].file[fd].curnode);
-        len-=i;
+        len-=c;
     }
-    if(PROTABLE[CURPID].file[fd].curnode>0xff8){
-        return -1;
-    }
-    ReadBlock(DataSec+PROTABLE[CURPID].file[fd].curnode-2);
-    for(i=0;(i<len)&&(i+PROTABLE[CURPID].file[fd].offset
-        <PROTABLE[CURPID].file[fd].length);i=i+1,readlen=readlen+1){
-        ((char*)buff)[readlen]=BUFFER_FAT[PROTABLE[CURPID].file[fd].offset%512+i];
-    }
-    PROTABLE[CURPID].file[fd].offset+=i;
     return readlen;
 }
 
-int file_write(int fd,const void *ptr,size_t len){
+
+off_t file_lseek(fileindex *file,off_t offset, int whence) {
+    int startnode,tmpnode;
+    int startoffset,tmpoffset;
+    switch(whence) {
+    case SEEK_SET:
+        startnode=file->startnode;
+        startoffset=0;
+        break;
+    case SEEK_CUR:
+        startnode=file->curnode;
+        startoffset=file->offset;
+        break;
+    case SEEK_END:
+        startnode=file->curnode;
+        startoffset=file->length;
+        while(1) {
+            tmpnode=getnextnode(startnode);
+            if(tmpnode >= 0xff8) {
+                break;
+            } else {
+                startnode = tmpnode;
+            }
+        }
+        break;
+    default:
+        errno=EINVAL;
+        return -1;
+    }
+    tmpoffset=offset;
+    tmpnode=0;
+    if(offset>0) {
+        while(tmpoffset>0) {
+            if(tmpnode>=0xff8) {
+                startnode=getblanknode(startnode);
+                if(startnode<0) {                     //TODO There is a bug,it doesn't release the node it applied.
+                    errno=ENOSPC;
+                    return -1;
+                }
+            } else {
+                tmpnode=getnextnode(startnode);
+                if(tmpnode<0xff8) {
+                    startnode=tmpnode;
+                } else {
+                    continue;
+                }
+            }
+            if(startnode%512) {
+                tmpoffset-=512;
+                startoffset+=512;
+            } else {
+                tmpoffset-=(512-startoffset%512);
+                startoffset+=(512-startoffset%512);
+            }
+        }
+    } else if(offset<0) {
+        if(offset+file->offset < 0) {
+            errno=EINVAL;
+            return -1;
+        }
+        while(tmpoffset>0) {
+            startnode=getprenode(startnode);
+            if(startnode%512) {
+                tmpoffset+=512;
+                startoffset-=512;
+            } else {
+                tmpoffset+=startoffset%512;
+                startoffset-=startoffset%512;
+            }
+        }
+    }
+    file->curnode=startnode;
+    file->offset=startoffset+tmpoffset;
+    if(offset > file->length) {            //文件长度被扩展
+        file->length=offset;
+    }
+    return file->offset;
+}
+
+int file_write(fileindex *file,const void *ptr,size_t len) {
     return 0;
 }

@@ -42,12 +42,18 @@ typedef struct
 
 typedef struct
 {
-    uint8         FileName[11];
-    uint8         FileAttrib;
-    uint8         UnUsed[10];
-    uint8         FileUpdateTime[2];
-    uint8         FileUpdateData[2];
-    FILE_POSIT    FilePosit;
+    uint8         Name[11];
+    uint8         Attrib;
+    uint8         UnUsed;
+    uint8         CreateTimems;
+    uint16        CreateTime;
+    uint16        CreateDate;
+    uint16        LastAccessTime;
+    uint16        EA_Index;
+    uint16        UpdateTime;
+    uint16        UpdateData;
+    uint16        Start;
+    uint32        Length;
 } __attribute__ ((packed)) DIR;
 
 void FAT_Init(void);
@@ -56,5 +62,9 @@ void     ReadBlock        (uint32 LBA);
 void     WriteBlock       (uint32 LBA);
 uint32 DirStartSec(void);
 uint32 DataStartSec(void);
+
+int getnextnode(uint32 node);
+int getprenode(uint32 node);
+int getblanknode(uint32 node);
 
 #endif

@@ -20,24 +20,11 @@ void set8253(u16 time) {
 void TimerInitHandler() {
     outp(0x20,0x20);
     int i;
-    charbuff[0]=(reenter+'0') | 0x0700;
     if(reenter==0) {
-        if(PROTABLE[1].isused){
-            CURPID=1;
-        }
     }
     TSS.esp0=(u32)&(PROTABLE[CURPID].pid);
     STACKTOP=PROTABLE+CURPID;
     LDT=PROTABLE[CURPID].ldt;
-}
-
-
-void process1() {
-    int i=fork();
-    write(1,"create a new process",20);
-    while(1) {
-        charbuff[i+1]++;
-    }
 }
 
 void init() {
@@ -87,7 +74,7 @@ void init() {
     PROTABLE[CURPID].reg.ss=(1<<3)|7;
     PROTABLE[CURPID].reg.oesp=0x1ffffe;
     PROTABLE[CURPID].reg.cs=(0<<3)|7;
-    PROTABLE[CURPID].reg.eip=(u32)process1;
+    PROTABLE[CURPID].reg.eip=(u32)&&USER;
     PROTABLE[CURPID].reg.eflags=0x1202;
     PROTABLE[CURPID].reg.ds=(1<<3)|7;
     PROTABLE[CURPID].reg.es=(1<<3)|7;
@@ -99,8 +86,11 @@ void init() {
     }
 
     PROTABLE[CURPID].file[0].isused=1;               //for standard input
+    PROTABLE[CURPID].file[0].dev=TTY;
     PROTABLE[CURPID].file[1].isused=1;               //for standard output
+    PROTABLE[CURPID].file[1].dev=TTY;
     PROTABLE[CURPID].file[2].isused=1;               //for standard errer
+    PROTABLE[CURPID].file[2].dev=TTY;
     for(i=3; i<MAX_FD; i=i+1) {
         PROTABLE[CURPID].file[i].isused=0;
     }
@@ -140,5 +130,11 @@ void init() {
     printf("hello newlib\n");
 
     movetouse(&(PROTABLE[CURPID]));
-
+USER:
+    puts("Move to use mode!");
+    while(1) {
+        char a;
+        read(1,&a,1);
+        write(1,&a,1);
+    }
 }
