@@ -35,7 +35,7 @@ void FAT_Init(void)
 void ReadBlock(uint32 LBA)
 //********************************************************************************************
 {
-    if(LBA != LastAccess){
+    if(LBA != LastAccess) {
         readfloppyA(LBA, BUFFER_FAT);
         LastAccess=LBA;
     }
@@ -102,25 +102,20 @@ int getnextnode(uint32 node) {
 
 
 //获取一个node上一个簇的序号 如不存在则返回-1
-int getprenode(uint32 node){
-    int i,n=2;
-    for(i=1; i<=9; ++i) {
-        ReadBlock(i);
-        do{
-            uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
-            if(n&1) {
-                if(t>>4 == node) {
-                    return n;
-                }
-            } else {
-                if((t&0x0fff) == node) {
-                    return n;
-                }
+int getprenode(uint32 node) {
+    int n;
+    for(n=2; n<0xff7; ++n) {
+        ReadBlock(n*12/8/512+1);
+        uint16 t=*(uint16 *)(&((uint8 *)BUFFER_FAT)[(n*12/8)%512]);
+        if(n&1) {
+            if(t>>4 == node) {
+                return n;
             }
-            n++;
-            if((n*12/8)%512==0)
-                break;
-        }while(1);
+        } else {
+            if((t&0x0fff) == node) {
+                return n;
+            }
+        }
     }
     return -1;
 }
@@ -128,28 +123,23 @@ int getprenode(uint32 node){
 
 //获取一个空白簇，如果node不为0，则会在对应簇号上填入获得的簇号
 int getblanknode(uint32 node) {
-    int i,n=2;
-    for(i=1; i<=9; ++i) {
-        ReadBlock(i);
-        do{
-            uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
-            if(n&1) {
-                if(t>>4 == 0) {
-                    *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0x000f)| 0xfff0;
-                    WriteBlock(i);
-                    goto next;
-                }
-            } else {
-                if((t&0x0fff) == 0) {
-                    *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0xf000)| 0xfff;
-                    WriteBlock(i);
-                    goto next;
-                }
+    int n=2;
+    for(n=2; n<0xff7; ++n) {
+        ReadBlock(n*12/8/512+1);
+        uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
+        if(n&1) {
+            if(t>>4 == 0) {
+                *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0x000f)| 0xfff0;
+                WriteBlock(n*12/8/512+1);
+                goto next;
             }
-            n++;
-            if((n*12/8)%512==0)
-                break;
-        }while(1);
+        } else {
+            if((t&0x0fff) == 0) {
+                *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0xf000)| 0xfff;
+                WriteBlock(n*12/8/512+1);
+                goto next;
+            }
+        }
     }
     return -1;
 next:

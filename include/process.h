@@ -33,7 +33,7 @@ typedef struct{
     register_status reg;
     u32 pid;
     u32 ppid;
-    u8 isused;
+    u32 isused;
     u16 ldt;
     ss  cdt;
     ss  ddt;

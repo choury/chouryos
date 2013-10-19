@@ -87,7 +87,7 @@ int file_open(fileindex *file,const char *path, int flags, ...) {
                 file->isused=1;
                 file->indexno=(i-DirStart)*16+j;
                 file->offset=0;
-                file->startnode=((DIR*)&BUFFER_FAT[j * 32])->Start;
+                file->startnode=((DIR*)&BUFFER_FAT[j * 32])->Startl;
                 file->curnode=file->startnode;
                 file->length=((DIR*)&BUFFER_FAT[j * 32])->Length;
                 file->dev=NOMAL_FILE;

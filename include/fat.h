@@ -34,11 +34,6 @@ typedef struct
     uint8         ExecutableMarker[2];
 } __attribute__ ((packed)) FAT_BPB;
 
-typedef struct
-{
-    uint16        Start;
-    uint32        Size;
-} __attribute__ ((packed)) FILE_POSIT;
 
 typedef struct
 {
@@ -46,15 +41,37 @@ typedef struct
     uint8         Attrib;
     uint8         UnUsed;
     uint8         CreateTimems;
-    uint16        CreateTime;
-    uint16        CreateDate;
-    uint16        LastAccessTime;
-    uint16        EA_Index;
-    uint16        UpdateTime;
-    uint16        UpdateData;
-    uint16        Start;
+    uint16        Create2Second:5;
+    uint16        CreateMinute:6;
+    uint16        CreateHour:5;
+    uint16        CreateDay:5;
+    uint16        CreateMonth:4;
+    uint16        CreateYear:7;
+    uint16        Access2Second:5;
+    uint16        AccessMinute:6;
+    uint16        AccessHour:5;
+    uint16        Starth;
+    uint16        Update2Second:5;
+    uint16        UpdateMinute:6;
+    uint16        UpdateHour:5;
+    uint16        UpdateDay:5;
+    uint16        UpdateMonth:4;
+    uint16        UpdateYear:7;
+    uint16        Startl;
     uint32        Length;
 } __attribute__ ((packed)) DIR;
+
+typedef struct{
+    uint8         Index;
+    uint8         Name1[10];
+    uint8         Attrib;
+    uint8         UnUsed;
+    uint8         Sum;
+    uint8         Name2[12];
+    uint16        Start;
+    uint8         Name3[4];
+}__attribute__ ((packed)) LFN;
+
 
 void FAT_Init(void);
 

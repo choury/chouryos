@@ -142,7 +142,7 @@ void process0(void){
     if(!in){
         perror("open file faild");
     }else{
-        fseek(in,-5,SEEK_END);
+        fseek(in,-515,SEEK_END);
         int n=fread(buff,1,10,in);
         write(1,buff,n);
         fclose(in);

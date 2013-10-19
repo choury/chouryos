@@ -10,12 +10,12 @@
 #define TTY        1
 
 typedef struct{
-    uint8  isused;
-    uint16 dev;
+    uint32  isused;
+    uint32 dev;
     uint32 indexno;
     uint32 offset;
-    uint16 startnode;
-    uint16 curnode;
+    uint32 startnode;
+    uint32 curnode;
     uint32 length;
 }__attribute__ ((packed)) fileindex;
 
