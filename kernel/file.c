@@ -104,17 +104,19 @@ int file_read(fileindex *file,void *buff,size_t len) {
     uint16 DataSec=DataStartSec();
     int c,readlen=0;
     while(len) {
-        if( (file->offset)&&(file->offset%512 == 0) ) {
+        if( (file->offset%512 == 0) && (file->offset) && (file->offset < file->length) ) {
             file->curnode=getnextnode(file->curnode);
         }
         ReadBlock(DataSec+file->curnode-2);
         c=(512-file->offset%512)<(file->length-file->offset)?
           (512-file->offset%512):
           (file->length-file->offset);
+        c=c<len?c:len;
         memcpy(buff+readlen,BUFFER_FAT+file->offset%512,c);
         readlen+=c;
         file->offset+=c;
         if(file->offset==file->length) {
+            errno=0;
             return readlen;
         }
         len-=c;
@@ -180,8 +182,8 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
             return -1;
         }
         while(1) {
-            tmpoffset+=startoffset%512;
-            startoffset-=startoffset%512;
+            tmpoffset+=(startoffset-1)%512+1;
+            startoffset-=(startoffset-1)%512+1;
             if(tmpoffset>=0){
                 break;
             }
@@ -191,7 +193,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
     file->curnode=startnode;
     file->offset=startoffset+tmpoffset;
     if(file->offset > file->length) {            //文件长度被扩展
-        file->length=offset;
+        file->length=file->offset;
     }
     return file->offset;
 }
