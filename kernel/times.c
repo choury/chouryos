@@ -112,6 +112,8 @@ void read_rtc() {
     }
 }
 
+#if 0
+
 #define MINUTE 60
 #define HOUR (60*MINUTE)
 #define DAY (24*HOUR)
@@ -154,9 +156,33 @@ long kernel_mktime(void)
     return res;
 }
 
+#endif
+
+time_t kernel_mktime (
+    unsigned int year, unsigned int mon,
+    unsigned int day, unsigned int hour,
+    unsigned int min, unsigned int sec)
+        {
+    if (0 >= (int) (mon -= 2)) {    /* 1..12 -> 11,12,1..10 */
+         mon += 12;      /* Puts Feb last since it has leap day */
+         year -= 1;
+    }
+
+    return (((
+             (time_t) (year/4 - year/100 + year/400 + 367*mon/12 + day) +
+             year*365 - 719499
+          )*24 + hour /* now have hours */
+       )*60 + min /* now have minutes */
+    )*60 + sec; /* finally seconds */
+}
+
+time_t kernel_getnowtime(){
+    read_rtc();
+    return kernel_mktime(Year,Month,Day,Hour-8,Minute,Second);
+}
 
 int sys_gettimeofday(struct timeval *tv, struct timezone *tz){
-    tv->tv_sec=kernel_mktime();
+    tv->tv_sec=kernel_getnowtime();
     tv->tv_usec=0;
     return 0;
 }

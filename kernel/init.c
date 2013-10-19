@@ -145,9 +145,10 @@ void process0(void){
     }else{
         fseek(in,-515,SEEK_END);
         int n=fread(buff,1,10,in);
-        write(1,buff,n);
+//        write(1,buff,n);
         fclose(in);
     }
+    printf("time:%ld\n",time(NULL));
     while(1) {
         char a;
         read(0,&a,1);

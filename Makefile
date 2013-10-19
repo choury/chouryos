@@ -28,6 +28,8 @@ copy:boot kernel boot.img
 	sudo mount -o loop,umask=000 boot.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
+	@dd if=/dev/urandom of=aaa bs=512 count=2
+	cp aaa /mnt
 	sudo umount /mnt
 
 kernel:asm

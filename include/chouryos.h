@@ -3,6 +3,7 @@
 
 #include <process.h>
 #include <type.h>
+#include <sys/types.h>
 
 
 #ifndef NULL
@@ -46,8 +47,11 @@ void process0(void);
 void setpoint(int x,int y,int color);
 void setinterrupt(int into,void f());
 
+time_t kernel_mktime(
+    unsigned int year, unsigned int mon,
+    unsigned int day, unsigned int hour,
+    unsigned int min, unsigned int sec);
 
-
-
+time_t kernel_getnowtime();
 
 #endif

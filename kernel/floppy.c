@@ -168,7 +168,17 @@ void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,uns
     seek_track(head,track,drive);
     outp (0x3F7, 0);
     setup_DMA(buffer,command);
-    send_byte(READ_SECTOR);
+    switch(command){
+    case 0x46:
+        send_byte(READ_SECTOR);
+        break;
+    case 0x4a:
+        send_byte(WRITE_SECTOR);
+        break;
+    default:
+        puts("Wrong Floppy command!");
+        return;
+    }
     send_byte(head<<2|drive);
     send_byte(track);
     send_byte(head);

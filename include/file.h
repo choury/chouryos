@@ -2,6 +2,8 @@
 #define __FILE_H__
 
 #include <type.h>
+#include <time.h>
+
 
 #define MAX_FD 10
 
@@ -17,6 +19,9 @@ typedef struct{
     uint32 startnode;
     uint32 curnode;
     uint32 length;
+    time_t createtime;
+    time_t accesstime;
+    time_t updatetime;
 } fileindex;
 
 void initfs();

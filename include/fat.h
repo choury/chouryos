@@ -47,9 +47,9 @@ typedef struct
     uint16        CreateDay:5;
     uint16        CreateMonth:4;
     uint16        CreateYear:7;
-    uint16        Access2Second:5;
-    uint16        AccessMinute:6;
-    uint16        AccessHour:5;
+    uint16        AccessDay:5;
+    uint16        AccessMonth:4;
+    uint16        AccessYear:7;
     uint16        Starth;
     uint16        Update2Second:5;
     uint16        UpdateMinute:6;

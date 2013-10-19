@@ -72,7 +72,6 @@ void splitpath(const char *path,char name[]) {
 int file_open(fileindex *file,const char *path, int flags, ...) {
     (void)flags;
     uint16 DirSecCut, DirStart, i, j;
-
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
     char name[11];
@@ -87,10 +86,27 @@ int file_open(fileindex *file,const char *path, int flags, ...) {
                 file->isused=1;
                 file->indexno=(i-DirStart)*16+j;
                 file->offset=0;
-                file->startnode=((DIR*)&BUFFER_FAT[j * 32])->Startl;
+                file->startnode=((DIR*)BUFFER_FAT)[j].Starth<<16 | ((DIR*)BUFFER_FAT)[j].Startl;
                 file->curnode=file->startnode;
-                file->length=((DIR*)&BUFFER_FAT[j * 32])->Length;
+                file->length=((DIR*)BUFFER_FAT)[j].Length;
                 file->dev=NOMAL_FILE;
+                file->createtime=kernel_mktime(((DIR*)BUFFER_FAT)[j].CreateYear+1980,
+                                               ((DIR*)BUFFER_FAT)[j].CreateMonth,
+                                               ((DIR*)BUFFER_FAT)[j].CreateDay,
+                                               ((DIR*)BUFFER_FAT)[j].CreateHour,
+                                               ((DIR*)BUFFER_FAT)[j].CreateMinute,
+                                               ((DIR*)BUFFER_FAT)[j].Create2Second*2
+                );
+
+                file->updatetime=kernel_mktime(((DIR*)BUFFER_FAT)[j].UpdateYear+1980,
+                                               ((DIR*)BUFFER_FAT)[j].UpdateMonth,
+                                               ((DIR*)BUFFER_FAT)[j].UpdateDay,
+                                               ((DIR*)BUFFER_FAT)[j].UpdateHour,
+                                               ((DIR*)BUFFER_FAT)[j].UpdateMinute,
+                                               ((DIR*)BUFFER_FAT)[j].Update2Second*2
+                );
+
+                file->accesstime=kernel_getnowtime();
                 return 0; //找到对应的目录项,返回
             }
         }
@@ -199,10 +215,37 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
 }
 
 int file_write(fileindex *file,const void *ptr,size_t len) {
+    file->updatetime=kernel_getnowtime();
     return 0;
 }
 
 
 int file_close(fileindex *file){
+    struct tm* t;
+    ReadBlock(DirStartSec()+file->indexno/16);
+    t=gmtime(&file->createtime);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Create2Second=t->tm_sec/2;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMinute=t->tm_min;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateHour=t->tm_hour;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateDay=t->tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMonth=t->tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateYear=t->tm_year-80;
+    t=gmtime(&file->accesstime);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessDay=t->tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessMonth=t->tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessYear=t->tm_year-80;
+    t=gmtime(&file->updatetime);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Update2Second=t->tm_sec/2;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMinute=t->tm_min;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateHour=t->tm_hour;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateDay=t->tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMonth=t->tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateYear=t->tm_year-80;
+
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Starth=file->startnode>>16;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Startl=file->startnode&0xffff;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Length=file->length;
+
+    WriteBlock(DirStartSec()+file->indexno/16);
     return 0;
 }

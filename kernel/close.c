@@ -11,7 +11,7 @@ int sys_close(int fd) {
     case TTY:
         return 0;
     case NOMAL_FILE:
-        return file_close(PROTABLE[curpid].file);
+        return file_close(PROTABLE[curpid].file+fd);
     default:
         return 0;
     }
