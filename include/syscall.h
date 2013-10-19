@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/times.h>
 #include <sys/unistd.h>
 #include <type.h>
@@ -26,6 +27,7 @@ int sys_open(const char *name, int flags,...);
 int sys_read(int fd, void *ptr, size_t len);
 void* sys_sbrk(int incr);
 int sys_stat(const char *fd, struct stat *st);
+int sys_gettimeofday(struct timeval *tv, struct timezone *tz);
 clock_t sys_times(struct tms *buf);
 int sys_unlink(char *name);
 int sys_wait(int *status);

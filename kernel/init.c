@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <keyboad.h>
+#include <time.h>
 
 int reenter=0;
 u32 curpid;
@@ -28,7 +29,7 @@ void TimerInitHandler() {
     if(!reenter) {
         TSS.esp0=(u32)&(PROTABLE[curpid].pid);
         stacktop=PROTABLE+curpid;
-        __asm__ ("lldt %0" : :"r"(PROTABLE[curpid].ldt));
+        lldt(PROTABLE[curpid].ldt);
     }
 }
 

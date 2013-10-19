@@ -4,6 +4,7 @@ global open
 global close
 global fstat
 global lseek
+global gettimeofday
 global isatty
 global sbrk
 global fork
@@ -106,6 +107,20 @@ lseek:
     mov edx, [ebp+16]
     int 80
     pop edx
+    pop ecx
+    pop ebx
+    leave
+    ret
+
+gettimeofday:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    mov eax, 8
+    mov ebx, [ebp+8]
+    mov ecx, [ebp+12]
+    int 80
     pop ecx
     pop ebx
     leave

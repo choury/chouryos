@@ -7,5 +7,12 @@ int sys_close(int fd) {
         return -1;
     }
     PROTABLE[curpid].file[fd].isused=0;
-    return 0;
+    switch(PROTABLE[curpid].file[fd].dev){
+    case TTY:
+        return 0;
+    case NOMAL_FILE:
+        return file_close(PROTABLE[curpid].file);
+    default:
+        return 0;
+    }
 }

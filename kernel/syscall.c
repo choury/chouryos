@@ -6,10 +6,7 @@
  *      Author: nanoage.co.uk
  */
 
-#include <sys/stat.h>
-#include <sys/times.h>
-#include <sys/unistd.h>
-#include <sys/types.h>
+
 #include <chouryos.h>
 #include <syscall.h>
 
@@ -30,6 +27,8 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return sys_fork();
     case 7:
         return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
+    case 8:
+        return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
     }
     return 0;
 }
@@ -110,14 +109,6 @@ int sys_stat(const char *filepath, struct stat *st) {
     return 0;
 }
 
-/*
- times
- Timing information for current process. Minimal implementation:
- */
-
-clock_t sys_times(struct tms *buf) {
-    return -1;
-}
 
 /*
  unlink

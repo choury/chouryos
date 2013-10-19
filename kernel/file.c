@@ -82,7 +82,7 @@ int file_open(fileindex *file,const char *path, int flags, ...) {
         ReadBlock(i);
         for(j = 0; j <16; j++)
         {
-            if(cmpname(name, (char *)&((DIR*)&BUFFER_FAT[j * 32])->Name))
+            if(cmpname(name, (char *)((DIR*)BUFFER_FAT)[j].Name))
             {
                 file->isused=1;
                 file->indexno=(i-DirStart)*16+j;
@@ -199,5 +199,10 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
 }
 
 int file_write(fileindex *file,const void *ptr,size_t len) {
+    return 0;
+}
+
+
+int file_close(fileindex *file){
     return 0;
 }

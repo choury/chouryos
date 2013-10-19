@@ -63,13 +63,13 @@ typedef struct
 
 typedef struct{
     uint8         Index;
-    uint8         Name1[10];
+    uint16        Name1[5];
     uint8         Attrib;
     uint8         UnUsed;
     uint8         Sum;
-    uint8         Name2[12];
+    uint16        Name2[6];
     uint16        Start;
-    uint8         Name3[4];
+    uint16        Name3[2];
 }__attribute__ ((packed)) LFN;
 
 
@@ -83,5 +83,7 @@ uint32 DataStartSec(void);
 int getnextnode(uint32 node);
 int getprenode(uint32 node);
 int getblanknode(uint32 node);
+
+u8 getchecksum (const unsigned char Name[11]);  // 长文件名的校验和
 
 #endif

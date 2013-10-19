@@ -157,6 +157,17 @@ next:
     return n;
 }
 
+
+u8 getchecksum (const unsigned char Name[11])
+{
+        int i;
+        unsigned char sum=0;
+
+        for (i=11; i; i--)
+                sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *Name++;
+        return sum;
+}
+
 #if 0
 
 //********************************************************************************************
