@@ -139,16 +139,14 @@ void init() {
 void process0(void){
     char buff[10];
     printf("Move to use mode,pid:%d\n",curpid);
-    FILE *in=fopen("aaa","r");
+    FILE *in=fopen("aaa","w");
     if(!in){
         perror("open file faild");
     }else{
-        fseek(in,-515,SEEK_END);
-        int n=fread(buff,1,10,in);
-//        write(1,buff,n);
+//        fseek(in,0,SEEK_END);
+        fwrite(buff,1,10,in);
         fclose(in);
     }
-    printf("time:%ld\n",time(NULL));
     while(1) {
         char a;
         read(0,&a,1);

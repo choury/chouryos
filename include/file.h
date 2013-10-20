@@ -25,10 +25,10 @@ typedef struct{
 } fileindex;
 
 void initfs();
-int file_open(fileindex *file,const char *path, int flags, ...);
+int file_open(fileindex *file,const char *path, int flags);
 int file_read(fileindex *file,void *buff,size_t len);
 off_t file_lseek(fileindex *file,off_t offset, int whence);
-int file_write(fileindex *file,const void *ptr,size_t len);  //doesn't Implement
+int file_write(fileindex *file,const void *ptr,size_t len);
 int file_close(fileindex *file);
 
 #endif

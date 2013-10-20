@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <fat.h>
 #include <errno.h>
-
+#include <fcntl.h>
 
 
 void initfs() {
@@ -69,8 +69,8 @@ void splitpath(const char *path,char name[]) {
     }
 }
 
-int file_open(fileindex *file,const char *path, int flags, ...) {
-    (void)flags;
+
+int file_open(fileindex *file,const char *path, int flags) {
     uint16 DirSecCut, DirStart, i, j;
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
@@ -107,6 +107,11 @@ int file_open(fileindex *file,const char *path, int flags, ...) {
                 );
 
                 file->accesstime=kernel_getnowtime();
+                if(flags & O_TRUNC){
+                    file->length=0;
+                    file->updatetime=kernel_getnowtime();
+                    releasenode(file->curnode,FALSE);
+                }
                 return 0; //找到对应的目录项,返回
             }
         }
@@ -133,7 +138,7 @@ int file_read(fileindex *file,void *buff,size_t len) {
         file->offset+=c;
         if(file->offset==file->length) {
             errno=0;
-            return readlen;
+            break;
         }
         len-=c;
     }
@@ -172,9 +177,14 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
     tmpoffset=offset;
     tmpnode=0;
     if(offset>0) {
+        if(startoffset){
+            tmpoffset-=(512-(startoffset-1)%512-1);
+            startoffset+=(512-(startoffset-1)%512-1);
+        }else{
+            tmpoffset-=512;
+            startoffset+=512;
+        }
         while(1) {
-            tmpoffset-=(512-startoffset%512);
-            startoffset+=(512-startoffset%512);
             if(tmpoffset<=0){
                 break;
             }
@@ -191,19 +201,23 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
                     return -1;
                 }
             }
+            tmpoffset-=512;
+            startoffset+=512;
         }
     } else if(offset<0) {
         if(offset+file->offset < 0) {
             errno=EINVAL;
             return -1;
         }
+        tmpoffset+=(startoffset-1)%512+1;
+        startoffset-=(startoffset-1)%512+1;
         while(1) {
-            tmpoffset+=(startoffset-1)%512+1;
-            startoffset-=(startoffset-1)%512+1;
             if(tmpoffset>=0){
                 break;
             }
             startnode=getprenode(startnode);
+            tmpoffset+=512;
+            startoffset-=512;
         }
     }
     file->curnode=startnode;
@@ -215,8 +229,35 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
 }
 
 int file_write(fileindex *file,const void *ptr,size_t len) {
+    uint16 DataSec=DataStartSec();
+    int c,writelen=0;
     file->updatetime=kernel_getnowtime();
-    return 0;
+    while(len){
+        if( (file->offset%512 == 0) && (file->offset) && (file->offset < file->length) ) {
+            file->curnode=getnextnode(file->curnode);
+        }
+        if( (file->offset%512 == 0) && (file->offset >= file->length) ){
+            int tmpnode=getblanknode(file->curnode);
+            if(tmpnode>0){
+                file->curnode=tmpnode;
+            }else{
+                errno=ENOSPC;
+                break;
+            }
+        }
+        ReadBlock(DataSec+file->curnode-2);
+        c=(512-file->offset%512)<len?
+          (512-file->offset%512):len;
+        memcpy(BUFFER_FAT+file->offset%512,ptr+writelen,c);
+        WriteBlock(DataSec+file->curnode-2);
+        len-=c;
+        file->offset+=c;
+        writelen+=c;
+    }
+    if(file->offset > file->length){
+        file->length=file->offset;
+    }
+    return writelen;
 }
 
 

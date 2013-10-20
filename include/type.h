@@ -12,6 +12,16 @@ typedef uint16 u16;
 typedef uint32 u32;
 
 
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
+#ifndef BOOL
+typedef unsigned char BOOL;
+#define FALSE 0
+#define TRUE  !FALSE
+#endif
+
 /*
 0            未定义
 1            可用286TSS

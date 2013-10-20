@@ -6,11 +6,6 @@
 #include <sys/types.h>
 
 
-#ifndef NULL
-#define NULL (void *)0
-#endif
-
-
 #define Floppybuff      (unsigned char *)4096
 
 

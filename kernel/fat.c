@@ -91,8 +91,11 @@ uint32 DataStartSec(void)
 
 //获取一个node下一个簇的序号
 int getnextnode(uint32 node) {
+    if(node<2 || node>=0xff8){
+        return -1;
+    }
     ReadBlock(node*12/8/512+1);
-    uint16 nextnode=*(uint16 *)(&((uint8 *)BUFFER_FAT)[(node*12/8)%512]);
+    uint16 nextnode=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
     if(node&1) {
         return nextnode>>4;
     } else {
@@ -106,7 +109,7 @@ int getprenode(uint32 node) {
     int n;
     for(n=2; n<0xff7; ++n) {
         ReadBlock(n*12/8/512+1);
-        uint16 t=*(uint16 *)(&((uint8 *)BUFFER_FAT)[(n*12/8)%512]);
+        uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
         if(n&1) {
             if(t>>4 == node) {
                 return n;
@@ -158,6 +161,50 @@ next:
 }
 
 
+int releasenode(u32 node,u8 flag){
+    uint16 t;
+    if(node<2 || node >=0xff8){
+        return -1;
+    }
+    u32 tmpnode=getnextnode(node);
+    ReadBlock(node*12/8/512+1);
+    t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
+    if(flag){
+        if(node&1) {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0x000f;
+        } else {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0xf000;
+        }
+        WriteBlock(node*12/8/512+1);
+//        WriteBlock(node*12/8/512+10);
+    }else{
+        if(node&1) {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t | 0xfff0;
+        } else {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t | 0x0fff;
+        }
+        WriteBlock(node*12/8/512+1);
+//        WriteBlock(node*12/8/512+10);
+    }
+    node=tmpnode;
+    while(node<0xff8){
+        tmpnode=getnextnode(tmpnode);
+        ReadBlock(node*12/8/512+1);
+        t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
+        if(node&1) {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0x000f;
+        } else {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0xf000;
+        }
+        WriteBlock(node*12/8/512+1);
+        printf("node:%x,nextnode:%x\n",node,tmpnode);
+//        WriteBlock(node*12/8/512+10);
+        node=tmpnode;
+    };
+    return 0;
+}
+
+
 u8 getchecksum (const unsigned char Name[11])
 {
         int i;
@@ -167,6 +214,7 @@ u8 getchecksum (const unsigned char Name[11])
                 sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *Name++;
         return sum;
 }
+
 
 #if 0
 

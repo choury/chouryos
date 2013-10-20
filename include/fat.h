@@ -83,6 +83,7 @@ uint32 DataStartSec(void);
 int getnextnode(uint32 node);
 int getprenode(uint32 node);
 int getblanknode(uint32 node);
+int releasenode(u32 node,BOOL flag);      //释放node以后所有节点，如果flag为TRUE 则node也被释放
 
 u8 getchecksum (const unsigned char Name[11]);  // 长文件名的校验和
 

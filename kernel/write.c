@@ -1,5 +1,6 @@
 #include <syscall.h>
 #include <chouryos.h>
+#include <string.h>
 
 static int line=1;
 static int colume=0;
@@ -35,6 +36,10 @@ int sys_write(int fd,const void *ptr,size_t len) {
             if(colume==80) {
                 line++;
                 colume=0;
+            }
+            if(line==25){
+                memcpy(charbuff,charbuff+80,80*26*2);
+                line=24;
             }
         }
         outp(0x3d4,14);
