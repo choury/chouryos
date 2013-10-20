@@ -178,7 +178,7 @@ time_t kernel_mktime (
 
 time_t kernel_getnowtime(){
     read_rtc();
-    return kernel_mktime(Year,Month,Day,Hour-8,Minute,Second);
+    return kernel_mktime(Year,Month,Day,Hour,Minute,Second);
 }
 
 int sys_gettimeofday(struct timeval *tv, struct timezone *tz){

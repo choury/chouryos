@@ -91,34 +91,79 @@ uint32 DataStartSec(void)
 
 //获取一个node下一个簇的序号
 int getnextnode(uint32 node) {
-    if(node<2 || node>=0xff8){
+    if(node<2 || node>=0xff8) {
         return -1;
     }
     ReadBlock(node*12/8/512+1);
-    uint16 nextnode=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
-    if(node&1) {
-        return nextnode>>4;
+    if((node*12/8)%512!=511) {
+        uint16 nextnode=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
+        if(node&1) {
+            return nextnode>>4;
+        } else {
+            return nextnode&0x0fff;
+        }
     } else {
-        return nextnode&0x0fff;
+        if(node&1) {
+            uint16 nextnode=BUFFER_FAT[511] >>4;
+            ReadBlock(node*12/8/512+2);
+            nextnode |= BUFFER_FAT[0]<<4;
+            return nextnode;
+        } else {
+            uint16 nextnode=BUFFER_FAT[511] & 0xff;
+            ReadBlock(node*12/8/512+2);
+            nextnode |= (BUFFER_FAT[0] & 0xf) <<8;
+            return nextnode;
+        }
     }
 }
 
+//将node的簇的下一个簇号设为nextnode
+int writenextnode(uint32 node,uint32 nextnode) {
+    if(node<2 || node>=0xff8) {
+        return -1;
+    }
+    if((node*12/8)%512!=511) {
+        ReadBlock(node*12/8/512+1);
+        uint16 t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
+        if(node&1) {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0x000f) | (nextnode <<4));
+        } else {
+            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0xf000) | (nextnode & 0xfff));
+        }
+        WriteBlock(node*12/8/512+1);
+        WriteBlock(node*12/8/512+10);
+    } else {
+        if(node&1) {
+            ReadBlock(node*12/8/512+1);
+            BUFFER_FAT[511] = (BUFFER_FAT[511] & 0xf) | (nextnode & 0xf);
+            WriteBlock(node*12/8/512+1);
+            WriteBlock(node*12/8/512+10);
+
+            ReadBlock(node*12/8/512+2);
+            BUFFER_FAT[0] = nextnode>>4;
+            WriteBlock(node*12/8/512+2);
+            WriteBlock(node*12/8/512+11);
+        } else {
+            ReadBlock(node*12/8/512+1);
+            BUFFER_FAT[511] = nextnode & 0xff;
+            WriteBlock(node*12/8/512+1);
+            WriteBlock(node*12/8/512+10);
+
+            ReadBlock(node*12/8/512+2);
+            BUFFER_FAT[0] = (BUFFER_FAT[0] & 0xf0) | (nextnode>>8);
+            WriteBlock(node*12/8/512+2);
+            WriteBlock(node*12/8/512+11);
+        }
+    }
+    return 0;
+}
 
 //获取一个node上一个簇的序号 如不存在则返回-1
 int getprenode(uint32 node) {
     int n;
     for(n=2; n<0xff7; ++n) {
-        ReadBlock(n*12/8/512+1);
-        uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
-        if(n&1) {
-            if(t>>4 == node) {
-                return n;
-            }
-        } else {
-            if((t&0x0fff) == node) {
-                return n;
-            }
-        }
+        if(getnextnode(n)==node)
+            return n;
     }
     return -1;
 }
@@ -128,77 +173,32 @@ int getprenode(uint32 node) {
 int getblanknode(uint32 node) {
     int n=2;
     for(n=2; n<0xff7; ++n) {
-        ReadBlock(n*12/8/512+1);
-        uint16 t=*(uint16 *)(&BUFFER_FAT[(n*12/8)%512]);
-        if(n&1) {
-            if(t>>4 == 0) {
-                *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0x000f)| 0xfff0;
-                WriteBlock(n*12/8/512+1);
-                goto next;
+        if(getnextnode(n)==0) {
+            if(node != 0) {
+                writenextnode(node,n);
             }
-        } else {
-            if((t&0x0fff) == 0) {
-                *(uint16 *)(&BUFFER_FAT[(n*12/8)%512])= (t & 0xf000)| 0xfff;
-                WriteBlock(n*12/8/512+1);
-                goto next;
-            }
+            return n;
         }
     }
     return -1;
-next:
-    if(node != 0) {
-        ReadBlock(node*12/8/512+1);
-        uint16 t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
-        if(node&1) {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0x000f) | (n <<4));
-        } else {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=((t & 0xf000) | (n & 0xfff));
-        }
-        WriteBlock(node*12/8/512+1);
-        WriteBlock(node*12/8/512+10);
-    }
-    return n;
+
 }
 
 
-int releasenode(u32 node,u8 flag){
-    uint16 t;
-    if(node<2 || node >=0xff8){
+int releasenode(u32 node,u8 flag) {
+    if(node<2 || node >=0xff8) {
         return -1;
     }
     u32 tmpnode=getnextnode(node);
-    ReadBlock(node*12/8/512+1);
-    t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
-    if(flag){
-        if(node&1) {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0x000f;
-        } else {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0xf000;
-        }
-        WriteBlock(node*12/8/512+1);
-//        WriteBlock(node*12/8/512+10);
-    }else{
-        if(node&1) {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t | 0xfff0;
-        } else {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t | 0x0fff;
-        }
-        WriteBlock(node*12/8/512+1);
-//        WriteBlock(node*12/8/512+10);
+    if(flag) {
+        writenextnode(node,0);
+    } else {
+        writenextnode(node,0xfff);
     }
     node=tmpnode;
-    while(node<0xff8){
+    while(node<0xff8) {
         tmpnode=getnextnode(tmpnode);
-        ReadBlock(node*12/8/512+1);
-        t=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
-        if(node&1) {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0x000f;
-        } else {
-            *(uint16 *)(&BUFFER_FAT[(node*12/8)%512])=t & 0xf000;
-        }
-        WriteBlock(node*12/8/512+1);
-        printf("node:%x,nextnode:%x\n",node,tmpnode);
-//        WriteBlock(node*12/8/512+10);
+        writenextnode(node,0);
         node=tmpnode;
     };
     return 0;
@@ -207,12 +207,12 @@ int releasenode(u32 node,u8 flag){
 
 u8 getchecksum (const unsigned char Name[11])
 {
-        int i;
-        unsigned char sum=0;
+    int i;
+    unsigned char sum=0;
 
-        for (i=11; i; i--)
-                sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *Name++;
-        return sum;
+    for (i=11; i; i--)
+        sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *Name++;
+    return sum;
 }
 
 
