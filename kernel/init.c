@@ -141,11 +141,10 @@ void process0(void){
     if(!in){
         perror("open file faild");
     }else{
-//        fseek(in,0,SEEK_END);
+        fseek(in,-10,SEEK_END);
         fwrite(buff,1,10,in);
         fclose(in);
     }
-    drawLine(0,0,800,600,RGB(255,88,255));
     while(1) {
         char a;
         a=getchar();

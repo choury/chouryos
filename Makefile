@@ -28,6 +28,7 @@ copy:boot kernel exe boot.img
 	sudo mount -o loop,umask=000 boot.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
+	cp exe/exe.elf /mnt
 	sudo umount /mnt
 
 kernel:asm
