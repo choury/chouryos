@@ -10,7 +10,7 @@ export ROOT=$(CWD)
 export CPPFLAGS=-m32 -Wall -fno-leading-underscore -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
 
 
-.PHONY : all kernel boot asm clean
+.PHONY : all kernel boot asm exe clean
 
 all: boot asm kernel
 
@@ -24,12 +24,10 @@ boot.img:
 
 
 	
-copy:boot kernel boot.img
+copy:boot kernel exe boot.img
 	sudo mount -o loop,umask=000 boot.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
-	@dd if=/dev/urandom of=aaa bs=1K count=1300
-	cp aaa /mnt
 	sudo umount /mnt
 
 kernel:asm
@@ -37,11 +35,16 @@ kernel:asm
 
 asm:
 	$(MAKE) -C asm	
-	
+
+exe:asm
+	$(MAKE) -C exe
+
+
 clean:
 	$(MAKE) clean -C boot
 	$(MAKE) clean -C kernel
 	$(MAKE) clean -C asm
+	$(MAKE) clean -C exe
 	@rm -f *.o *.elf loader chouryos
 
 cleanall:clean

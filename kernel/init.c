@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <keyboad.h>
 #include <time.h>
+#include <stdlib.h>
 
 int reenter=0;
 u32 curpid;
@@ -23,9 +24,9 @@ void set8253(u16 time) {
     outp(0x40,time >> 8 );
 }
 
+
 void TimerInitHandler() {
     outp(0x20,0x20);
-    int i;
     if(!reenter) {
         TSS.esp0=(u32)&(PROTABLE[curpid].pid);
         stacktop=PROTABLE+curpid;
@@ -144,10 +145,10 @@ void process0(void){
         fwrite(buff,1,10,in);
         fclose(in);
     }
-    drawLine(0,0,800,600,RGB(255,255,255));
+    drawLine(0,0,800,600,RGB(255,88,255));
     while(1) {
         char a;
-        read(0,&a,1);
-        write(1,&a,1);
+        a=getchar();
+        putchar(a);
     }
 }

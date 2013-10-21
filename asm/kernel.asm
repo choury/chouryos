@@ -136,7 +136,6 @@ int%+i:
     mov ax, KERNELDATA_DT
     mov ds, ax
     mov es, ax
-    mov fs, ax
     mov gs, ax
     mov esp, 0x2ffffe
     call [INTHER+i*4]
@@ -169,7 +168,6 @@ int80:
     mov ax, KERNELDATA_DT
     mov ds, ax
     mov es, ax
-    mov fs, ax
     mov gs, ax
     mov eax, [esp+44]
     mov esp, 0x2ffffe
@@ -223,6 +221,8 @@ int%+i:
     push gs
     mov ax, KERNELDATA_DT
     mov ds, ax
+    mov es, ax
+    mov gs, ax
     mov esp, 0x2ffffe
     call [INTHER+i*4]
     cli

@@ -2,9 +2,9 @@
 
 all:chouryos
 
-chouryos:../asm/kernel.o ../asm/syscall.o init.o syscall.o floppy.o keyboad.o fat.o file.o graphy.o \
+chouryos:init.o syscall.o floppy.o keyboad.o fat.o file.o graphy.o \
 	open.o read.o write.o close.o lseek.o fstat.o sbrk.o fork.o times.o
-	$(LD) -o $@.elf $^ ../newlib-i386/libc.a -Tkernel.ld -melf_i386
+	$(LD) -o $@.elf $^  -Tkernel.ld
 	$(OBJCOPY) -R .pdr -R .comment -R .note -I elf32-i386 -O binary $@.elf $@
 
 clean:

@@ -143,6 +143,8 @@ gettimeofday:
 ;    leave
 ;    ret
 
+;(x+y*800)*3
+
 setpoint:
     push ebp
     mov ebp,esp
@@ -154,14 +156,19 @@ setpoint:
     shl ecx,9
     add ebx,ecx
     mov ecx,eax
-    shl ecx,7
+    shl ecx,8
+    add ebx,ecx
+    mov ecx,eax
+    shl ecx,5
     add ebx,ecx
     mov ecx,ebx
     shl ebx,1
+    add ebx, ecx
     mov eax,[ebp+16]
     mov ecx,eax
     shr ecx,16
     mov [fs:ebx],ax
+    mov [fs:ebx+2], cl
     pop ecx
     pop ebx
     leave

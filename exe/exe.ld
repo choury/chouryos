@@ -1,6 +1,7 @@
+ENTRY(start)
 SEARCH_DIR(../asm)
 SEARCH_DIR(../newlib-i386)
-STARTUP(kernel.o)
+STARTUP(crt0.o)
 INPUT(Syscall.o)
 INPUT(libc.a)
 OUTPUT_FORMAT("elf32-i386")
@@ -8,9 +9,8 @@ OUTPUT_ARCH(i386)
 
 SECTIONS
 {
-  . = 0x200000;
-  .text :
-  {
-    _ftext = .;
-  } = 0
+. = 0x00000;
+.text : { *(.text) }
+.data : { *(.data) }
+.bss : { *(.bss) }
 }
