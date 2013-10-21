@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#include <sys/unistd.h>
 #include <type.h>
 #include <graphy.h>
 

@@ -1,15 +1,15 @@
-#include <sys/types.h>
-
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
 typedef unsigned char  uint8;
 typedef unsigned short uint16;
 typedef unsigned int   uint32;
+typedef unsigned long  uint64;
 
 typedef uint8   u8;
 typedef uint16 u16;
 typedef uint32 u32;
+typedef uint64 u64;
 
 
 #ifndef NULL
@@ -22,6 +22,8 @@ typedef unsigned char BOOL;
 #define TRUE  !FALSE
 #endif
 
+//typedef unsigned long int size_t;
+//typedef unsigned long int off_t;
 /*
 0            未定义
 1            可用286TSS

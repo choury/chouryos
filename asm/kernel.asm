@@ -3,7 +3,6 @@
 ;         4096---4607   floopy buffer
 ;         5000---5103   tss
 ;         10240--11264  realinthandler table
-;         12004--12007  return statck top
 ;         0xB8000       console buffer
 ;         1M------      process table
 ;         2M------      kernel
@@ -46,7 +45,7 @@ start:
     mov ss,ax
     mov es,ax
     mov gs,ax
-    mov esp,0x2ffffe
+    mov esp,0x1ffffe
     jmp KERNELCODE_DT:next
 next:
     call setinterrupt
@@ -137,7 +136,7 @@ int%+i:
     mov ds, ax
     mov es, ax
     mov gs, ax
-    mov esp, 0x2ffffe
+    mov esp, 0x1ffffe
     call [INTHER+i*4]
     cli
     mov esp, [stacktop]
@@ -170,7 +169,7 @@ int80:
     mov es, ax
     mov gs, ax
     mov eax, [esp+44]
-    mov esp, 0x2ffffe
+    mov esp, 0x1ffffe
     sti
     push edi
     push esi
@@ -223,7 +222,7 @@ int%+i:
     mov ds, ax
     mov es, ax
     mov gs, ax
-    mov esp, 0x2ffffe
+    mov esp, 0x1ffffe
     call [INTHER+i*4]
     cli
     mov esp, [stacktop]

@@ -36,6 +36,8 @@ __rtcdst2:
     mov dword [esp+4],filebuff
     mov dword [esp+8],1024
     call read
+    test eax, eax
+    jz __rtcdstret
     push fs
     mov bx,DATA-LDT
     or  bx,4
@@ -49,8 +51,8 @@ __rtcdst1:
     inc edi
     loop __rtcdst1
     pop fs
-    cmp eax,1024
-    je __rtcdst2
+    jmp __rtcdst2
+__rtcdstret:
     add esp,20
     popad
     leave

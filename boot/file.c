@@ -106,12 +106,11 @@ int open(const char *path) {
         ReadBlock(i);
         for(j = 0; j <16; j++)
         {
-            if(cmpname(name, (char *)&((DIR*)&BUFFER_FAT[j * 32])->FileName))
+            if(cmpname(name, (char *)((DIR*)BUFFER_FAT)[j].FileName))
             {
-                filedesc.offset=0;
-                filedesc.startnode=((DIR*)&BUFFER_FAT[j * 32])->FilePosit.Start;
+                filedesc.startnode=((DIR*)BUFFER_FAT)[j].FilePosit.Start;
                 filedesc.curnode=filedesc.startnode;
-                filedesc.length=((DIR*)&BUFFER_FAT[j * 32])->FilePosit.Size;
+                filedesc.length=((DIR*)BUFFER_FAT)[j].FilePosit.Size;
                 return 0; //找到对应的目录项,返回
             }
         }

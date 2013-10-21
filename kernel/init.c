@@ -1,18 +1,18 @@
-#include <stdio.h>
 #include <process.h>
 #include <chouryos.h>
 #include <syscall.h>
 #include <floppy.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <keyboad.h>
-#include <time.h>
-#include <stdlib.h>
+
+
 
 int reenter=0;
 u32 curpid;
 process *stacktop;
-static struct _reent libc;
+int* __errno(){
+    return (int *)12000;
+}
+
 
 void setinterrupt(int into,void f()) {
     INTHER[into]=f;
@@ -37,7 +37,6 @@ void TimerInitHandler() {
 
 void init() {
     int i;
-    _impure_ptr=&libc;
     set8253(0xffff);
     setinterrupt(0x20,TimerInitHandler);
     setinterrupt(0x21,KeyBoadHandler);
@@ -76,7 +75,7 @@ void init() {
     PROTABLE[curpid].ddt.Type=DA_WR;
 
     PROTABLE[curpid].reg.ss=(1<<3)|7;
-    PROTABLE[curpid].reg.oesp=0x1ffffe;
+    PROTABLE[curpid].reg.oesp=0x3ffffe;
     PROTABLE[curpid].reg.cs=(0<<3)|7;
     PROTABLE[curpid].reg.eip=(u32)process0;
     PROTABLE[curpid].reg.eflags=0x1202;
@@ -135,19 +134,13 @@ void init() {
     movetouse(&(PROTABLE[curpid]));
 }
 
+
+#include <unistd.h>
+
 void process0(void){
-    char buff[10];
-    FILE *in=fopen("aaa","r");
-    if(!in){
-        perror("open file faild");
-    }else{
-        fseek(in,-10,SEEK_END);
-        fwrite(buff,1,10,in);
-        fclose(in);
-    }
     while(1) {
         char a;
-        a=getchar();
-        putchar(a);
+        read(1,&a,1);
+        write(1,&a,1);
     }
 }

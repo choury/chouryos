@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <file.h>
-#include <ctype.h>
 #include <fat.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -265,26 +264,26 @@ int file_write(fileindex *file,const void *ptr,size_t len) {
 
 
 int file_close(fileindex *file){
-    struct tm* t;
+    struct tm t;
     ReadBlock(DirStartSec()+file->indexno/16);
-    t=gmtime(&file->createtime);
-    ((DIR*)BUFFER_FAT)[file->indexno%16].Create2Second=t->tm_sec/2;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMinute=t->tm_min;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateHour=t->tm_hour;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateDay=t->tm_mday;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMonth=t->tm_mon+1;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateYear=t->tm_year-80;
-    t=gmtime(&file->accesstime);
-    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessDay=t->tm_mday;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessMonth=t->tm_mon+1;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessYear=t->tm_year-80;
-    t=gmtime(&file->updatetime);
-    ((DIR*)BUFFER_FAT)[file->indexno%16].Update2Second=t->tm_sec/2;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMinute=t->tm_min;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateHour=t->tm_hour;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateDay=t->tm_mday;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMonth=t->tm_mon+1;
-    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateYear=t->tm_year-80;
+    time_to_tm(file->createtime,&t);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Create2Second=t.tm_sec/2;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMinute=t.tm_min;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateHour=t.tm_hour;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateDay=t.tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateMonth=t.tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].CreateYear=t.tm_year-80;
+    time_to_tm(file->accesstime,&t);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessDay=t.tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessMonth=t.tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].AccessYear=t.tm_year-80;
+    time_to_tm(file->updatetime,&t);
+    ((DIR*)BUFFER_FAT)[file->indexno%16].Update2Second=t.tm_sec/2;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMinute=t.tm_min;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateHour=t.tm_hour;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateDay=t.tm_mday;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateMonth=t.tm_mon+1;
+    ((DIR*)BUFFER_FAT)[file->indexno%16].UpdateYear=t.tm_year-80;
 
     ((DIR*)BUFFER_FAT)[file->indexno%16].Starth=file->startnode>>16;
     ((DIR*)BUFFER_FAT)[file->indexno%16].Startl=file->startnode&0xffff;

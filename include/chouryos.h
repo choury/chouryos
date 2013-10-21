@@ -50,5 +50,5 @@ time_t kernel_mktime(
     unsigned int min, unsigned int sec);
 
 time_t kernel_getnowtime();
-
+void time_to_tm(time_t totalsecs, struct tm *result);
 #endif
