@@ -3,6 +3,7 @@
 
 #include <process.h>
 #include <type.h>
+#include <graphy.h>
 #include <sys/types.h>
 
 
@@ -15,8 +16,9 @@
 
 #define KERNELCODE_DT  1
 #define KERNELDATA_DT  2
-#define TSS_DT         3
-#define LDT_START      4
+#define VGA_DT         3
+#define TSS_DT         4
+#define LDT_START      5
 
 #define charbuff ((u16 *)0xB8000)
 
@@ -39,7 +41,7 @@ unsigned char inp(unsigned int port);
 void movetouse(process *);
 void process0(void);
 
-void setpoint(int x,int y,int color);
+int setpoint(int x,int y,RGB_t color);
 void setinterrupt(int into,void f());
 
 time_t kernel_mktime(

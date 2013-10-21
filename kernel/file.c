@@ -112,6 +112,9 @@ int file_open(fileindex *file,const char *path, int flags) {
                     file->updatetime=kernel_getnowtime();
                     releasenode(file->curnode,FALSE);
                 }
+                if(flags & O_APPEND){
+                    file_lseek(file,0,SEEK_END);
+                }
                 return 0; //找到对应的目录项,返回
             }
         }

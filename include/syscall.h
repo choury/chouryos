@@ -7,6 +7,7 @@
 #include <sys/times.h>
 #include <sys/unistd.h>
 #include <type.h>
+#include <graphy.h>
 
 int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi);
 
@@ -32,5 +33,6 @@ clock_t sys_times(struct tms *buf);
 int sys_unlink(char *name);
 int sys_wait(int *status);
 int sys_write(int fd, const void *ptr, size_t len);
+int sys_setpoint(int x,int y,RGB_t color);
 
 #endif

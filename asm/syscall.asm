@@ -126,9 +126,25 @@ gettimeofday:
     leave
     ret
 
+setpoint:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    push edx
+    mov eax, 9
+    mov ebx, [ebp+8]
+    mov ecx, [ebp+12]
+    mov edx, [ebp+16]
+    int 80
+    pop edx
+    pop ecx
+    pop ebx
+    leave
+    ret
+
 fstat:
 isatty:
-setpoint:
     ret
 
 

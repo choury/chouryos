@@ -4,7 +4,7 @@
 
 
 
-void BresenhamLine(int x1, int y1, int x2, int y2,int color,int mod)
+void BresenhamLine(int x1, int y1, int x2, int y2,RGB_t color,int mod)
 {
     int x,y,dx,dy,p;
     dx=x2-x1;
@@ -37,7 +37,7 @@ void BresenhamLine(int x1, int y1, int x2, int y2,int color,int mod)
 }
 
 
-void drawLine(int x1, int y1, int x2, int y2,int color)
+void drawLine(int x1, int y1, int x2, int y2,RGB_t color)
 {
 
     if(x1>x2) {                         //交换两个点坐标

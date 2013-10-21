@@ -81,7 +81,7 @@ void init() {
     PROTABLE[curpid].reg.eflags=0x1202;
     PROTABLE[curpid].reg.ds=(1<<3)|7;
     PROTABLE[curpid].reg.es=(1<<3)|7;
-    PROTABLE[curpid].reg.fs=(1<<3)|7;
+    PROTABLE[curpid].reg.fs=VGA_DT<<3;
     PROTABLE[curpid].reg.gs=(1<<3)|7;
 
     for(i=1; i<MAX_PROCESS; ++i) {
@@ -130,16 +130,13 @@ void init() {
 
     sti();
     initfs();
-    puts("Init secceed!");
-    printf("hello newlib\n");
 
     movetouse(&(PROTABLE[curpid]));
 }
 
 void process0(void){
     char buff[10];
-    printf("Move to use mode,pid:%d\n",curpid);
-    FILE *in=fopen("aaa","w");
+    FILE *in=fopen("aaa","r");
     if(!in){
         perror("open file faild");
     }else{

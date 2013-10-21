@@ -78,7 +78,6 @@ unsigned char get_byte();
 void seek_track(unsigned char head,unsigned char track,unsigned char drive);
 void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,unsigned char command);
 void readfloppyA(unsigned int block,unsigned char *buffer);
-void writefloppyA(unsigned int block,unsigned char *buffer);
 
 
 extern uint8   BUFFER_FAT[512];
@@ -136,8 +135,6 @@ uint32 DataStartSec(void);
 
 
 typedef struct{
-    uint8  isused;
-    uint16 indexno;
     uint32 offset;
     uint16 startnode;
     uint16 curnode;

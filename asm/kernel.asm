@@ -16,8 +16,9 @@ INTHER    equ 10240
 
 KERNELCODE_DT equ 8
 KERNELDATA_DT equ 16
-TSS_DT        equ 24
-LDT_START     equ 32
+VGA_DT        equ 24
+TSS_DT        equ 32
+LDT_START     equ 40
 
     extern init
     extern reenter
@@ -44,7 +45,6 @@ start:
     mov ds,ax
     mov ss,ax
     mov es,ax
-    mov fs,ax
     mov gs,ax
     mov esp,0x2ffffe
     jmp KERNELCODE_DT:next
