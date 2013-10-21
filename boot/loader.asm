@@ -47,7 +47,7 @@ s1:
    
     mov ax,4f02h
     mov bx,4111h
-;    int 10h
+    int 10h
     
     
     mov ax,4f01h
@@ -130,9 +130,9 @@ section .data
 section .vdt
 LABEL_GDT:          Descriptor  0,                  0,       0
 LABEL_DESC_CODE32:  Descriptor  0x20000,            0xfffff, DA_C +DA_32 + DA_G
-LABEL_DESC_DATA:    Descriptor  0x20000,            0xfffff, DA_DRWA+DA_32+ DA_G
-LABEL_DESC_VGA:     Descriptor  0,                  0xea,    DA_DRW +DA_G
-LABEL_DESC_ORG:     Descriptor  0,                  0xfffff, DA_DRWA+DA_32+ DA_G
+LABEL_DESC_DATA:    Descriptor  0x20000,            0xfffff, DA_DRW +DA_32+ DA_G
+LABEL_DESC_VGA:     Descriptor  0,                  0xea,    DA_DRW +DA_32+ DA_G + DA_DPL3
+LABEL_DESC_ORG:     Descriptor  0,                  0xfffff, DA_DRW +DA_32+ DA_G
 LABEL_DESC_CHAR:    Descriptor  0xB8000,            0x0,     DA_DRW +DA_G
 LABEL_DESC_LDT0:    Descriptor  0x1400,             0x1000 , DA_LDT   
 

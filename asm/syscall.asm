@@ -126,18 +126,42 @@ gettimeofday:
     leave
     ret
 
+;setpoint:
+;    push ebp
+;    mov ebp, esp
+;    push ebx
+;    push ecx
+;    push edx
+;    mov eax, 9
+;    mov ebx, [ebp+8]
+;    mov ecx, [ebp+12]
+;    mov edx, [ebp+16]
+;    int 80
+;    pop edx
+;    pop ecx
+;    pop ebx
+;    leave
+;    ret
+
 setpoint:
     push ebp
-    mov ebp, esp
+    mov ebp,esp
     push ebx
     push ecx
-    push edx
-    mov eax, 9
-    mov ebx, [ebp+8]
-    mov ecx, [ebp+12]
-    mov edx, [ebp+16]
-    int 80
-    pop edx
+    mov ebx,[ebp+8]
+    mov eax,[ebp+12]
+    mov ecx,eax
+    shl ecx,9
+    add ebx,ecx
+    mov ecx,eax
+    shl ecx,7
+    add ebx,ecx
+    mov ecx,ebx
+    shl ebx,1
+    mov eax,[ebp+16]
+    mov ecx,eax
+    shr ecx,16
+    mov [fs:ebx],ax
     pop ecx
     pop ebx
     leave

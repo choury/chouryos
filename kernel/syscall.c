@@ -29,8 +29,6 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
     case 8:
         return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
-    case 9:
-        return sys_setpoint(ebx,ecx,edx);
     }
     return 0;
 }

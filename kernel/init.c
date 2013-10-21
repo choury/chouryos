@@ -144,6 +144,7 @@ void process0(void){
         fwrite(buff,1,10,in);
         fclose(in);
     }
+    drawLine(0,0,800,600,RGB(255,255,255));
     while(1) {
         char a;
         read(0,&a,1);
