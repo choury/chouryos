@@ -28,6 +28,11 @@ void set8253(u16 time) {
 void TimerInitHandler() {
     outp(0x20,0x20);
     if(!reenter) {
+        if((curpid==0) && (PROTABLE[1].isused)){
+            curpid=1;
+        }else{
+            curpid=0;
+        }
         TSS.esp0=(u32)&(PROTABLE[curpid].pid);
         stacktop=PROTABLE+curpid;
         lldt(PROTABLE[curpid].ldt);
@@ -138,9 +143,10 @@ void init() {
 #include <unistd.h>
 
 void process0(void){
-    while(1) {
-        char a;
-        read(1,&a,1);
-        write(1,&a,1);
+    if(fork()){
+        while(1)write(1,"P",1);
+    }else{
+        while(1) write(1,"S",1) ;
     }
 }
+
