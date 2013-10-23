@@ -7,7 +7,7 @@ export OBJCOPY=objcopy
 
 CWD = $(shell pwd)
 export ROOT=$(CWD)
-export CPPFLAGS=-m32 -Wall -fno-leading-underscore -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
+export CPPFLAGS=-m32 -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
 
 
 .PHONY : all kernel boot asm exe clean

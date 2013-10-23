@@ -146,8 +146,9 @@ void init() {
 #include <unistd.h>
 
 void process0(void) {
-    drawLine(0,0,800,600,RGB(255,255,0));
-    drawLine(800,0,0,600,RGB(0,255,255));
+    printf("HD0:\n");
+    printf("drivers:%d,heads:%d,cylinders:%d,spt:%d\n",
+           HdInfo[0].drivers,HdInfo[0].heads,HdInfo[0].cylindersh<<8 | HdInfo[0].cylindersl,HdInfo[0].spt);
     while(1) {
         char a;
         read(1,&a,1);

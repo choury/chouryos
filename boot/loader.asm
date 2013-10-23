@@ -1,6 +1,6 @@
 %include "pm.h"
 
-
+hdinfo equ 0x1300
 
 use16
     extern  Init8259
@@ -58,6 +58,32 @@ s1:
     mov eax,[PhysBasePtr]
     mov ebx,LABEL_DESC_VGA
     call setdtbase
+
+    mov cl, 0x80
+    mov eax, hdinfo
+    push eax
+readhdinfo:
+    mov ax, 0
+    mov es, ax
+    mov di, 0
+    mov ah, 0x08
+    mov dl, cl
+    inc cl
+    int 13h
+
+
+    jc readhdinfo
+    cmp eax, 0
+    jne readhdinfo
+    pop eax
+    mov [eax], dx
+    add eax, 2
+    mov [eax], cx
+    add eax, 2
+    push eax
+    cmp cl, 0x90
+    ja readhdinfo
+    pop eax
 
 
 

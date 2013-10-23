@@ -1,4 +1,4 @@
-#include <chouryos.h>
+#include <type.h>
 
 #ifndef __HD_H__
 #define __HD_H__
@@ -37,6 +37,14 @@
 #define WIN_SEEK        0x70
 #define WIN_DIAGNOSE    0x90
 #define WIN_SPECIFY     0x91
+
+typedef struct{
+    uint8   drivers;
+    uint8   heads;
+    uint8   spt:6;
+    uint8   cylindersh:2;
+    uint8   cylindersl;
+}__attribute__ ((packed)) Hdinfo;
 
 void HdInitHandler();
 

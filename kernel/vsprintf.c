@@ -292,9 +292,9 @@ int sprintf(char * buf, const char *fmt, ...)
     return i;
 }
 
-int puts(const char* s) {
+int putstring(const char* s) {
     int i=strlen(s);
-    sys_write(1,s,i);
+    write(1,s,i);
     return i;
 }
 
@@ -306,7 +306,7 @@ int printf(const char *fmt, ...)
 
     va_start(args, fmt);
     i=vsprintf(printbuf, fmt, args);
-    puts(printbuf);
+    putstring(printbuf);
     va_end(args);
     return i;
 }
