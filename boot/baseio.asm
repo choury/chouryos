@@ -12,8 +12,6 @@ outp:
     mov edx,[ebp+8]
     mov eax,[ebp+12]
     out dx,al
-    nop
-    nop
     pop edx
     leave
     ret
@@ -25,8 +23,6 @@ outpw:
     mov edx,[ebp+8]
     mov eax,[ebp+12]
     out dx,ax
-    nop
-    nop
     pop edx
     leave
     ret

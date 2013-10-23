@@ -38,4 +38,6 @@
 #define WIN_DIAGNOSE    0x90
 #define WIN_SPECIFY     0x91
 
+void HdInitHandler();
+
 #endif

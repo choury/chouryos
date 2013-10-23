@@ -1,11 +1,12 @@
-;mem map  0---2047      idt
-;         2048---4095   gdt
-;         4096---4607   floopy buffer
-;         5000---5103   tss
-;         10240--11264  realinthandler table
-;         0xB8000       console buffer
-;         1M------      process table
-;         2M------      kernel
+;mem map  0---0x7ff      idt
+;         0x800---0xfff   gdt
+;         0x1000---0x11ff   floopy buffer
+;         0x1200---0x1267   tss
+;         0x1300---0x130f   ide 1 info
+;         0x2800--0x2c00   realinthandler table
+;         0xa0000-0xfffff  bios rom     0xB8000       console buffer
+;         1M------         process table
+;         2M------         kernel
 
 
 IDT_START equ 0
@@ -48,8 +49,6 @@ outp:
     mov edx,[ebp+8]
     mov eax,[ebp+12]
     out dx,al
-    nop
-    nop
     pop edx
     leave
     ret
@@ -61,8 +60,6 @@ outpw:
     mov edx,[ebp+8]
     mov eax,[ebp+12]
     out dx,ax
-    nop
-    nop
     pop edx
     leave
     ret

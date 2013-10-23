@@ -11,8 +11,8 @@
 
 
 #define IDT     ((gate *)0)
-#define GDT     ((ss *)2048)
-#define TSS     (*(tss_struct *)5000)
+#define GDT     ((ss *)0x800)
+#define TSS     (*(tss_struct *)0x1200)
 
 #define KERNELCODE_DT  1
 #define KERNELDATA_DT  2
@@ -23,7 +23,7 @@
 #define charbuff ((u16 *)0xB8000)
 
 
-#define INTHER  ((void (**)())10240)
+#define INTHER  ((void (**)())0x2800)
 
 
 #define PROTABLE    ((process *)0x100000)

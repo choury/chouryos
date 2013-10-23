@@ -2,6 +2,7 @@
 #include <chouryos.h>
 #include <syscall.h>
 #include <floppy.h>
+#include <hd.h>
 #include <keyboad.h>
 
 
@@ -46,9 +47,11 @@ void init() {
     setinterrupt(0x20,TimerInitHandler);
     setinterrupt(0x21,KeyBoadHandler);
     setinterrupt(0x26,FloppyInitHandler);
+    setinterrupt(0x2e,HdInitHandler);
     setinterrupt(80,(void (*)())syscall);
-    outp(0x21,inp(0x21)&0xfd);
-    outp(0x21,inp(0x21)&0xfe);
+    outp(0x21,inp(0x21)&0xfd);      //开启键盘中断
+    outp(0x21,inp(0x21)&0xfe);      //开启时钟中断
+    outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
     curpid=0;
     PROTABLE[curpid].isused=1;
     PROTABLE[curpid].pid=0;
@@ -143,6 +146,8 @@ void init() {
 #include <unistd.h>
 
 void process0(void) {
+    drawLine(0,0,800,600,RGB(255,255,0));
+    drawLine(800,0,0,600,RGB(0,255,255));
     while(1) {
         char a;
         read(1,&a,1);
