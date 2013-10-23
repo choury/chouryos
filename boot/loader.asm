@@ -12,12 +12,12 @@ use16
 section .text
 start:
     mov ax,0b800h
-    mov gs,ax
+    mov fs,ax
     mov ax,cs
     mov ds,ax
     mov es,ax
     mov ss,ax
-    mov esp,0xffffe
+    mov esp,0xa0000
 
     ; Clear screen
     mov ax,0600h    ; %ah=6, %al=0 */
@@ -33,7 +33,7 @@ start:
 s1:
     mov ah,0fh
     mov al,[bx]
-    mov [gs:si],ax
+    mov [fs:si],ax
     inc bx
     add si,2
     loop s1
@@ -57,12 +57,12 @@ s1:
 
     mov eax,[PhysBasePtr]
     mov ebx,LABEL_DESC_VGA
-    call setdatedt
+    call setdtbase
 
 
 
     cli
-    
+
     xor eax,eax
     mov es,ax
     mov esi,LABEL_GDT
@@ -74,33 +74,31 @@ __movgdt:
     inc si
     inc di
     loop __movgdt
-    
+
     lgdt    [GdtPtr]
-    
+
     lidt    [IdtPtr]
-    
-    
+
+
     ;Open A20 line.
     in  al,0x92
     or  al,0b00000010
     out 0x92,al
-    
+
     ;Enable protect mode, PE bit of CR0.
     mov eax,cr0
     or  eax,1
     mov cr0,eax
     mov ax,LABEL_DESC_VGA-LABEL_GDT
     mov fs,ax
-    mov ax,LABEL_DESC_CHAR-LABEL_GDT
-    mov gs,ax
-    mov ax,LABEL_DESC_ORG-LABEL_GDT
-    mov es,ax
     mov ax,LABEL_DESC_DATA-LABEL_GDT
     mov ds,ax
     mov ss,ax
+    mov es,ax
+    mov gs,ax
     jmp LABEL_DESC_CODE32-LABEL_GDT:dword LABEL_SEG_CODE32
 
-setdatedt:
+setdtbase:
     mov     [ebx + 2],ax
     shr     eax,16
     mov     [ebx + 4],al
@@ -110,12 +108,6 @@ setdatedt:
 section .text    
 use32
 LABEL_SEG_CODE32:
-    mov ax,LABEL_DESC_LDT0-LABEL_GDT
-    lldt ax
-    call Init8259
-    call setinterrupt
-    sti
-    call initfs
     call loadkernel
 ;Stop here, infinite loop.
     jmp $
@@ -129,12 +121,10 @@ section .data
     
 section .vdt
 LABEL_GDT:          Descriptor  0,                  0,       0
-LABEL_DESC_CODE32:  Descriptor  0x20000,            0xfffff, DA_C +DA_32 + DA_G
-LABEL_DESC_DATA:    Descriptor  0x20000,            0xfffff, DA_DRW +DA_32+ DA_G
+LABEL_DESC_CODE32:  Descriptor  0,                  0xfffff, DA_C   +DA_32+ DA_G
+LABEL_DESC_DATA:    Descriptor  0,                  0xfffff, DA_DRW +DA_32+ DA_G
 LABEL_DESC_VGA:     Descriptor  0,                  0x160,   DA_DRW +DA_32+ DA_G + DA_DPL3
-LABEL_DESC_ORG:     Descriptor  0,                  0xfffff, DA_DRW +DA_32+ DA_G
-LABEL_DESC_CHAR:    Descriptor  0xB8000,            0x0,     DA_DRW +DA_G
-LABEL_DESC_LDT0:    Descriptor  0x1400,             0x1000 , DA_LDT   
+
 
 
 ;LABEL_LDT:          Descriptor 

@@ -2,37 +2,36 @@
 #define __BOOT_H__
 
 
-#define uint8  unsigned char
-#define uint16 unsigned short
-#define uint32 unsigned int
+typedef unsigned char  uint8;
+typedef unsigned short uint16;
+typedef unsigned int   uint32;
+typedef unsigned long  uint64;
 
-#define u8      uint8
-#define u16     uint16
-#define u32     uint32
-
-
-/* we use this so that we can do without the ctype library */
-#define isdigit(c) ((c) >= '0' && (c) <= '9')
-#define isxdigit(c) (((c) >= '0' && (c) <= '9') ||\
-                     ((c) >= 'A' && (c) <= 'F') ||\
-                     ((c) >= 'a' && (c) <= 'f'))
-#define islower(c)  ((c)>='a' && (c)<='z')
-#define toupper(c)  ((c)-32)
-
-#define Floppybuff      (unsigned char *)4096           //if you changed this,you should change the addr in copyfloppydata also
+typedef uint8   u8;
+typedef uint16 u16;
+typedef uint32 u32;
+typedef uint64 u64;
 
 
-void sti();
-void cli();
+
+#define Floppybuff      ((unsigned char *)4096)
+
+
+#define KernelLocation  0x200000
+
+#define kernel          ((void (*)())KernelLocation)
 
 void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);
 unsigned char inp(unsigned int port);
-void copyfloppydata(unsigned char *buffer);
+void Init8259();
+void setinterrupt();
+void initfs();
 
-int printf(const char *fmt,...);
-int putchar(int);
-int puts(const char*);
+int lopen(const char *path);
+int lread(void *buff,u32 len);
+//int printf(const char *fmt,...);
+int putstring(const char*);
 
 #define STATUS_REG_A            0x03f0 /*PS2 SYSTEMS*/
 #define STATUS_REG_B            0x03f1 /*PS2 SYSTEMS*/
@@ -71,12 +70,6 @@ int puts(const char*);
 
 
 void reset_floppy_controller(char drive);
-void calibrate_drive(char drive);
-void configure_drive(char drive) ;
-void send_byte(unsigned char command) ;
-unsigned char get_byte();
-void seek_track(unsigned char head,unsigned char track,unsigned char drive);
-void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,unsigned char command);
 void readfloppyA(unsigned int block,unsigned char *buffer);
 
 
@@ -128,7 +121,6 @@ typedef struct
 void FAT_Init(void);
 
 void     ReadBlock        (uint32 LBA);
-void     WriteBlock       (uint32 LBA);
 uint32 DirStartSec(void);
 uint32 DataStartSec(void);
 
@@ -139,7 +131,7 @@ typedef struct{
     uint16 startnode;
     uint16 curnode;
     uint32 length;
-}__attribute__ ((packed)) fileindex;
+} fileindex;
 
 
 #endif

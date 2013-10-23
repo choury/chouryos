@@ -1,8 +1,15 @@
 #include "boot.h"
 
 
-fileindex filedesc;
+static fileindex filedesc;
 
+/* we use this so that we can do without the ctype library */
+#define isdigit(c) ((c) >= '0' && (c) <= '9')
+#define isxdigit(c) (((c) >= '0' && (c) <= '9') ||\
+                     ((c) >= 'A' && (c) <= 'F') ||\
+                     ((c) >= 'a' && (c) <= 'f'))
+#define islower(c)  ((c)>='a' && (c)<='z')
+#define toupper(c)  ((c)-32)
 
 void initfs() {
     reset_floppy_controller(0);         //init floppy
@@ -95,7 +102,7 @@ void splitpath(const char *path,char name[]) {
     }
 }
 
-int open(const char *path) {
+int lopen(const char *path) {
     uint16 DirSecCut, DirStart, i, j;
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
@@ -118,9 +125,9 @@ int open(const char *path) {
     return -1; //没有找到对应的目录项,返回
 }
 
-int read(int fd,void *buff,int len) {
+int lread(void *buff,u32 len) {
     uint16 DataSec=DataStartSec();
-    int c,readlen=0,i;
+    u32 c,readlen=0,i;
     while(len) {
         if( (filedesc.offset%512 == 0) && (filedesc.offset) && (filedesc.offset < filedesc.length) ) {
             filedesc.curnode=getnextnode(filedesc.curnode);

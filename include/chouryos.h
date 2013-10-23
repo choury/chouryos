@@ -7,7 +7,7 @@
 #include <sys/types.h>
 
 
-#define Floppybuff      (unsigned char *)4096
+#define Floppybuff      ((unsigned char *)4096)
 
 
 #define IDT     ((gate *)0)

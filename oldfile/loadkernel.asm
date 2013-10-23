@@ -6,23 +6,8 @@ use32
     extern  puts
     global  loadkernel
     
-setidt:
-    push ebp
-    mov ebp,esp
-    pushad
-    mov esi,LDT
-    mov edi,0x1400
-    mov ecx,16
-__stidt1:
-    mov al,[ds:esi]
-    mov [es:edi],al
-    inc esi
-    inc edi
-    loop __stidt1
-    popad
-    leave
-    ret
-    
+
+
     
 readtocalldst:
     push ebp
@@ -38,19 +23,14 @@ __rtcdst2:
     call read
     test eax, eax
     jz __rtcdstret
-    push fs
-    mov bx,DATA-LDT
-    or  bx,4
-    mov fs,bx
     mov ecx,eax
     mov esi,filebuff
 __rtcdst1:
-    mov bl,[ds:esi]
-    mov [fs:edi],bl
+    mov bl,[esi]
+    mov [edi],bl
     inc esi
     inc edi
     loop __rtcdst1
-    pop fs
     jmp __rtcdst2
 __rtcdstret:
     add esp,20
@@ -63,22 +43,15 @@ loadkernel:
     push ebp
     mov ebp,esp
     pushad
-    call setidt
     sub esp,10
     mov dword [esp],kernelname
     call open
     cmp eax,0
     jl  __exece1
-    mov ebx,eax
     mov [esp],eax
     mov dword [esp+4],0x200000
     call readtocalldst
-    push ds
-    mov  ax,DATA-LDT
-    or   ax,4
-    mov  ds,ax
-    call  (CODE-LDT)|4:0x200000
-    pop ds
+    call  0x200000
     jmp __execr
 __exece1:
     mov eax,warning
@@ -90,11 +63,7 @@ __execr:
     leave
     ret
 
-section .ldt
-LDT:
-    CODE:  Descriptor  0x0,            0x2ff, DA_C   +DA_32+DA_G
-    DATA:  Descriptor  0x0,            0x2ff, DA_DRWA+DA_32+DA_G
-    
+
 section .date
     warning db "There's no kernel can be loader!" 
             db 0

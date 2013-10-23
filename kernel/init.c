@@ -9,7 +9,7 @@
 int reenter=0;
 u32 curpid;
 process *stacktop;
-int* __errno(){
+int* __errno() {
     return (int *)12000;
 }
 
@@ -28,9 +28,9 @@ void set8253(u16 time) {
 void TimerInitHandler() {
     outp(0x20,0x20);
     if(!reenter) {
-        if((curpid==0) && (PROTABLE[1].isused)){
+        if((curpid==0) && (PROTABLE[1].isused)) {
             curpid=1;
-        }else{
+        } else {
             curpid=0;
         }
         TSS.esp0=(u32)&(PROTABLE[curpid].pid);
@@ -142,11 +142,11 @@ void init() {
 
 #include <unistd.h>
 
-void process0(void){
-    if(fork()){
-        while(1)write(1,"P",1);
-    }else{
-        while(1) write(1,"S",1) ;
+void process0(void) {
+    while(1) {
+        char a;
+        read(1,&a,1);
+        write(1,&a,1);
     }
 }
 

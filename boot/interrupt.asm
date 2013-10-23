@@ -52,7 +52,7 @@ Init8259:
 
 
 
-FloppyInitHandler:    
+FloppyInitHandler:
     pushad
     mov byte [floppystatus],0xff
     mov al,20h

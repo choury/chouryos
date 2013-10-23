@@ -6,6 +6,34 @@ extern unsigned char floppystatus;
 
 static unsigned char st0,current_track;
 
+
+void send_byte(unsigned char command) {
+    int counter;
+    unsigned char status;
+    for(counter = 0 ; counter < 10000 ; counter++) {
+        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
+        if (status == STATUS_READY) {
+            outp(DATA_REGISTER,command);
+            return;
+        }
+    }
+    putstring("Unable to send byte to FDC!\n");
+}
+
+unsigned char get_byte(){
+    int counter;
+    unsigned char status=0;
+    for(counter = 0 ; counter < 10000 ; counter++) {
+        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
+        if ((status == STATUS_READY) | STATUS_DIR) {
+            return inp(DATA_REGISTER);
+        }
+    }
+    putstring("Unable to get byte from FDC!\n");
+    return 0;
+}
+
+
 static int waitinterrupt() {
     while(floppystatus==0);
     floppystatus=0;
@@ -18,6 +46,23 @@ static int result(void)
     st0=get_byte();
     current_track=get_byte();
     return 0;
+}
+
+void configure_drive(char drive) {
+    send_byte(FIX_DRIVE_DATA);
+    send_byte(0xcf);         /* hut etc */
+    send_byte(6);            /* Head load time =6ms, DMA */
+    return;
+}
+
+
+void calibrate_drive(char drive) {
+    outp(DIGITAL_OUTPUT_REG,0x0c | 1<<(4+drive));
+    send_byte(CALIBRATE_DRIVE); /*Calibrate drive*/
+    send_byte(drive);
+    waitinterrupt();
+    result();
+    return;
 }
 
 
@@ -41,55 +86,6 @@ void reset_floppy_controller(char drive) {
     return;
 }
 
-void configure_drive(char drive) {
-    send_byte(FIX_DRIVE_DATA);
-    send_byte(0xcf);         /* hut etc */
-    send_byte(6);            /* Head load time =6ms, DMA */
-    return;
-}
-
-
-void calibrate_drive(char drive) {
-    outp(DIGITAL_OUTPUT_REG,0x0c | 1<<(4+drive));
-    send_byte(CALIBRATE_DRIVE); /*Calibrate drive*/
-    send_byte(drive);
-    waitinterrupt();
-    result();
-    return;
-}
-
-
-
-
-void send_byte(unsigned char command) {
-    int counter;
-    unsigned char status;
-    for(counter = 0 ; counter < 10000 ; counter++) {
-        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
-//        puthex(status);
-        if (status == STATUS_READY) {
-            outp(DATA_REGISTER,command);
-            return;
-        }
-    }
-    puts("Unable to send byte to FDC!");
-    
-    
-}
-
-unsigned char get_byte(){
-    int counter;
-    unsigned char status=0;
-    for(counter = 0 ; counter < 10000 ; counter++) {
-        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
-//        puthex(status);
-        if ((status == STATUS_READY) | STATUS_DIR) {
-            return inp(DATA_REGISTER);
-        }
-    }
-    puts("Unable to get byte from FDC!");
-    return 0;
-}
 
 
 void setup_DMA(unsigned char *  buffer,unsigned char command) {
@@ -137,7 +133,7 @@ void seek_track(unsigned char head,unsigned char track,unsigned char drive) {
     waitinterrupt();
     result();
     if(current_track!=track){
-        puts("Seek failed");
+        putstring("Seek failed\n");
         seek_track(head,track,drive);
     }
     return;
@@ -180,7 +176,10 @@ void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,uns
 
 
 void readfloppyA(unsigned int block,unsigned char *buffer) {
+    int i;
     rw_sector(0,block+1,Floppybuff,0x46);
-    copyfloppydata(buffer);
+    for(i=0;i<512;++i){
+        buffer[i]=Floppybuff[i];
+    }
 }
 

@@ -29,25 +29,12 @@ LDT_START     equ 40
 use32
 start:
     cli
-    xor eax,eax
-    mov ebx,GDT_START+KERNELCODE_DT
-    mov [ebx + 2],ax
-    shr eax,16
-    mov [ebx + 4],al
-    mov [ebx + 7],ah
-    mov ebx,GDT_START+KERNELDATA_DT
-    mov [ebx + 2],ax
-    shr eax,16
-    mov [ebx + 4],al
-    mov [ebx + 7],ah
     mov ax,KERNELDATA_DT
     mov ds,ax
     mov ss,ax
     mov es,ax
     mov gs,ax
     mov esp,0x1ffffe
-    jmp KERNELCODE_DT:next
-next:
     call setinterrupt
     call init
     jmp $

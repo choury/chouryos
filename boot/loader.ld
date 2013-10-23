@@ -10,7 +10,7 @@
 
 SECTIONS
 {
-  . = 0x00000;
+  . = 0x02000;
   .text :
   {
     _ftext = .;
