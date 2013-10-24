@@ -59,47 +59,30 @@ s1:
     mov ebx,LABEL_DESC_VGA
     call setdtbase
 
-    mov cl, 0x80
-    mov eax, hdinfo
-    push eax
-readhdinfo:
-    mov ax, 0
-    mov es, ax
-    mov di, 0
-    mov ah, 0x08
-    mov dl, cl
-    inc cl
-    int 13h
-
-
-    jc readhdinfo
-    cmp eax, 0
-    jne readhdinfo
-    pop eax
-    mov [eax], dx
-    add eax, 2
-    mov [eax], cx
-    add eax, 2
-    push eax
-    cmp cl, 0x90
-    ja readhdinfo
-    pop eax
-
-
+    mov bx, 0104h
+    mov si, [bx]
+    mov ds, [bx+2]
+    mov di, hdinfo
+    mov cx, 0fh
+    cld
+    rep movsb
+    mov bx, 0118h
+    mov si, [bx]
+    mov ds, [bx+2]
+    mov cx, 0fh
+    rep movsb
 
     cli
 
     xor eax,eax
-    mov es,ax
-    mov esi,LABEL_GDT
-    mov edi,2048
-    mov ecx,2048
-__movgdt:
-    mov al,[ds:esi]
-    mov [es:edi],al
-    inc si
-    inc di
-    loop __movgdt
+    mov es, ax
+    mov ds, ax
+    mov si,LABEL_GDT
+    mov di,2048
+    mov cx,2048
+    cld
+    rep movsb
+
 
     lgdt    [GdtPtr]
 

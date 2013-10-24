@@ -41,7 +41,7 @@
 
 
 
-void FloppyInitHandler();
+void FloppyIntHandler();
 
 void reset_floppy_controller(char drive);
 void calibrate_drive(char drive);

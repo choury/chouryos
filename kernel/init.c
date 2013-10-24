@@ -46,11 +46,12 @@ void init() {
     set8253(0xffff);
     setinterrupt(0x20,TimerInitHandler);
     setinterrupt(0x21,KeyBoadHandler);
-    setinterrupt(0x26,FloppyInitHandler);
-    setinterrupt(0x2e,HdInitHandler);
+    setinterrupt(0x26,FloppyIntHandler);
+    setinterrupt(0x2e,HdIntHandler);
     setinterrupt(80,(void (*)())syscall);
     outp(0x21,inp(0x21)&0xfd);      //开启键盘中断
     outp(0x21,inp(0x21)&0xfe);      //开启时钟中断
+    outp(0x21,inp(0x21)&0xfb);      //允许从片中断
     outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
     curpid=0;
     PROTABLE[curpid].isused=1;
@@ -138,7 +139,12 @@ void init() {
 
     sti();
     initfs();
-
+    resetHd(0);
+    u8 buff[2048];
+    readHd(0,1,buff);
+    for(i=0;i<512;++i){
+        printf("%02x",buff[i]);
+    }
     movetouse(&(PROTABLE[curpid]));
 }
 
@@ -146,9 +152,6 @@ void init() {
 #include <unistd.h>
 
 void process0(void) {
-    printf("HD0:\n");
-    printf("drivers:%d,heads:%d,cylinders:%d,spt:%d\n",
-           HdInfo[0].drivers,HdInfo[0].heads,HdInfo[0].cylindersh<<8 | HdInfo[0].cylindersl,HdInfo[0].spt);
     while(1) {
         char a;
         read(1,&a,1);

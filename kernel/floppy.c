@@ -11,7 +11,7 @@ static u8 floppystatus=0;
 static unsigned char st0,current_track;
 
 
-void FloppyInitHandler(){
+void FloppyIntHandler(){
     outp(0x20,0x20);
     floppystatus=0xff;
 }

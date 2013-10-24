@@ -39,13 +39,20 @@
 #define WIN_SPECIFY     0x91
 
 typedef struct{
-    uint8   drivers;
+    uint16  cyl;
     uint8   heads;
-    uint8   spt:6;
-    uint8   cylindersh:2;
-    uint8   cylindersl;
+    uint16  unknow;
+    uint16  wpcom;
+    uint8   unknow1;
+    uint8   ctl;
+    uint8   unknow2[3];
+    uint16  lzone;
+    uint8   spt;
+    uint8   reserved;
 }__attribute__ ((packed)) Hdinfo;
 
-void HdInitHandler();
+void HdIntHandler();
+void resetHd(int driver);
+void readHd(int sec,int n,void *buff);
 
 #endif

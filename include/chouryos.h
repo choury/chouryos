@@ -32,11 +32,18 @@ extern u32 curpid;
 #define sti()     __asm__("sti\n")
 #define cli()     __asm__("cli\n")
 #define nop()     __asm__("nop\n")
-#define lldt(x)   __asm__ ("lldt %0" : :"r"(x));
+#define lldt(x)   __asm__ ("lldt %0" : :"r"(x))
 
 void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);
+void outpd(unsigned int port,unsigned int data);
 unsigned char inp(unsigned int port);
+unsigned short inpw(unsigned int port);
+unsigned int inpd(unsigned int port);
+void inpn(unsigned int port,void *buff,int n);
+void inpwn(unsigned int port,void *buff,int n);
+void inpdn(unsigned int port,void *buff,int n);
+
 void movetouse(process *);
 void process0(void);
 
