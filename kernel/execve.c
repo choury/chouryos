@@ -67,7 +67,7 @@ int sys_execve(char *name, char **argv, char **env) {
 			n = sys_read( fd, elf32.e_flags, 4 ); // Interpretation of this field depends on the target architecture.
 			n = sys_read( fd, elf32.e_ehsize, 2 ); // Contains the size of this header, normally 64 bytes for 64-bit and 52 for 32-bit format.
 			n = sys_read( fd, elf32.e_phentsize, 2 ); // Contains the size of a program header table entry.
-			n = sys_read( fd, elf32.e_phnum, 2 ss); // Contains the number of entries in the program header table.
+			n = sys_read( fd, elf32.e_phnum, 2 ); // Contains the number of entries in the program header table.
 			n = sys_read( fd, elf32.e_shentsize, 2 ); // Contains the size of a section header table entry.
 			n = sys_read( fd, elf32.e_shnum, 2 ); // Contains the number of entries in the section header table.
 			n = sys_read( fd, elf32.e_shstrndx, 2 ); // Contains index of the section header table entry that contains the section names.
