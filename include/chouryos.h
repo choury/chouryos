@@ -3,17 +3,13 @@
 
 #include <process.h>
 #include <type.h>
-#include <graphy.h>
 #include <sys/types.h>
-#include <hd.h>
-
-#define Floppybuff      ((unsigned char *)4096)
 
 
 #define IDT     ((gate *)0)
 #define GDT     ((ss *)0x800)
 #define TSS     (*(tss_struct *)0x1200)
-#define HdInfo  ((Hdinfo *)0x1300)
+
 
 #define KERNELCODE_DT  1
 #define KERNELDATA_DT  2
@@ -25,7 +21,7 @@
 
 #define INTHER  ((void (**)())0x2800)
 
-#define PROTABLE    ((process *)0x100000)
+
 #define KERNEL_HEAP ((void *)0x300000)
 
 extern u32 curpid;
@@ -48,7 +44,7 @@ void inpdn(unsigned int port,void *buff,int n);
 void movetouse(process *);
 void process0(void);
 
-int setpoint(int x,int y,RGB_t color);
+
 void setinterrupt(int into,void f());
 
 int putstring(const char* s);

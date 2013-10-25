@@ -15,9 +15,9 @@ __s:
     nop                 ;  nop required 
 BS_OEMName:         db  "ChouryOs"    ;  OEM String, 8 bytes required 
 BPB_BytsPerSec:     dw  512           ;  Bytes per sector 
-BPB_SecPerCluster:  db   1             ;  Sector per cluster 
+BPB_SecPerCluster:  db  1             ;  Sector per cluster
 BPB_ResvdSecCnt:    dw  1             ;  Reserved sector count 
-BPB_NumFATs:        db   2             ;  Number of FATs 
+BPB_NumFATs:        db  2             ;  Number of FATs
 BPB_RootEntCnt:     dw  224           ;  Root entries count 
 BPB_TotSec16:       dw  2880          ;  Total sector number 
 BPB_Media:          db   0xf0          ;  Media descriptor 

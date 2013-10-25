@@ -43,4 +43,6 @@ typedef struct{
 }process;
 
 
+#define PROTABLE    ((process *)0x100000)
+
 #endif

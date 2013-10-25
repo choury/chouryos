@@ -38,6 +38,7 @@
 #define WIN_DIAGNOSE    0x90
 #define WIN_SPECIFY     0x91
 
+
 typedef struct{
     uint16  cyl;
     uint8   heads;
@@ -51,8 +52,32 @@ typedef struct{
     uint8   reserved;
 }__attribute__ ((packed)) Hdinfo;
 
+#define HdInfo  ((Hdinfo *)0x1300)
+
+typedef struct{
+    uint8 boot_ind;
+    uint8 head;
+    uint8 sec:6;
+    uint8 cylh:2;
+    uint8 cyll;
+    uint8 sys_ind;
+    uint8 end_head;
+    uint8 end_sec:6;
+    uint8 end_cylh:2;
+    uint8 end_cyll;
+    uint32 sector;
+    uint32 nsector;
+}__attribute__ ((packed))HPT;
+
+typedef struct{
+    uint8 code[446];
+    HPT   hpt[4];
+    uint8 sig[2];
+}__attribute__ ((packed))MBR;
+
 void HdIntHandler();
 void resetHd(int driver);
 void readHd(int sec,int n,void *buff);
+void writeHd(int sec,int nsec,void *buff);
 
 #endif

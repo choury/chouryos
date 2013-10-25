@@ -139,14 +139,24 @@ void init() {
 
     sti();
     initfs();
-    resetHd(0);
     movetouse(&(PROTABLE[curpid]));
 }
 
-
+#include <fcntl.h>
 #include <unistd.h>
 
 void process0(void) {
+    int fd=open("menu.lst",O_RDWR);
+    if(fd<0){
+        putstring("Open filed\n");
+    }else{
+        printf("fd:%d\n",fd);
+        uint8 buff[512];
+//        lseek(fd,512,SEEK_SET);
+        int n=read(fd,buff,512);
+        write(1,buff,n);
+        close(fd);
+    }
     while(1) {
         char a;
         read(1,&a,1);

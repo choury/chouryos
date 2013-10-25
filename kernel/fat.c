@@ -3,6 +3,7 @@
 #include <string.h>
 #include <file.h>
 #include <chouryos.h>
+#include <hd.h>
 #include <stdlib.h>
 
 
@@ -15,6 +16,8 @@ typedef struct
 } FATFileIndex;
 
 uint8           BUFFER_FAT[1024];      //1024字节的缓冲区
+
+static uint32          Partition_Sec;
 
 static uint16          BPB_BytesPerSec;
 static uint8           BPB_SecPerClus;
@@ -37,6 +40,9 @@ static void     ReadBPB          (void);
 
 void FAT_Init(void)
 {
+    uint8 buff[512];
+    readHd(0,1,buff);
+    Partition_Sec=((MBR*)buff)->hpt[0].sector;
     ReadBPB();
 }
 
@@ -45,7 +51,8 @@ void FAT_Init(void)
 static void ReadSector(uint32 sec)
 {
     if(sec != LastAccess) {
-        readfloppyA(sec, BUFFER_FAT);
+//        readfloppyA(sec, BUFFER_FAT);
+        readHd(sec+Partition_Sec,1,BUFFER_FAT);
         LastAccess=sec;
     }
 }
@@ -55,7 +62,7 @@ static void ReadSector(uint32 sec)
 //写一个扇区
 static void WriteSector(uint32 sec)
 {
-    writefloppyA(sec, BUFFER_FAT);
+    writeHd(sec+Partition_Sec,1,BUFFER_FAT);
     LastAccess=sec;
 }
 
@@ -67,6 +74,7 @@ static void ReadBPB(void)
     FAT_BPB* BPB = (FAT_BPB*)BUFFER_FAT;
 
     //缓存相关参数
+    BPB_BytesPerSec =  BPB->BytesPerSec;
     BPB_SecPerClus  =  BPB->SecPerClus;
     BPB_RsvdSecCnt  =  BPB->RsvdSecCnt;
     BPB_NumFATs     =  BPB->NumFATs;
@@ -286,7 +294,7 @@ static int releaseclus(u32 clus,u8 flag) {
         writenextclus(clus,EOC);
     }
     clus=tmpclus;
-    while(clus<=BEOC) {
+    while(clus<=MaxClus) {
         tmpclus=getnextclus(tmpclus);
         writenextclus(clus,0);
         clus=tmpclus;
@@ -404,7 +412,7 @@ int Fat_open(fileindex *file,const char *path) {
     case FAT32:
         i=BPB_RootDirClu;
         buff=kernel_malloc(ClusBytes);                             //TODO 这里可能有bug
-        while(i<=BEOC) {
+        while(i<=MaxClus) {
             ReadClus(i,buff);
             for(j = 0; j <ClusBytes/sizeof(DIR); j++) {
                 if(cmpname(name, (char *)((DIR*)buff)[j].Name)) {

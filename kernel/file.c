@@ -3,11 +3,14 @@
 #include <fat.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <unistd.h>
 #include <chouryos.h>
-
+#include <hd.h>
+#include <floppy.h>
 
 void initfs() {
+    reset_floppy_controller(0);         //init floppy
+    resetHd(0);
     FAT_Init();                         //get fat infomation struct
 }
 

@@ -1,7 +1,7 @@
 #ifndef __FLOPPY_H__
 #define __FLOPPY_H__
 
-
+#define Floppybuff      ((unsigned char *)4096)
 
 
 #define STATUS_REG_A            0x03f0 /*PS2 SYSTEMS*/
