@@ -120,7 +120,7 @@ typedef struct
 
 void FAT_Init(void);
 
-void     ReadBlock        (uint32 LBA);
+void     ReadSector        (uint32 LBA);
 uint32 DirStartSec(void);
 uint32 DataStartSec(void);
 

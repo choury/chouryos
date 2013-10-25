@@ -26,6 +26,7 @@
 #define INTHER  ((void (**)())0x2800)
 
 #define PROTABLE    ((process *)0x100000)
+#define KERNEL_HEAP ((void *)0x300000)
 
 extern u32 curpid;
 
@@ -59,4 +60,6 @@ time_t kernel_mktime(
 
 time_t kernel_getnowtime();
 void time_to_tm(time_t totalsecs, struct tm *result);
+void *kernel_malloc(long );
+void kernel_free(void *);
 #endif

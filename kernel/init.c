@@ -140,11 +140,6 @@ void init() {
     sti();
     initfs();
     resetHd(0);
-    u8 buff[2048];
-    readHd(0,1,buff);
-    for(i=0;i<512;++i){
-        printf("%02x",buff[i]);
-    }
     movetouse(&(PROTABLE[curpid]));
 }
 

@@ -14,10 +14,12 @@
 typedef struct{
     uint32 isused;
     uint32 dev;
+    uint32 dirnode;
     uint32 indexno;
     uint32 offset;
     uint32 startnode;
     uint32 curnode;
+    uint32 nodebytes;
     uint32 length;
     time_t createtime;
     time_t accesstime;

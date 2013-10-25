@@ -1,4 +1,5 @@
 #include <syscall.h>
+#include <chouryos.h>
 
 /*
  sbrk
@@ -7,6 +8,5 @@
  */
 void * sys_sbrk(int incr) {
 //    errno = ENOMEM;
-    return  (void *)0x300000+incr;
-
+    return  PROTABLE[curpid].heap+incr;
 }

@@ -23,7 +23,6 @@ int sys_fork() {
     PROTABLE[i].ldt=(LDT_START+curpid+i)<<3;
     PROTABLE[i].pid=i;
     PROTABLE[i].ppid=curpid;
-//    PROTABLE[i].reg.eip=(u32)process1;
     PROTABLE[i].reg.oesp=PROTABLE[curpid].reg.oesp+0x100000;
     PROTABLE[i].reg.ebp=PROTABLE[curpid].reg.ebp+0x100000;
     memcpy((void *)PROTABLE[i].reg.oesp,(void *)PROTABLE[curpid].reg.oesp,0x400000-PROTABLE[curpid].reg.oesp);

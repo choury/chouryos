@@ -17,7 +17,7 @@ start:
     mov ds,ax
     mov es,ax
     mov ss,ax
-    mov esp,0xa0000
+    mov esp,0x7FFFF
 
     ; Clear screen
     mov ax,0600h    ; %ah=6, %al=0 */

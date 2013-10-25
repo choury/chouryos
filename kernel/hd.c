@@ -46,6 +46,10 @@ void resetHd(int driver) {
     for(i=0; i<100; i++)
         __asm__("nop\n");
     outp(HD_CMD,HdInfo[0].ctl & 0x0f );
+    while(HdInfo[0].heads>0x10){
+        HdInfo[0].cyl*=2;
+        HdInfo[0].heads/=2;
+    }
     drive=driver;
     nsector=HdInfo[0].spt;
     sector=HdInfo[0].spt;

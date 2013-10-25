@@ -37,6 +37,8 @@ typedef struct{
     u16 ldt;
     ss  cdt;
     ss  ddt;
+    void *base;                             //进程空间基址，也是ddt的基址
+    void *heap;                             //进程堆的起始地址，相对于base
     fileindex file[MAX_FD];
 }process;
 

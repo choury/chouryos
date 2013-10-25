@@ -18,11 +18,11 @@ void initfs() {
 
 
 //获取一个node下一个簇的序号
-int getnextnode(uint32 node) {
+int getnextclus(uint32 node) {
     if(node<2 || node>=0xff8) {
         return -1;
     }
-    ReadBlock(node*12/8/512+1);
+    ReadSector(node*12/8/512+1);
     if((node*12/8)%512!=511) {
         uint16 nextnode=*(uint16 *)(&BUFFER_FAT[(node*12/8)%512]);
         if(node&1) {
@@ -33,12 +33,12 @@ int getnextnode(uint32 node) {
     } else {
         if(node&1) {
             uint16 nextnode=BUFFER_FAT[511] >>4;
-            ReadBlock(node*12/8/512+2);
+            ReadSector(node*12/8/512+2);
             nextnode |= BUFFER_FAT[0]<<4;
             return nextnode;
         } else {
             uint16 nextnode=BUFFER_FAT[511] & 0xff;
-            ReadBlock(node*12/8/512+2);
+            ReadSector(node*12/8/512+2);
             nextnode |= (BUFFER_FAT[0] & 0xf) <<8;
             return nextnode;
         }
@@ -110,7 +110,7 @@ int lopen(const char *path) {
     splitpath(path,name);
     for(i = DirStart; i < DirSecCut; i++)
     {
-        ReadBlock(i);
+        ReadSector(i);
         for(j = 0; j <16; j++)
         {
             if(cmpname(name, (char *)((DIR*)BUFFER_FAT)[j].FileName))
@@ -130,9 +130,9 @@ int lread(void *buff,u32 len) {
     u32 c,readlen=0,i;
     while(len) {
         if( (filedesc.offset%512 == 0) && (filedesc.offset) && (filedesc.offset < filedesc.length) ) {
-            filedesc.curnode=getnextnode(filedesc.curnode);
+            filedesc.curnode=getnextclus(filedesc.curnode);
         }
-        ReadBlock(DataSec+filedesc.curnode-2);
+        ReadSector(DataSec+filedesc.curnode-2);
         c=(512-filedesc.offset%512)<(filedesc.length-filedesc.offset)?
           (512-filedesc.offset%512):
           (filedesc.length-filedesc.offset);

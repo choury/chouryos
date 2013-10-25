@@ -6,7 +6,15 @@
 ;         0x2800--0x2c00   realinthandler table
 ;         0xa0000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M------         process table
-;         2M------         kernel
+;         2M    ---------       kernel code & date
+;               ↓       ↓
+;               .
+;               ↑       ↑       kernel stack
+;         3M    ---------
+;               ↓       ↓       kernel heap
+;               .
+;               ↑       ↑       process0 stack
+;         4M    ---------
 
 
 IDT_START equ 0
