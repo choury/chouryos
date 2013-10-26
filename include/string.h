@@ -12,6 +12,7 @@
 #define toupper(c)  ((c)-32)
 
 int strlen(const char *s) ;
+void *memset(void *s,int c,size_t n);
 void* memcpy(void *dest,const void *src,size_t n) ;
 
 
