@@ -1,9 +1,7 @@
-%include "pm.h"
-;    extern  start
-;    extern  putchar
+%include "../asm/asm.h"
+
     global  Init8259
     global  setinterrupt
-    global  floppystatus
 use32
 section .text
 
@@ -47,39 +45,46 @@ Init8259:
     mov al,0ffh
     out 0a1h,al  ;slave,ocw1
     nop
+    call setinterrupt
     pop eax
     ret
 
-
-
-FloppyInitHandler:
-    pushad
-    mov byte [floppystatus],0xff
-    mov al,20h
-    out 20h,al
-    popad
-    iret
 
 setinterrupt:
     push ebp
     mov ebp,esp
     pushad
-    mov eax,0x26
+%assign i 32
+%rep 16
+
+    mov eax,i
     shl eax,3
-    mov ebx,FloppyInitHandler
+    mov ebx,int%+i
     mov [es:eax],bx
     add eax,2
-    mov cx,cs
+    mov cx,KERNELCODE_DT
     mov [es:eax],cx
     add eax,2
-    mov cx,0x8e00
+    mov cx,0xee00
     mov [es:eax],cx
     add eax,2
     shr ebx,16
     mov [es:eax],bx
+
+%assign i i+1
+%endrep
+
     popad
     leave
     ret
-    
-section .data
-    floppystatus db   0
+
+
+%assign i 32
+%rep 16
+int%+i:
+    pushad
+    call [INTHER+i*4]
+    popad
+    iret
+%assign i i+1
+%endrep

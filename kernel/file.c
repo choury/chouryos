@@ -9,7 +9,7 @@
 #include <floppy.h>
 
 void initfs() {
-    reset_floppy_controller(0);         //init floppy
+//    reset_floppy_controller(0);         //init floppy
     resetHd(0);
     FAT_Init();                         //get fat infomation struct
 }

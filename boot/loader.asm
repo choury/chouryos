@@ -9,7 +9,7 @@ use16
     extern  loadkernel
     extern  main
 
-section .text
+section .text16
 start:
     mov ax,0b800h
     mov fs,ax
@@ -128,7 +128,7 @@ section .data
 
     
     
-section .vdt
+;section .vdt
 LABEL_GDT:          Descriptor  0,                  0,       0
 LABEL_DESC_CODE32:  Descriptor  0,                  0xfffff, DA_C   +DA_32+ DA_G
 LABEL_DESC_DATA:    Descriptor  0,                  0xfffff, DA_DRW +DA_32+ DA_G
@@ -147,7 +147,7 @@ IdtPtr: dw  2048
 
 
 
-section .ModeInfoBlock
+;section .ModeInfoBlock
 ModeInfoBlock: 
 ; Mandatory information for all VBE revisions
 ModeAttributes      dw 0 ; mode attributes

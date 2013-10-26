@@ -1,15 +1,28 @@
-#include "boot.h"
+#include <boot.h>
+#include <chouryos.h>
+#include <fcntl.h>
+#include <floppy.h>
+#include <hd.h>
 
+void Setinterrupt(int into,void f()) {
+    INTHER[into]=f;
+}
 
 void loadkernel(){
     Init8259();
-    setinterrupt();
+    Setinterrupt(0x26,FloppyIntHandler);
+    Setinterrupt(0x2e,HdIntHandler);
+
+    outp(0x21,inp(0x21)&0xfb);      //允许从片中断
+    outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
     sti();
     initfs();
-    if(lopen("chouryos")<0){
+    fileindex file;
+    int r=file_open(&file,"chouryos",O_RDWR);
+    if(r<0){
         putstring("Can't find kernel!\n");
     }else{
-        lread((void *)KernelLocation,0xffffffff);
+        file_read(&file,(void *)KernelLocation,0xffffffff);
+        kernel();
     }
-    kernel();
 }

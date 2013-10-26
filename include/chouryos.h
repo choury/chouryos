@@ -45,9 +45,9 @@ void movetouse(process *);
 void process0(void);
 
 
-void setinterrupt(int into,void f());
 
-int putstring(const char* s);
+
+void putstring(const char* s);
 
 time_t kernel_mktime(
     unsigned int year, unsigned int mon,
@@ -56,6 +56,5 @@ time_t kernel_mktime(
 
 time_t kernel_getnowtime();
 void time_to_tm(time_t totalsecs, struct tm *result);
-void *kernel_malloc(long );
-void kernel_free(void *);
+
 #endif

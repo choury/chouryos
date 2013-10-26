@@ -2,7 +2,7 @@ use16
 org 7c00h
 BaseOfStack     equ     0x7c00    ;  Stack base address, inner 
 BaseOfLoader    equ     0x0000    ;  Section loading address of LOADER.BIN
-OffsetOfLoader  equ     0x2000    ;  Loading offset of LOADER.BIN
+OffsetOfLoader  equ     0x7e00    ;  Loading offset of LOADER.BIN
 RootDirSectors  equ     14        ;  Root directory sector count 
 SecNoOfRootDir  equ     19        ;  1st sector of root directory 
 SecNoOfFAT1     equ     1         ;  1st sector of FAT1 

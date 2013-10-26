@@ -8,11 +8,16 @@
    This file is licensed under the GNU General Public License; either
    version 3 of the License, or (at your option) any later version. */
 
+SEARCH_DIR(../asm)
+INPUT(baseio.o)
+
 SECTIONS
 {
-  . = 0x02000;
-  .text :
+  . = 0x07e00;
+  .text16 :
   {
     _ftext = .;
   } = 0
+  .data : { *(.data) }
+  .text : { *(.text) }
 }

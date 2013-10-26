@@ -14,7 +14,6 @@ typedef uint64 u64;
 
 
 
-#define Floppybuff      ((unsigned char *)4096)
 
 
 #define KernelLocation  0x200000
@@ -30,7 +29,7 @@ void initfs();
 
 int lopen(const char *path);
 int lread(void *buff,u32 len);
-//int printf(const char *fmt,...);
+
 int putstring(const char*);
 
 #define STATUS_REG_A            0x03f0 /*PS2 SYSTEMS*/

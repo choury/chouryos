@@ -7,15 +7,12 @@
 
 
 
-int reenter=0;
+int reenter;
 u32 curpid;
 process *stacktop;
-int* __errno() {
-    return (int *)12000;
-}
 
 
-void setinterrupt(int into,void f()) {
+void Setinterrupt(int into,void f()) {
     INTHER[into]=f;
 }
 
@@ -44,11 +41,11 @@ void TimerInitHandler() {
 void init() {
     int i;
     set8253(0xffff);
-    setinterrupt(0x20,TimerInitHandler);
-    setinterrupt(0x21,KeyBoadHandler);
-    setinterrupt(0x26,FloppyIntHandler);
-    setinterrupt(0x2e,HdIntHandler);
-    setinterrupt(80,(void (*)())syscall);
+    Setinterrupt(0x20,TimerInitHandler);
+    Setinterrupt(0x21,KeyBoadHandler);
+    Setinterrupt(0x26,FloppyIntHandler);
+    Setinterrupt(0x2e,HdIntHandler);
+    Setinterrupt(80,(void (*)())syscall);
     outp(0x21,inp(0x21)&0xfd);      //开启键盘中断
     outp(0x21,inp(0x21)&0xfe);      //开启时钟中断
     outp(0x21,inp(0x21)&0xfb);      //允许从片中断
@@ -137,6 +134,7 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
+    reenter=0;
     sti();
     initfs();
     movetouse(&(PROTABLE[curpid]));

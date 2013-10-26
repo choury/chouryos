@@ -6,7 +6,7 @@
 
 //#define  drive 0
 
-static u8 floppystatus=0;
+static u8 floppystatus;
 
 static unsigned char st0,current_track;
 
@@ -36,6 +36,7 @@ drive is the drive on the controller to be reset - 0 is drive A (fd0),1 is drive
 
 void reset_floppy_controller(char drive) {
     cli();
+    floppystatus=0;
     outp(DIGITAL_OUTPUT_REG,00); /*disable controller*/
     int i;
     for(i=0; i<200; i++)

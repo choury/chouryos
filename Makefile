@@ -12,9 +12,9 @@ export CPPFLAGS=-m32 -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/includ
 
 .PHONY : all kernel boot asm exe clean
 
-all: boot asm kernel
+all: boot asm kernel exe
 
-boot:
+boot:kernel
 	$(MAKE) -C boot
 
 
@@ -25,6 +25,10 @@ boot.img:
 
 	
 copy:boot kernel exe boot.img
+	sudo mount -o loop,umask=000 /dev/loop1 /mnt
+	cp boot/loader /mnt
+	cp kernel/chouryos /mnt
+	sudo umount /mnt
 	sudo mount -o loop,umask=000 boot.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt

@@ -1,7 +1,7 @@
 #include <hd.h>
 #include <chouryos.h>
 
-static uint8 hdstats=0;
+static uint8 hdstats;
 static uint8 nsector,sector,head,drive;
 static uint16 cyl;
 
@@ -42,6 +42,7 @@ static int win_result(void)
 
 void resetHd(int driver) {
     int i;
+    hdstats=0;
     outp(HD_CMD,4);
     for(i=0; i<100; i++)
         __asm__("nop\n");

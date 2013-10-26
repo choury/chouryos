@@ -34,7 +34,7 @@ static uint32          EOC;
 static enum Filetype   ft;
 
 
-static int             LastAccess=-1;
+static int             LastAccess;
 
 static void     ReadBPB          (void);
 
@@ -43,6 +43,7 @@ void FAT_Init(void)
     uint8 buff[512];
     readHd(0,1,buff);
     Partition_Sec=((MBR*)buff)->hpt[0].sector;
+    LastAccess=-1;
     ReadBPB();
 }
 
@@ -375,7 +376,6 @@ int Fat_open(fileindex *file,const char *path) {
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
     char name[11];
-    void *buff;
     splitpath(path,name);
     switch(ft) {
     case FAT12:
@@ -411,38 +411,35 @@ int Fat_open(fileindex *file,const char *path) {
         break;
     case FAT32:
         i=BPB_RootDirClu;
-        buff=kernel_malloc(ClusBytes);                             //TODO 这里可能有bug
         while(i<=MaxClus) {
-            ReadClus(i,buff);
+            ReadClus(i,KERNEL_HEAP);
             for(j = 0; j <ClusBytes/sizeof(DIR); j++) {
-                if(cmpname(name, (char *)((DIR*)buff)[j].Name)) {
+                if(cmpname(name, (char *)((DIR*)KERNEL_HEAP)[j].Name)) {
                     file->nodebytes=ClusBytes;
                     file->dirnode=i;
                     file->indexno=j;
-                    file->startnode=((DIR*)buff)[j].Starth<<16 | ((DIR*)buff)[j].Startl;
-                    file->length=((DIR*)buff)[j].Length;
-                    file->createtime=kernel_mktime(((DIR*)buff)[j].CreateYear+1980,
-                                                   ((DIR*)buff)[j].CreateMonth,
-                                                   ((DIR*)buff)[j].CreateDay,
-                                                   ((DIR*)buff)[j].CreateHour,
-                                                   ((DIR*)buff)[j].CreateMinute,
-                                                   ((DIR*)buff)[j].Create2Second*2
+                    file->startnode=((DIR*)KERNEL_HEAP)[j].Starth<<16 | ((DIR*)KERNEL_HEAP)[j].Startl;
+                    file->length=((DIR*)KERNEL_HEAP)[j].Length;
+                    file->createtime=kernel_mktime(((DIR*)KERNEL_HEAP)[j].CreateYear+1980,
+                                                   ((DIR*)KERNEL_HEAP)[j].CreateMonth,
+                                                   ((DIR*)KERNEL_HEAP)[j].CreateDay,
+                                                   ((DIR*)KERNEL_HEAP)[j].CreateHour,
+                                                   ((DIR*)KERNEL_HEAP)[j].CreateMinute,
+                                                   ((DIR*)KERNEL_HEAP)[j].Create2Second*2
                                                   );
 
-                    file->updatetime=kernel_mktime(((DIR*)buff)[j].UpdateYear+1980,
-                                                   ((DIR*)buff)[j].UpdateMonth,
-                                                   ((DIR*)buff)[j].UpdateDay,
-                                                   ((DIR*)buff)[j].UpdateHour,
-                                                   ((DIR*)buff)[j].UpdateMinute,
-                                                   ((DIR*)buff)[j].Update2Second*2
+                    file->updatetime=kernel_mktime(((DIR*)KERNEL_HEAP)[j].UpdateYear+1980,
+                                                   ((DIR*)KERNEL_HEAP)[j].UpdateMonth,
+                                                   ((DIR*)KERNEL_HEAP)[j].UpdateDay,
+                                                   ((DIR*)KERNEL_HEAP)[j].UpdateHour,
+                                                   ((DIR*)KERNEL_HEAP)[j].UpdateMinute,
+                                                   ((DIR*)KERNEL_HEAP)[j].Update2Second*2
                                                   );
-                    kernel_free(buff);
                     return 0; //找到对应的目录项,返回
                 }
             }
             i=getnextclus(i);
         }
-        kernel_free(buff);
         break;
     }
     return -1; //没有找到对应的目录项,返回
@@ -454,20 +451,18 @@ int Fat_read(fileindex *file,void *ptr,size_t len) {
     if(file->offset+len > file->length) {
         return -1;
     }
-    void* buff=kernel_malloc(ClusBytes);
     while(len>0) {
         if( (file->offset%ClusBytes == 0) && (file->offset) ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(file->curnode,buff);
+        ReadClus(file->curnode,KERNEL_HEAP);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(ptr+readlen,buff+file->offset%ClusBytes,c);
+        memcpy(ptr+readlen,KERNEL_HEAP+file->offset%ClusBytes,c);
         readlen+=c;
         file->offset+=c;
         len-=c;
     }
-    kernel_free(buff);
     return readlen;
 }
 
@@ -527,27 +522,24 @@ int Fat_write(fileindex *file,const void *ptr,size_t len) {
         return -1;
     }
     uint16 DataSec=DataStartSec();
-    void* buff=kernel_malloc(ClusBytes);
     while(len>0) {
         if( (file->offset%ClusBytes == 0) && (file->offset)  ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(DataSec+file->curnode,buff);
+        ReadClus(DataSec+file->curnode,KERNEL_HEAP);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(buff+file->offset%ClusBytes,ptr+writelen,c);
-        WriteClus(DataSec+file->curnode,buff);
+        memcpy(KERNEL_HEAP+file->offset%ClusBytes,ptr+writelen,c);
+        WriteClus(DataSec+file->curnode,KERNEL_HEAP);
         len-=c;
         file->offset+=c;
         writelen+=c;
     }
-    kernel_free(buff);
     return writelen;
 }
 
 int Fat_close(fileindex *file) {
     struct tm t;
-    void* buff;
     switch(ft) {
     case FAT12:
     case FAT16:
@@ -577,32 +569,30 @@ int Fat_close(fileindex *file) {
         WriteSector(file->dirnode);
         break;
     case FAT32:
-        buff=kernel_malloc(ClusBytes);
-        ReadClus(file->dirnode,buff);
+        ReadClus(file->dirnode,KERNEL_HEAP);
         time_to_tm(file->createtime,&t);
-        ((DIR*)buff)[file->indexno].Create2Second=t.tm_sec/2;
-        ((DIR*)buff)[file->indexno].CreateMinute=t.tm_min;
-        ((DIR*)buff)[file->indexno].CreateHour=t.tm_hour;
-        ((DIR*)buff)[file->indexno].CreateDay=t.tm_mday;
-        ((DIR*)buff)[file->indexno].CreateMonth=t.tm_mon+1;
-        ((DIR*)buff)[file->indexno].CreateYear=t.tm_year-80;
+        ((DIR*)KERNEL_HEAP)[file->indexno].Create2Second=t.tm_sec/2;
+        ((DIR*)KERNEL_HEAP)[file->indexno].CreateMinute=t.tm_min;
+        ((DIR*)KERNEL_HEAP)[file->indexno].CreateHour=t.tm_hour;
+        ((DIR*)KERNEL_HEAP)[file->indexno].CreateDay=t.tm_mday;
+        ((DIR*)KERNEL_HEAP)[file->indexno].CreateMonth=t.tm_mon+1;
+        ((DIR*)KERNEL_HEAP)[file->indexno].CreateYear=t.tm_year-80;
         time_to_tm(file->accesstime,&t);
-        ((DIR*)buff)[file->indexno].AccessDay=t.tm_mday;
-        ((DIR*)buff)[file->indexno].AccessMonth=t.tm_mon+1;
-        ((DIR*)buff)[file->indexno].AccessYear=t.tm_year-80;
+        ((DIR*)KERNEL_HEAP)[file->indexno].AccessDay=t.tm_mday;
+        ((DIR*)KERNEL_HEAP)[file->indexno].AccessMonth=t.tm_mon+1;
+        ((DIR*)KERNEL_HEAP)[file->indexno].AccessYear=t.tm_year-80;
         time_to_tm(file->updatetime,&t);
-        ((DIR*)buff)[file->indexno].Update2Second=t.tm_sec/2;
-        ((DIR*)buff)[file->indexno].UpdateMinute=t.tm_min;
-        ((DIR*)buff)[file->indexno].UpdateHour=t.tm_hour;
-        ((DIR*)buff)[file->indexno].UpdateDay=t.tm_mday;
-        ((DIR*)buff)[file->indexno].UpdateMonth=t.tm_mon+1;
-        ((DIR*)buff)[file->indexno].UpdateYear=t.tm_year-80;
+        ((DIR*)KERNEL_HEAP)[file->indexno].Update2Second=t.tm_sec/2;
+        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateMinute=t.tm_min;
+        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateHour=t.tm_hour;
+        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateDay=t.tm_mday;
+        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateMonth=t.tm_mon+1;
+        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateYear=t.tm_year-80;
 
-        ((DIR*)buff)[file->indexno].Starth=file->startnode>>16;
-        ((DIR*)buff)[file->indexno].Startl=file->startnode&0xffff;
-        ((DIR*)buff)[file->indexno].Length=file->length;
-        WriteClus(file->dirnode,buff);
-        kernel_free(buff);
+        ((DIR*)KERNEL_HEAP)[file->indexno].Starth=file->startnode>>16;
+        ((DIR*)KERNEL_HEAP)[file->indexno].Startl=file->startnode&0xffff;
+        ((DIR*)KERNEL_HEAP)[file->indexno].Length=file->length;
+        WriteClus(file->dirnode,KERNEL_HEAP);
         break;
     }
 
