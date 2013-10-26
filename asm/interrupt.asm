@@ -39,46 +39,47 @@ setinterrupt:
 %rep 80
 int%+i:
     pushad
+    push ds
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     inc dword [reenter]
     jnz rein%+i
-    push ds
     push es
     push fs
     push gs
-    mov ax, KERNELDATA_DT
-    mov ds, ax
     mov es, ax
     mov gs, ax
     mov esp, 0x1ffffe
     call [INTHER+i*4]
     cli
+    dec dword [reenter]
     mov esp, [stacktop]
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec dword [reenter]
     iret
 rein%+i:
+    pop ds
     call [INTHER+i*4]
-    popad
     dec dword [reenter]
+    popad
     iret
 %assign i i+1
 %endrep
 
 
 int80:
-    inc dword [reenter]
-    jnz rein80
     pushad
     push ds
+    mov ax, KERNELDATA_DT
+    mov ds, ax
+    inc dword [reenter]
+    jnz rein80
     push es
     push fs
     push gs
-    mov ax, KERNELDATA_DT
-    mov ds, ax
     mov es, ax
     mov gs, ax
     mov eax, [esp+44]
@@ -92,6 +93,7 @@ int80:
     push eax
     call [INTHER+80*4]
     cli
+    dec dword [reenter]
     mov esp, [stacktop]
     mov [esp+44], eax
     pop gs
@@ -99,10 +101,10 @@ int80:
     pop es
     pop ds
     popad
-    dec dword [reenter]
     iret
 rein80:
     sti
+    pop ds
     push edi
     push esi
     push edx
@@ -110,13 +112,9 @@ rein80:
     push ebx
     push eax
     call [INTHER+80*4]
-    add esp, 4
-    pop ebx
-    pop ecx
-    pop edx
-    pop esi
-    pop edi
+    add esp, 24
     dec dword [reenter]
+    popad
     iret
 
 
@@ -125,31 +123,32 @@ rein80:
 %rep 174
 int%+i:
     pushad
+    push ds
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     inc dword [reenter]
     jnz rein%+i
-    push ds
     push es
     push fs
     push gs
-    mov ax, KERNELDATA_DT
-    mov ds, ax
     mov es, ax
     mov gs, ax
     mov esp, 0x1ffffe
     call [INTHER+i*4]
     cli
+    dec dword [reenter]
     mov esp, [stacktop]
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec dword [reenter]
     iret
 rein%+i:
+    pop ds
     call [INTHER+i*4]
-    popad
     dec dword [reenter]
+    popad
     iret
 %assign i i+1
 %endrep

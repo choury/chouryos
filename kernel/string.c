@@ -10,9 +10,15 @@ int strlen(const char *s) {
 }
 
 void* memcpy(void *dest,const void *src,size_t n){
-    size_t i;
-    for(i=0;i!=n;++i){
-        ((char *)dest)[i]=((char *)src)[i];
-    }
+    __asm__("push %%es\n"
+            "mov %0,%%ecx\n"
+            "mov %1,%%edi\n"
+            "mov %2,%%esi\n"
+            "mov %%ds,%%ax\n"
+            "mov %%ax,%%es\n"
+            "cld\n"
+            "rep movsb\n"
+            "pop %%es"
+            : :"g"(n),"g"(dest),"g"(src):"eax","ecx","edi","esi");
     return dest;
 }
