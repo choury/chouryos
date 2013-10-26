@@ -144,17 +144,7 @@ void init() {
 #include <unistd.h>
 
 void process0(void) {
-    int fd=open("menu.lst",O_RDWR);
-    if(fd<0){
-        putstring("Open filed\n");
-    }else{
-        printf("fd:%d\n",fd);
-        uint8 buff[512];
-//        lseek(fd,512,SEEK_SET);
-        int n=read(fd,buff,512);
-        write(1,buff,n);
-        close(fd);
-    }
+    putstring("The process 0 is started!\n");
     while(1) {
         char a;
         read(1,&a,1);
