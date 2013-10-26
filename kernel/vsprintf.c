@@ -13,7 +13,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <syscall.h>
-
+#include <unistd.h>
 
 static char printbuf[1024];
 

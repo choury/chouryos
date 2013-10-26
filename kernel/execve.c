@@ -43,7 +43,7 @@ int sys_execve(char *name, char **argv, char **env) {
 		unsigned char c;
 		int index = 0;
 		int n = file_read( &fd, &elf32, sizeof(Elf32_Ehdr) );
-		if( n == sizeof(Elf32_Ehdr) && strcmp( "\x7fELF", (const char*)elf32.e_ident, 4 ) == 0 )
+		if( n == sizeof(Elf32_Ehdr) && strcmp( "\x7f""ELF", (const char*)elf32.e_ident, 4 ) == 0 )
 		{
 #if 0
 			n = file_read( &fd, &c, 1 ); // 第九个字节，currently unused
@@ -76,7 +76,7 @@ int sys_execve(char *name, char **argv, char **env) {
 	/*	if( n == 1 && ch[0] == 0x7F )
 		{
 			elf32.e_ident[index] = 0x7F;
-			n = file_read( fd, ch, 3 );
+			n = file_read( &fd, ch, 3 );
 			if( strcmp( ch, "ELF" ) == 0 )
 			{
 				copy( elf32.e_ident, "ELF", 1, 3 );
