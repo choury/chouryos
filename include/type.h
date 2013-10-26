@@ -16,6 +16,12 @@ typedef uint64 u64;
 #define NULL (void *)0
 #endif
 
+#ifndef _SIZE_T
+#define _SIZE_T
+typedef unsigned int size_t;
+#endif
+
+
 #ifndef BOOL
 typedef unsigned char BOOL;
 #define FALSE 0
