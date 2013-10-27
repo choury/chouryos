@@ -1,6 +1,10 @@
 #include <chouryos.h>
+#include <string.h>
+#include <unistd.h>
 
 
-int* __errno() {
-    return (int *)12000;
+int putstring(const char* s) {
+    int i=strlen(s);
+    write(1,s,i);
+    return i;
 }

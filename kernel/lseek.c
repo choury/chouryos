@@ -11,7 +11,7 @@ off_t sys_lseek(int fd, off_t ptr, int dir) {
         errno=EBADF;
         return -1;
     }
-    switch(PROTABLE[curpid].file[fd].dev){
+    switch(PROTABLE[curpid].file[fd].type){
     case TTY:
         errno=ESPIPE;
         return -1;

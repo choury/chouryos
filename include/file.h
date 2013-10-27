@@ -6,25 +6,38 @@
 
 
 #define MAX_FD 10
+#define MAX_DEV 10
 
+typedef enum{
+    NOMAL_FILE,TTY
+}Filetype;
 
-#define NOMAL_FILE 0
-#define TTY        1
+typedef enum{
+    Floopy,HardDisk
+}DEV;
+
 
 typedef struct{
-    uint32 isused;
-    uint32 dev;
-    uint32 dirnode;
-    uint32 indexno;
-    uint32 offset;
-    uint32 startnode;
-    uint32 curnode;
-    uint32 nodebytes;
-    uint32 length;
-    time_t createtime;
-    time_t accesstime;
-    time_t updatetime;
+    uint32      isused;
+    Filetype    type;
+    DEV         dev;
+    uint32      dirnode;
+    uint32      indexno;
+    uint32      offset;
+    uint32      startnode;
+    uint32      curnode;
+    uint32      nodebytes;
+    uint32      length;
+    time_t      createtime;
+    time_t      accesstime;
+    time_t      updatetime;
 } fileindex;
+
+typedef struct{
+    uint8  isused;
+    DEV    dev;
+    uint32 firstdatenode;
+}supernode;
 
 void initfs();
 int file_open(fileindex *file,const char *path, int flags);

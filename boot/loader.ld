@@ -19,5 +19,6 @@ SECTIONS
     _ftext = .;
   } = 0
   .data : { *(.data) }
+  .bss  : { *(.bss) }
   .text : { *(.text) }
 }

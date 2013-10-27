@@ -22,12 +22,60 @@ static int waitinterrupt() {
     return 0;
 }
 
+unsigned char get_byte(){
+    int counter;
+    unsigned char status=0;
+    for(counter = 0 ; counter < 10000 ; counter++) {
+        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
+        if ((status == STATUS_READY) | STATUS_DIR) {
+            return inp(DATA_REGISTER);
+        }
+    }
+    putstring("Unable to get byte from FDC!\n");
+    return 0;
+}
+
+
+void send_byte(unsigned char command) {
+    int counter;
+    unsigned char status;
+    for(counter = 0 ; counter < 10000 ; counter++) {
+        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
+        if (status == STATUS_READY) {
+            outp(DATA_REGISTER,command);
+            return;
+        }
+    }
+    putstring("Unable to send byte to FDC!\n");
+
+
+}
+
+
 static int result(void)
 {
     send_byte(CHECK_INTERRUPT_STATUS);
     st0=get_byte();
     current_track=get_byte();
     return 0;
+}
+
+
+void configure_drive(char drive) {
+    send_byte(FIX_DRIVE_DATA);
+    send_byte(0xcf);         /* hut etc */
+    send_byte(6);            /* Head load time =6ms, DMA */
+    return;
+}
+
+
+void calibrate_drive(char drive) {
+    outp(DIGITAL_OUTPUT_REG,0x0c | 1<<(4+drive));
+    send_byte(CALIBRATE_DRIVE); /*Calibrate drive*/
+    send_byte(drive);
+    waitinterrupt();
+    result();
+    return;
 }
 
 
@@ -52,55 +100,6 @@ void reset_floppy_controller(char drive) {
     return;
 }
 
-void configure_drive(char drive) {
-    send_byte(FIX_DRIVE_DATA);
-    send_byte(0xcf);         /* hut etc */
-    send_byte(6);            /* Head load time =6ms, DMA */
-    return;
-}
-
-
-void calibrate_drive(char drive) {
-    outp(DIGITAL_OUTPUT_REG,0x0c | 1<<(4+drive));
-    send_byte(CALIBRATE_DRIVE); /*Calibrate drive*/
-    send_byte(drive);
-    waitinterrupt();
-    result();
-    return;
-}
-
-
-
-
-void send_byte(unsigned char command) {
-    int counter;
-    unsigned char status;
-    for(counter = 0 ; counter < 10000 ; counter++) {
-        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
-//        puthex(status);
-        if (status == STATUS_READY) {
-            outp(DATA_REGISTER,command);
-            return;
-        }
-    }
-    putstring("Unable to send byte to FDC!\n");
-    
-    
-}
-
-unsigned char get_byte(){
-    int counter;
-    unsigned char status=0;
-    for(counter = 0 ; counter < 10000 ; counter++) {
-        status = inp(MAIN_STATUS_REG) & (STATUS_READY | STATUS_DIR );
-//        puthex(status);
-        if ((status == STATUS_READY) | STATUS_DIR) {
-            return inp(DATA_REGISTER);
-        }
-    }
-    putstring("Unable to get byte from FDC!\n");
-    return 0;
-}
 
 
 void setup_DMA(unsigned char *  buffer,unsigned char command) {

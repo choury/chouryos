@@ -12,6 +12,11 @@ u32 curpid;
 process *stacktop;
 
 
+int* __errno() {
+    return (int *)12000;
+}
+
+
 void Setinterrupt(int into,void f()) {
     INTHER[into]=f;
 }
@@ -95,11 +100,11 @@ void init() {
     }
 
     PROTABLE[curpid].file[0].isused=1;               //for standard input
-    PROTABLE[curpid].file[0].dev=TTY;
+    PROTABLE[curpid].file[0].type=TTY;
     PROTABLE[curpid].file[1].isused=1;               //for standard output
-    PROTABLE[curpid].file[1].dev=TTY;
+    PROTABLE[curpid].file[1].type=TTY;
     PROTABLE[curpid].file[2].isused=1;               //for standard errer
-    PROTABLE[curpid].file[2].dev=TTY;
+    PROTABLE[curpid].file[2].type=TTY;
     for(i=3; i<MAX_FD; i=i+1) {
         PROTABLE[curpid].file[i].isused=0;
     }
@@ -137,6 +142,7 @@ void init() {
     reenter=0;
     sti();
     initfs();
+    cli();
     movetouse(&(PROTABLE[curpid]));
 }
 

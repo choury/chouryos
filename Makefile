@@ -25,11 +25,11 @@ boot.img:
 
 	
 copy:boot kernel exe boot.img
-	sudo mount -o loop,umask=000 /dev/loop1 /mnt
+	sudo mount -o loop,umask=000 /dev/sdb1 /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
 	sudo umount /mnt
-	sudo mount -o loop,umask=000 boot.img /mnt
+	sudo mount -o loop,umask=000 /dev/loop1 /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
 	sudo umount /mnt

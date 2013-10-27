@@ -31,6 +31,8 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
         return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
     case 9:
         return sys_execve((char *)ebx,(char **)ecx,(char **)edx);
+    case 10:
+        return sys_isatty(ebx);
     }
     return 0;
 }
@@ -70,7 +72,7 @@ int sys_isatty(int fd) {
         errno=EBADF;
         return 0;
     }
-    if(PROTABLE[curpid].file[fd].dev==TTY)
+    if(PROTABLE[curpid].file[fd].type==TTY)
         return 1;
     else{
         errno = ENOTTY;

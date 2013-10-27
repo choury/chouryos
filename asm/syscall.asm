@@ -143,6 +143,16 @@ execve:
     leave
     ret
 
+isatty:
+    push ebp
+    mov ebp, esp
+    push edx
+    mov eax, 10
+    mov ebx, [ebp+8]
+    int 80
+    pop ebx
+    leave
+    ret
 
 ;(x+y*800)*3
 setpoint:
@@ -175,7 +185,6 @@ setpoint:
     ret
 
 fstat:
-isatty:
     ret
 
 

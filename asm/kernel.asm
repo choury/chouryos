@@ -45,12 +45,12 @@ movetouse:
     ltr  ax
     mov ax, LDT_START
     lldt ax
+    dec dword [reenter]
     mov esp, [ebp+0x8]
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    dec dword [reenter]
     iret
 

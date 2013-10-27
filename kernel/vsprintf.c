@@ -12,8 +12,7 @@
 
 #include <stdarg.h>
 #include <string.h>
-#include <syscall.h>
-#include <unistd.h>
+#include <chouryos.h>
 
 static char printbuf[1024];
 
@@ -290,12 +289,6 @@ int sprintf(char * buf, const char *fmt, ...)
     va_start(args, fmt);
     i=vsprintf(buf,fmt,args);
     va_end(args);
-    return i;
-}
-
-int putstring(const char* s) {
-    int i=strlen(s);
-    write(1,s,i);
     return i;
 }
 

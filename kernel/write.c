@@ -17,7 +17,7 @@ int sys_write(int fd,const void *ptr,size_t len) {
         errno=EBADF;
         return -1;
     }
-    switch(PROTABLE[curpid].file[fd].dev) {
+    switch(PROTABLE[curpid].file[fd].type) {
     case TTY:
         while(count<len) {
             char c=((char *)ptr)[count++];

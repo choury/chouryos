@@ -4,6 +4,12 @@
 #include <floppy.h>
 #include <hd.h>
 
+int* __errno() {
+    return (int *)12000;
+}
+
+
+
 void Setinterrupt(int into,void f()) {
     INTHER[into]=f;
 }
@@ -18,8 +24,7 @@ void loadkernel(){
     sti();
     initfs();
     fileindex file;
-    int r=file_open(&file,"chouryos",O_RDWR);
-    if(r<0){
+    if(file_open(&file,"chouryos",O_RDWR)<0){
         putstring("Can't find kernel!\n");
     }else{
         file_read(&file,(void *)KernelLocation,0xffffffff);

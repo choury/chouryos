@@ -44,12 +44,6 @@
 void FloppyIntHandler();
 
 void reset_floppy_controller(char drive);
-void calibrate_drive(char drive);
-void configure_drive(char drive) ;
-void send_byte(unsigned char command) ;
-unsigned char get_byte();
-void seek_track(unsigned char head,unsigned char track,unsigned char drive);
-void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,unsigned char command);
 void readfloppyA(unsigned int block,void *buffer);
 void writefloppyA(unsigned int block,void *buffer);
 

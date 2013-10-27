@@ -7,10 +7,18 @@
 #define HD_DATA     0x1f0   /* _CTL when writing */
 #define HD_ERROR    0x1f1   /* see err-bits */
 #define HD_NSECTOR  0x1f2   /* nr of sectors to read/write */
+#define HD_NSECTOR1 0x1f2   /* high 8 bit of sectors to read/write */
 #define HD_SECTOR   0x1f3   /* starting sector */
+#define HD_LBA0     0x1f3   /* LBA0 Register */
+#define HD_LBA3     0x1f3   /* LBA3 Register */
 #define HD_LCYL     0x1f4   /* starting cylinder */
+#define HD_LBA1     0x1f4   /* LBA1 Register */
+#define HD_LBA4     0x1f4   /* LBA4 Register */
 #define HD_HCYL     0x1f5   /* high byte of starting cyl */
+#define HD_LBA2     0x1f5   /* LBA2 Register */
+#define HD_LBA5     0x1f5   /* LBA5 Register */
 #define HD_CURRENT  0x1f6   /* 101dhhhh , d=drive, hhhh=head */
+#define HD_EVSEL    0x1f6   /* 111dhhhh , d=drive, hhhh=LBA4 */
 #define HD_STATUS   0x1f7   /* see status-bits */
 #define HD_PRECOMP HD_ERROR /* same io address, read=error, write=precomp */
 #define HD_COMMAND HD_STATUS    /* same io address, read=status, write=cmd */

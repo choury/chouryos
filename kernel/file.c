@@ -8,6 +8,9 @@
 #include <hd.h>
 #include <floppy.h>
 
+supernode dev[MAX_DEV];
+
+
 void initfs() {
 //    reset_floppy_controller(0);         //init floppy
     resetHd(0);
@@ -26,7 +29,7 @@ int file_open(fileindex *file,const char *path, int flags) {
         file->isused=1;
         file->offset=0;
         file->curnode=file->startnode;
-        file->dev=NOMAL_FILE;
+        file->type=NOMAL_FILE;
         file->accesstime=kernel_getnowtime();
         if(flags & O_TRUNC) {
             file->length=0;

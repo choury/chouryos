@@ -47,7 +47,7 @@ void process0(void);
 
 
 
-void putstring(const char* s);
+int putstring(const char* s);
 
 time_t kernel_mktime(
     unsigned int year, unsigned int mon,

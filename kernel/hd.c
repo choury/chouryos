@@ -2,8 +2,10 @@
 #include <chouryos.h>
 
 static uint8 hdstats;
-static uint8 nsector,sector,head,drive;
-static uint16 cyl;
+static uint8 drive;
+static uint16 nsector;
+static uint32 sector;
+static uint8 head;
 
 void HdIntHandler() {
     outp(0x20,0x20);
@@ -21,11 +23,15 @@ static void sendcmd(uint8 cmd) {
     while(!(inp(HD_STATUS) & READY_STAT));
     outp(HD_CMD,HdInfo[0].ctl);
     outp(HD_PRECOMP,HdInfo[0].wpcom>>2);
-    outp(HD_NSECTOR,nsector);               //对写扇区数
-    outp(HD_SECTOR,sector);                 //起始扇区
-    outp(HD_LCYL,cyl&0xff);                 //起始柱面
-    outp(HD_HCYL,cyl>>8);
-    outp(HD_CURRENT,0xA0 | (drive<<4) | head);  //驱动器号，磁头号
+    outp(HD_NSECTOR1,nsector>>8);               //读写扇区数，高8位
+    outp(HD_LBA3,sector>>24);
+    outp(HD_LBA4,0);
+    outp(HD_LBA5,0);
+    outp(HD_NSECTOR,nsector);                   //读写扇区数，低8位
+    outp(HD_LBA0,sector);                       //起始扇区
+    outp(HD_LBA1,sector>>8);
+    outp(HD_LBA2,sector>>16);
+    outp(HD_EVSEL,0xE0 | (drive<<4) | head );  //驱动器号，磁头号
     outp(HD_COMMAND,cmd);
 }
 
@@ -47,42 +53,29 @@ void resetHd(int driver) {
     for(i=0; i<100; i++)
         __asm__("nop\n");
     outp(HD_CMD,HdInfo[0].ctl & 0x0f );
-    while(HdInfo[0].heads>0x10){
-        HdInfo[0].cyl*=2;
-        HdInfo[0].heads/=2;
-    }
     drive=driver;
     nsector=HdInfo[0].spt;
-    sector=HdInfo[0].spt;
-    head=HdInfo[0].heads-1;
-    cyl=HdInfo[0].cyl;
+    head=0xf;
     sendcmd(WIN_SPECIFY);
     WaitInit();
+    head=0;
 }
 
 
 
 void readHd(int sec,int n,void *buff) {
-    sector=(sec%HdInfo[0].spt)+1;
-    cyl=(sec/HdInfo[0].spt)/HdInfo[0].heads;
-    head=(sec/HdInfo[0].spt)%HdInfo[0].heads;
+    sector=sec;
     nsector=n;
-    sendcmd(WIN_SEEK);
-    WaitInit();
     sendcmd(WIN_READ);
     while(nsector--) {
         WaitInit();
         if (win_result()) {
-            putstring("Read error!\n");
+            putstring("HardDisk Read Error!\n");
         }
         inpwn(HD_DATA,buff,256);
         buff+=512;
     }
     while(inp(HD_STATUS) & BUSY_STAT);
-    if(inp(HD_SECTOR) != ((sec+n)%HdInfo[0].spt)+1 ||
-            ((inp(HD_HCYL)<<8)|inp(HD_LCYL))!= ((sec+n)/HdInfo[0].spt)/HdInfo[0].heads ||
-            (inp(HD_CURRENT)&0xf) != ((sec+n)/HdInfo[0].spt)%HdInfo[0].heads )
-        putstring("Read Hard Disk Error!\n");
 }
 
 void writeHd(int sec,int nsec,void *buff) {
