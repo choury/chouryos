@@ -25,6 +25,7 @@
 #define KERNEL_HEAP ((void *)0x300000)
 
 extern u32 curpid;
+extern int reenter;
 
 #define sti()     __asm__("sti\n")
 #define cli()     __asm__("cli\n")

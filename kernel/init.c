@@ -151,11 +151,15 @@ void init() {
 
 void process0(void) {
     putstring("The process 0 is started!\n");
-    execve("exe.elf",NULL,NULL);
-    while(1) {
-        char a;
-        read(1,&a,1);
-        write(1,&a,1);
+    if(fork()==0) {
+        execve("exe.elf",NULL,NULL);
+    } else {
+        putstring("I forked a process!\n");
+        while(1) {
+            /*        char a;
+                    read(1,&a,1);
+                    write(1,&a,1);*/
+        }
     }
 }
 

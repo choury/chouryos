@@ -14,10 +14,19 @@
 int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
     switch(eax){
     case 1:
+        if(!reenter){
+            ecx+=PROTABLE[curpid].base;
+        }
         return sys_write((int)ebx,(const void *)ecx,(size_t)edx);
     case 2:
+        if(!reenter){
+            ecx+=PROTABLE[curpid].base;
+        }
         return sys_read((int)ebx,(void *)ecx,(size_t)edx);
     case 3:
+        if(!reenter){
+            ebx+=PROTABLE[curpid].base;
+        }
         return sys_open((const char*)ebx,(int)ecx,edx);
     case 4:
         return sys_close((int)ebx);
@@ -28,8 +37,17 @@ int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
     case 7:
         return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
     case 8:
+        if(!reenter){
+            ebx+=PROTABLE[curpid].base;
+            ecx+=PROTABLE[curpid].base;
+        }
         return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
     case 9:
+        if(!reenter){
+            ebx+=PROTABLE[curpid].base;
+            ecx+=PROTABLE[curpid].base;
+            edx+=PROTABLE[curpid].base;
+        }
         return sys_execve((char *)ebx,(char **)ecx,(char **)edx);
     case 10:
         return sys_isatty(ebx);
