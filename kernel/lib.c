@@ -5,6 +5,6 @@
 
 int putstring(const char* s) {
     int i=strlen(s);
-    write(1,s,i);
+    write(STDOUT_FILENO,s,i);
     return i;
 }

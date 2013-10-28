@@ -24,15 +24,17 @@ boot.img:
 
 
 	
-copy:boot kernel exe boot.img
-	sudo mount -o loop,umask=000 /dev/sdb1 /mnt
+copy:boot kernel exe
+	sudo mount -o umask=000 /dev/sdb1 /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
 	sudo umount /mnt
 	sudo mount -o loop,umask=000 /dev/loop1 /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
+	cp exe/exe.elf /mnt
 	sudo umount /mnt
+	sync
 
 kernel:asm
 	$(MAKE) -C kernel
@@ -50,6 +52,3 @@ clean:
 	$(MAKE) clean -C asm
 	$(MAKE) clean -C exe
 	@rm -f *.o *.elf loader chouryos
-
-cleanall:clean
-	@rm boot.img

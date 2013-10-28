@@ -8,6 +8,7 @@ global gettimeofday
 global isatty
 global sbrk
 global fork
+global execve
 global setpoint
 
 

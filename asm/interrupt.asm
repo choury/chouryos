@@ -105,6 +105,7 @@ int80:
 rein80:
     sti
     pop ds
+    mov eax, [esp+28]
     push edi
     push esi
     push edx
