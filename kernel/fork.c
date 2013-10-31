@@ -9,6 +9,10 @@
 
 int sys_fork() {
     int i;
+    if(reenter){
+        putstring("fork can't be called by kernel!\n");
+        return -1;
+    }
     for(i=0;i<MAX_PROCESS;++i){
         if(PROTABLE[i].isused==0)break;
     }

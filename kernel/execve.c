@@ -21,6 +21,10 @@ int sys_execve(char *name, char **argv, char **env) {
         putstring("The process 0 can't call execve!\n");
         return -1;
     }
+    if(reenter){
+        putstring("execve can't be called by kernel!\n");
+        return -1;
+    }
     if( file_open(&fd, name, O_RDONLY ) < 0 ){
         putstring("No such file!\n");
         return -1;

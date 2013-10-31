@@ -7,6 +7,10 @@
  Set position in a file. Minimal implementation:
  */
 off_t sys_lseek(int fd, off_t ptr, int dir) {
+    if(reenter){
+        putstring("lseek can't be called by kernel!\n");
+        return -1;
+    }
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
         return -1;

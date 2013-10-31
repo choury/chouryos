@@ -4,6 +4,10 @@
 #include <floppy.h>
 #include <hd.h>
 
+
+int line=1;
+int colume=0;
+
 int* __errno() {
     return (int *)12000;
 }

@@ -11,6 +11,10 @@
 int sys_open(const char *path, int flags, ...){
     int i;
     int fd;
+    if(reenter){
+        putstring("open can't be called by kernel!\n");
+        return -1;
+    }
     for(i=0;i<MAX_FD;i++){
         if(!PROTABLE[curpid].file[i].isused){
             fd=i;

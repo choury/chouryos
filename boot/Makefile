@@ -1,5 +1,8 @@
 VPATH = ../kernel:
 
+CFLAGS += -D __BOOT__
+
+
 all:boot loader
 
 
