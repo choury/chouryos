@@ -14,7 +14,7 @@ int sys_fork() {
         return -1;
     }
     for(i=0;i<MAX_PROCESS;++i){
-        if(PROTABLE[i].isused==0)break;
+        if(PROTABLE[i].status==unuse)break;
     }
     if(i==MAX_PROCESS){
         errno = EAGAIN;
@@ -23,6 +23,7 @@ int sys_fork() {
     cli();
     memcpy(PROTABLE+i,PROTABLE+curpid,sizeof(process));
     memcpy(GDT+LDT_START+i,GDT+LDT_START+curpid,sizeof(ss));
+    PROTABLE[i].status=ready;
     PROTABLE[i].reg.eax=0;
     PROTABLE[i].ldt=(LDT_START+curpid+i)<<3;
     PROTABLE[i].pid=i;

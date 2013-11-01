@@ -31,7 +31,7 @@ void set8253(u16 time) {
 void TimerInitHandler() {
     outp(0x20,0x20);
     if(!reenter) {
-        if((curpid==0) && (PROTABLE[1].isused)) {
+        if((curpid==0) && (PROTABLE[1].status==ready)) {
             curpid=1;
         } else {
             curpid=0;
@@ -56,7 +56,7 @@ void init() {
     outp(0x21,inp(0x21)&0xfb);      //允许从片中断
     outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
     curpid=0;
-    PROTABLE[curpid].isused=1;
+    PROTABLE[curpid].status=running;
     PROTABLE[curpid].pid=0;
     PROTABLE[curpid].ppid=0;
     PROTABLE[curpid].ldt=(LDT_START+curpid)<<3;
@@ -96,7 +96,7 @@ void init() {
     PROTABLE[curpid].reg.gs=(1<<3)|7;
 
     for(i=1; i<MAX_PROCESS; ++i) {
-        PROTABLE[i].isused=0;
+        PROTABLE[i].status=unuse;
     }
 
     PROTABLE[curpid].file[0].isused=1;               //for standard input

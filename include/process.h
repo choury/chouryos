@@ -6,6 +6,9 @@
 
 #define MAX_PROCESS 10
 
+typedef enum{
+  unuse,ready,running,block
+}pstatus;
 
 typedef struct{
     u32 gs;
@@ -33,7 +36,7 @@ typedef struct{
     register_status reg;
     u32 pid;
     u32 ppid;
-    u32 isused;
+    u32 status;
     u16 ldt;
     ss  cdt;
     ss  ddt;
