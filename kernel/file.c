@@ -17,8 +17,9 @@ void initfs() {
     FAT_Init();                         //get fat infomation struct
 }
 
-#define upto(x,y) ((x)+(y)-((x)%(y)))       //x对y向上取整 比如 upto(12,10）= 20
-#define upone(x,y) ((x)+(y)-1)/(y)          //x除以y取天棚  ┌x/y┐ 比如 upone(12,5)=3
+
+#define upto(x,y) ((x)+(y)-((((long)x)-1)%(y)+1))       //x对y向上取整 比如 upto(12,10）= 20
+#define upone(x,y) ((x)+(y)-1)/(y)                      //x除以y取天棚  ┌x/y┐ 比如 upone(12,5)=3
 
 
 int file_open(fileindex *file,const char *path, int flags) {
