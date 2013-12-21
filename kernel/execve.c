@@ -60,7 +60,7 @@ int sys_execve(char *name, char **argv, char **env) {
                     file_lseek(&fd,elf32_eh.e_phoff+i*elf32_eh.e_phentsize,SEEK_SET);
                     printf("file.offset:%d,curnode:%d\n",fd.offset,fd.curnode);
                     if(file_read(&fd,&elf32_ph,elf32_eh.e_phentsize )== elf32_eh.e_phentsize ){
-                        printf("ptype:%ud,pvaddr:%ud,poffset:%ud,pfilesz:%ud,pmemsz:%ud\n",
+                        printf("ptype:%ud,pvaddr:%u,poffset:%u,pfilesz:%u,pmemsz:%u\n",
                                elf32_ph.p_type,elf32_ph.p_vaddr,elf32_ph.p_offset,elf32_ph.p_filesz,elf32_ph.p_memsz);
                         if(elf32_ph.p_type == PT_LOAD){
                             file_lseek(&fd,elf32_ph.p_offset,SEEK_SET);

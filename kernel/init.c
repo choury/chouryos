@@ -148,13 +148,18 @@ void init() {
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
+
+void puts(const char *s){
+    write(STDOUT_FILENO,s,strlen(s));
+}
 
 void process0(void) {
-    putstring("The process 0 is started!\n");
+    puts("The process 0 is started!\n");
     if(fork()==0) {
         execve("exe.elf",NULL,NULL);
     } else {
-        putstring("I forked a process!\n");
+        puts("I forked a process!\n");
         while(1) {
             /*        char a;
                     read(1,&a,1);

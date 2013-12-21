@@ -23,24 +23,24 @@ boot.img:
 	@dd if=/dev/zero of=boot.img skip=1 seek=1 bs=512 count=2879
 
 
-	
-copy:boot kernel exe
-	sudo mount -o umask=000 /dev/sdb1 /mnt
-	cp boot/loader /mnt
-	cp kernel/chouryos /mnt
-	sudo umount /mnt
-	sudo mount -o loop,umask=000 /dev/loop1 /mnt
+
+install:boot kernel exe
+#	sudo mount -o umask=000 /dev/sdb1 /mnt
+#	cp boot/loader /mnt
+#	cp kernel/chouryos /mnt
+#	sudo umount /mnt
+	sudo mount -o loop,offset=1048576,umask=000 hd.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
 	cp exe/exe.elf /mnt
 	sudo umount /mnt
-	sync
+#	sync
 
 kernel:asm
 	$(MAKE) -C kernel
 
 asm:
-	$(MAKE) -C asm	
+	$(MAKE) -C asm
 
 exe:asm
 	$(MAKE) -C exe
