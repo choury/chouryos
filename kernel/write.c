@@ -13,13 +13,10 @@ int colume=0;
 
 int sys_write(int fd,const void *ptr,size_t len) {
     size_t count=0;
-    if(reenter){
-        putstring("write can't be called by kernel!\n");
-        return -1;
-    }
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)) {
         errno=EBADF;
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }
     switch(PROTABLE[curpid].file[fd].type) {
     case TTY:
@@ -50,11 +47,13 @@ int sys_write(int fd,const void *ptr,size_t len) {
         outp(0x3d5,(line*80+colume)>>8);
         outp(0x3d4,15);
         outp(0x3d5,line*80+colume);
-        return len;
+        PROTABLE[curpid].reg.eax=len;
+        return 0;
     case NOMAL_FILE:
-        return file_write(PROTABLE[curpid].file+fd,ptr,len);
-    default:
-        return -1;
+        PROTABLE[curpid].reg.eax=file_write(PROTABLE[curpid].file+fd,ptr,len);
+        return 0;
     }
+    PROTABLE[curpid].reg.eax=-1;
+    return 0;
 }
 

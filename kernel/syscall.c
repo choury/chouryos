@@ -11,48 +11,47 @@
 #include <syscall.h>
 
 
-int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
+void syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
     switch(eax){
     case 1:
-        if(!reenter){
-            ecx+=(u32)PROTABLE[curpid].base;
-        }
-        return sys_write((int)ebx,(const void *)ecx,(size_t)edx);
+        ecx+=(u32)PROTABLE[curpid].base;
+        sys_write((int)ebx,(const void *)ecx,(size_t)edx);
+        return;
     case 2:
-        if(!reenter){
-            ecx+=(u32)PROTABLE[curpid].base;
-        }
-        return sys_read((int)ebx,(void *)ecx,(size_t)edx);
+        ecx+=(u32)PROTABLE[curpid].base;
+        sys_read((int)ebx,(void *)ecx,(size_t)edx);
+        return;
     case 3:
-        if(!reenter){
-            ebx+=(u32)PROTABLE[curpid].base;
-        }
-        return sys_open((const char*)ebx,(int)ecx,edx);
+        ebx+=(u32)PROTABLE[curpid].base;
+        sys_open((const char*)ebx,(int)ecx,edx);
+        return;
     case 4:
-        return sys_close((int)ebx);
+        sys_close((int)ebx);
+        return;
     case 5:
-        return (int)sys_sbrk((int)ebx);
+        sys_sbrk((int)ebx);
+        return;
     case 6:
-        return sys_fork();
+        sys_fork();
+        return;
     case 7:
-        return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
+        sys_lseek((int)ebx,(off_t)ecx,(int)edx);
+        return;
     case 8:
-        if(!reenter){
-            ebx+=(u32)PROTABLE[curpid].base;
-            ecx+=(u32)PROTABLE[curpid].base;
-        }
-        return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
+        ebx+=(u32)PROTABLE[curpid].base;
+        ecx+=(u32)PROTABLE[curpid].base;
+        sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
+        return;
     case 9:
-        if(!reenter){
-            ebx+=(u32)PROTABLE[curpid].base;
-            ecx+=(u32)PROTABLE[curpid].base;
-            edx+=(u32)PROTABLE[curpid].base;
-        }
-        return sys_execve((char *)ebx,(char **)ecx,(char **)edx);
+        ebx+=(u32)PROTABLE[curpid].base;
+        ecx+=(u32)PROTABLE[curpid].base;
+        edx+=(u32)PROTABLE[curpid].base;
+        sys_execve((char *)ebx,(char **)ecx,(char **)edx);
+        return;
     case 10:
-        return sys_isatty(ebx);
+        sys_isatty(ebx);
+        return;
     }
-    return 0;
 }
 
 
@@ -88,12 +87,15 @@ int sys_getpid() {
 int sys_isatty(int fd) {
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
+        PROTABLE[curpid].reg.eax=0;
         return 0;
     }
-    if(PROTABLE[curpid].file[fd].type==TTY)
-        return 1;
-    else{
+    if(PROTABLE[curpid].file[fd].type==TTY){
+        PROTABLE[curpid].reg.eax=1;
+        return 0;
+    }else{
         errno = ENOTTY;
+        PROTABLE[curpid].reg.eax=0;
         return 0;
     }
 }

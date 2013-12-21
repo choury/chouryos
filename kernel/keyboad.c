@@ -6,7 +6,6 @@ static int keytail=0;
 static u8  keybuff[10];
 
 void KeyBoadHandler(){
-    outp(0x20,0x20);
     u8 a=inp(0x60);
     int h=keyhead;
     h=(h+1)%10;
@@ -14,6 +13,7 @@ void KeyBoadHandler(){
         keybuff[keyhead]=a;
         keyhead=h;
     }
+    outp(0x20,0x20);
 }
 
 

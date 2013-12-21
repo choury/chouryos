@@ -157,7 +157,9 @@ void puts(const char *s){
 void process0(void) {
     puts("The process 0 is started!\n");
     if(fork()==0) {
+        puts("I'am child process!\n");
         execve("exe.elf",NULL,NULL);
+        while(1);
     } else {
         puts("I forked a process!\n");
         while(1) {

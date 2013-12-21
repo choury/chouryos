@@ -15,19 +15,16 @@
 
 
 int sys_execve(char *name, char **argv, char **env) {
-    //TODO
     fileindex fd;
     if(curpid==0){
         putstring("The process 0 can't call execve!\n");
-        return -1;
-    }
-    if(reenter){
-        putstring("execve can't be called by kernel!\n");
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }
     if( file_open(&fd, name, O_RDONLY ) < 0 ){
         putstring("No such file!\n");
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }else{
         Elf32_Ehdr elf32_eh;
         Elf32_Phdr elf32_ph;
@@ -69,7 +66,8 @@ int sys_execve(char *name, char **argv, char **env) {
                         }
                     }else{
                         putstring("The file is broken!\n");
-                        return -1;
+                        PROTABLE[curpid].reg.eax=-1;
+                        return 0;
                     }
                 }
                 PROTABLE[curpid].heap=heap;
@@ -82,6 +80,7 @@ int sys_execve(char *name, char **argv, char **env) {
         }
         putstring("The file is not executable file!\n");
         file_close(&fd);
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }
 }

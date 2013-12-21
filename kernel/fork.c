@@ -9,16 +9,13 @@
 
 int sys_fork() {
     int i;
-    if(reenter){
-        putstring("fork can't be called by kernel!\n");
-        return -1;
-    }
     for(i=0;i<MAX_PROCESS;++i){
         if(PROTABLE[i].status==unuse)break;
     }
     if(i==MAX_PROCESS){
         errno = EAGAIN;
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }
     cli();
     memcpy(PROTABLE+i,PROTABLE+curpid,sizeof(process));
@@ -33,6 +30,7 @@ int sys_fork() {
     memcpy((void *)PROTABLE[i].reg.oesp,(void *)PROTABLE[curpid].reg.oesp,0x400000-PROTABLE[curpid].reg.oesp);
     GDT[LDT_START+i].base0_23=((u32)&PROTABLE[i].cdt)&0xffffff;
     GDT[LDT_START+i].base24_31=(u32)&PROTABLE[i].cdt >> 24;
+    PROTABLE[curpid].reg.eax=i;
     sti();
-    return i;
+    return 0;
 }

@@ -8,8 +8,6 @@
  */
 void * sys_sbrk(int incr) {
 //    errno = ENOMEM;
-    if(reenter){
-        putstring("sbrk can't be called by kernel!\n");
-    }
-    return  PROTABLE[curpid].heap+incr;
+    PROTABLE[curpid].reg.eax=(u32)PROTABLE[curpid].heap+incr;
+    return  0;
 }

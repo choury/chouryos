@@ -95,7 +95,7 @@ int80:
     cli
     dec dword [reenter]
     mov esp, [stacktop]
-    mov [esp+44], eax
+;    mov [esp+44], eax
     pop gs
     pop fs
     pop es
@@ -103,19 +103,10 @@ int80:
     popad
     iret
 rein80:
-    sti
     pop ds
-    mov eax, [esp+28]
-    push edi
-    push esi
-    push edx
-    push ecx
-    push ebx
-    push eax
-    call [INTHER+80*4]
-    add esp, 24
-    dec dword [reenter]
     popad
+    mov eax, -1
+    dec dword [reenter]
     iret
 
 

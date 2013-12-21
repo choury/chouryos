@@ -15,23 +15,22 @@
 
 int sys_read(int fd, void *ptr, size_t len) {
     size_t count=0;
-    if(reenter){
-        putstring("read can't  be called by kernel!\n");
-        return -1;
-    }
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
-        return -1;
+        PROTABLE[curpid].reg.eax=-1;
+        return 0;
     }
     switch(PROTABLE[curpid].file[fd].type){
     case TTY:
         while(count<len){
             ((char *)ptr)[count++]=getone();
         }
+        PROTABLE[curpid].reg.eax=len;
         return len;
     case NOMAL_FILE:
-        return file_read(PROTABLE[curpid].file+fd,ptr,len);
-    default:
-        return -1;
+        PROTABLE[curpid].reg.eax=file_read(PROTABLE[curpid].file+fd,ptr,len);
+        return 0;
     }
+    PROTABLE[curpid].reg.eax=-1;
+    return 0;
 }

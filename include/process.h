@@ -7,7 +7,7 @@
 #define MAX_PROCESS 10
 
 typedef enum{
-  unuse,ready,running,block
+  unuse,ready,running,wait
 }pstatus;
 
 typedef struct{
