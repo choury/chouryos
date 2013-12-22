@@ -39,9 +39,6 @@ setinterrupt:
 %rep 80
 int%+i:
     pushad
-    mov ax, ss
-    cmp ax, L_KSDT
-    je rein%+i
     push ds
     push es
     push fs
@@ -50,25 +47,11 @@ int%+i:
     mov ds, ax
     mov es, ax
     mov gs, ax
-    mov ax, L_KSDT
-    mov ss, ax
-    mov esp, KSL
     call [INTHER+i*4]
-    cli
-    mov eax, [prolen]
-    mul dword [curpid]
-    add eax, PROTABLE
-    mov esp, eax
-    mov ax, ds
-    mov ss, ax
     pop gs
     pop fs
     pop es
     pop ds
-    popad
-    iret
-rein%+i:
-    call [INTHER+i*4]
     popad
     iret
 %assign i i+1
@@ -77,21 +60,15 @@ rein%+i:
 
 int80:
     pushad
-    mov ebp, eax
-    mov ax, ss
-    cmp ax, L_KSDT
-    je rein80
     push ds
     push es
     push fs
     push gs
+    mov ebp, eax
     mov ax, KERNELDATA_DT
     mov ds, ax
     mov es, ax
     mov gs, ax
-    mov ax, L_KSDT
-    mov ss, ax
-    mov esp, KSL
     mov eax, ebp
     sti
     push edi
@@ -101,24 +78,12 @@ int80:
     push ebx
     push eax
     call [INTHER+80*4]
-    cli
-    mov ebx, eax
-    mov eax, [prolen]
-    mul dword [curpid]
-    add eax, PROTABLE
-    mov esp, eax
-    mov ax, ds
-    mov ss, ax
-    mov [esp+44], ebx
+    add esp, 24
     pop gs
     pop fs
     pop es
     pop ds
     popad
-    iret
-rein80:
-    popad
-    mov eax, -1
     iret
 
 
@@ -127,9 +92,6 @@ rein80:
 %rep 174
 int%+i:
     pushad
-    mov ax, ss
-    cmp ax, L_KSDT
-    je rein%+i
     push ds
     push es
     push fs
@@ -138,25 +100,12 @@ int%+i:
     mov ds, ax
     mov es, ax
     mov gs, ax
-    mov ax, L_KSDT
     mov ss, ax
-    mov esp, KSL
     call [INTHER+i*4]
-    cli
-    mov eax, [prolen]
-    mul dword [curpid]
-    add eax, PROTABLE
-    mov esp, eax
-    mov ax, ds
-    mov ss, ax
     pop gs
     pop fs
     pop es
     pop ds
-    popad
-    iret
-rein%+i:
-    call [INTHER+i*4]
     popad
     iret
 %assign i i+1

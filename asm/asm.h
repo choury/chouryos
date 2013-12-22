@@ -13,7 +13,4 @@ L_KSDT        equ 20
 KSL           equ 0x1000
 PROTABLE      equ 0x100000  ;定义于 process.h
 
-;以下变量均在init.c中定义
-extern  prolen
-extern  curpid
 

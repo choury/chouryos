@@ -7,7 +7,6 @@
 #include <schedule.h>
 
 u32 curpid;                         //当前正在运行进程号
-u32 prolen;                         //进程控制块长度
 
 int* __errno() {
     return (int *)12000;
@@ -119,8 +118,8 @@ void init() {
     GDT[LDT_START].Type=DA_LDT;
 
 
-    TSS.ss0=KERNELDATA_DT<<3;
-    TSS.esp0=(u32)&(PROTABLE[curpid].pid);
+    TSS.ss0=L_KSDT;
+    TSS.esp0=KSL;
 
 
     GDT[TSS_DT].base0_23=((u32)&TSS)&0xffffff;
@@ -135,10 +134,9 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
-    prolen=sizeof(process);
-//    sti();
-//    initfs();
-//    cli();
+    sti();
+    initfs();
+    cli();
     movetouse(&(PROTABLE[curpid]));
 }
 
@@ -154,7 +152,7 @@ void process0(void) {
     puts("The process 0 is started!\n");
     if(fork()==0) {
         puts("I'am child process!\n");
-//        execve("exe.elf",NULL,NULL);
+        execve("exe.elf",NULL,NULL);
         while(1);
     } else {
         puts("I forked a process!\n");
