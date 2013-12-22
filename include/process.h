@@ -37,12 +37,14 @@ typedef struct{
     u32 pid;
     u32 ppid;
     u32 status;
-    u16 ldt;
-    ss  cdt;
-    ss  ddt;
-    void *base;                             //进程空间基址，也是ddt的基址
+    u16 ldt;                                //局部描述符
+    ss  cdt;                                //代码段的描述符
+    ss  ddt;                                //数据段
+    ss  ksdt;                               //内核栈(4096B)
+    void *base;                             //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址，相对于base
-    fileindex file[MAX_FD];
+    fileindex file[MAX_FD];                 //打开的文件
+    u32 waitresource;                       //正在等待的资源数，当它为0时该进程状态应该为就绪
 }process;
 
 

@@ -55,7 +55,7 @@ void init() {
     outp(0x21,inp(0x21)&0xfe);      //开启时钟中断
     outp(0x21,inp(0x21)&0xfb);      //允许从片中断
     outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
-    curpid=0;
+    curpid=0;                       //初始化进程0,即闲逛进程
     PROTABLE[curpid].status=running;
     PROTABLE[curpid].pid=0;
     PROTABLE[curpid].ppid=0;
@@ -84,16 +84,28 @@ void init() {
     PROTABLE[curpid].ddt.G=1;
     PROTABLE[curpid].ddt.DPL=3;
     PROTABLE[curpid].ddt.Type=DA_WR;
+    
+    PROTABLE[curpid].ksdt.base0_23=0x1ff000;
+    PROTABLE[curpid].ksdt.base24_31=0;
+    PROTABLE[curpid].ksdt.limit0_15=0x1000;
+    PROTABLE[curpid].ksdt.limit16_19=0;
+    PROTABLE[curpid].ksdt.S=1;
+    PROTABLE[curpid].ksdt.D=1;
+    PROTABLE[curpid].ksdt.L=0;
+    PROTABLE[curpid].ksdt.P=1;
+    PROTABLE[curpid].ksdt.G=0;
+    PROTABLE[curpid].ksdt.DPL=0;
+    PROTABLE[curpid].ksdt.Type=DA_WR;
 
-    PROTABLE[curpid].reg.ss=(1<<3)|7;
+    PROTABLE[curpid].reg.ss=L_DDT;
     PROTABLE[curpid].reg.oesp=0x3ffffe;
-    PROTABLE[curpid].reg.cs=(0<<3)|7;
+    PROTABLE[curpid].reg.cs=L_CDT;
     PROTABLE[curpid].reg.eip=(u32)process0;
     PROTABLE[curpid].reg.eflags=0x1202;
-    PROTABLE[curpid].reg.ds=(1<<3)|7;
-    PROTABLE[curpid].reg.es=(1<<3)|7;
+    PROTABLE[curpid].reg.ds=L_DDT;
+    PROTABLE[curpid].reg.es=L_DDT;
     PROTABLE[curpid].reg.fs=VGA_DT<<3;
-    PROTABLE[curpid].reg.gs=(1<<3)|7;
+    PROTABLE[curpid].reg.gs=L_DDT;
 
     for(i=1; i<MAX_PROCESS; ++i) {
         PROTABLE[i].status=unuse;
@@ -108,10 +120,12 @@ void init() {
     for(i=3; i<MAX_FD; i=i+1) {
         PROTABLE[curpid].file[i].isused=0;
     }
-
+    
+    PROTABLE[curpid].waitresource=0;
+    
     GDT[LDT_START].base0_23=((u32)&PROTABLE[curpid].cdt)&0xffffff;
     GDT[LDT_START].base24_31=(u32)&PROTABLE[curpid].cdt >> 24;
-    GDT[LDT_START].limit0_15=16;
+    GDT[LDT_START].limit0_15=24;
     GDT[LDT_START].limit16_19=0;
     GDT[LDT_START].S=0;
     GDT[LDT_START].D=1;

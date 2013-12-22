@@ -8,6 +8,5 @@
  */
 void * sys_sbrk(int incr) {
 //    errno = ENOMEM;
-    PROTABLE[curpid].reg.eax=(u32)PROTABLE[curpid].heap+incr;
-    return  0;
+    return (u32)PROTABLE[curpid].heap+incr;
 }

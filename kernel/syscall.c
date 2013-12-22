@@ -11,47 +11,38 @@
 #include <syscall.h>
 
 
-void syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
+int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi){
     switch(eax){
     case 1:
         ecx+=(u32)PROTABLE[curpid].base;
-        sys_write((int)ebx,(const void *)ecx,(size_t)edx);
-        return;
+        return sys_write((int)ebx,(const void *)ecx,(size_t)edx);
     case 2:
         ecx+=(u32)PROTABLE[curpid].base;
-        sys_read((int)ebx,(void *)ecx,(size_t)edx);
-        return;
+        return sys_read((int)ebx,(void *)ecx,(size_t)edx);
     case 3:
         ebx+=(u32)PROTABLE[curpid].base;
-        sys_open((const char*)ebx,(int)ecx,edx);
-        return;
+        return sys_open((const char*)ebx,(int)ecx,edx);
     case 4:
-        sys_close((int)ebx);
-        return;
+        return sys_close((int)ebx);
     case 5:
-        sys_sbrk((int)ebx);
-        return;
+        return (int)sys_sbrk((int)ebx);
     case 6:
-        sys_fork();
-        return;
+        return sys_fork();
     case 7:
-        sys_lseek((int)ebx,(off_t)ecx,(int)edx);
-        return;
+        return sys_lseek((int)ebx,(off_t)ecx,(int)edx);
     case 8:
         ebx+=(u32)PROTABLE[curpid].base;
         ecx+=(u32)PROTABLE[curpid].base;
-        sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
-        return;
+        return sys_gettimeofday((struct timeval *)ebx,(struct timezone *)ecx);
     case 9:
         ebx+=(u32)PROTABLE[curpid].base;
         ecx+=(u32)PROTABLE[curpid].base;
         edx+=(u32)PROTABLE[curpid].base;
-        sys_execve((char *)ebx,(char **)ecx,(char **)edx);
-        return;
+        return sys_execve((char *)ebx,(char **)ecx,(char **)edx);
     case 10:
-        sys_isatty(ebx);
-        return;
+        return sys_isatty(ebx);
     }
+    return -1;
 }
 
 
@@ -87,15 +78,12 @@ int sys_getpid() {
 int sys_isatty(int fd) {
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
-        PROTABLE[curpid].reg.eax=0;
         return 0;
     }
     if(PROTABLE[curpid].file[fd].type==TTY){
-        PROTABLE[curpid].reg.eax=1;
-        return 0;
+        return 1;
     }else{
         errno = ENOTTY;
-        PROTABLE[curpid].reg.eax=0;
         return 0;
     }
 }

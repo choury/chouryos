@@ -18,13 +18,11 @@ int sys_execve(char *name, char **argv, char **env) {
     fileindex fd;
     if(curpid==0){
         putstring("The process 0 can't call execve!\n");
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }
     if( file_open(&fd, name, O_RDONLY ) < 0 ){
         putstring("No such file!\n");
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }else{
         Elf32_Ehdr elf32_eh;
         Elf32_Phdr elf32_ph;
@@ -49,10 +47,6 @@ int sys_execve(char *name, char **argv, char **env) {
                 int i;
                 void *base=(void *)0x400000;
                 void *heap=base;
-                PROTABLE[curpid].cdt.base0_23=(int)base;
-                PROTABLE[curpid].cdt.base24_31=(int)base>>24;
-                PROTABLE[curpid].ddt.base0_23=(int)base;
-                PROTABLE[curpid].ddt.base24_31=(int)base>>24;
                 for(i=0;i<elf32_eh.e_phnum;++i){
                     file_lseek(&fd,elf32_eh.e_phoff+i*elf32_eh.e_phentsize,SEEK_SET);
                     printf("file.offset:%d,curnode:%d\n",fd.offset,fd.curnode);
@@ -65,22 +59,29 @@ int sys_execve(char *name, char **argv, char **env) {
                             heap=MAX(heap,base+elf32_ph.p_vaddr+elf32_ph.p_memsz);
                         }
                     }else{
+                        file_close(&fd);
                         putstring("The file is broken!\n");
-                        PROTABLE[curpid].reg.eax=-1;
-                        return 0;
+                        return -1;
                     }
                 }
+                PROTABLE[curpid].cdt.base0_23=(int)base;
+                PROTABLE[curpid].cdt.base24_31=(int)base>>24;
+                PROTABLE[curpid].ddt.base0_23=(int)base;
+                PROTABLE[curpid].ddt.base24_31=(int)base>>24;
                 PROTABLE[curpid].heap=heap;
                 PROTABLE[curpid].base=base;
                 PROTABLE[curpid].reg.eip=elf32_eh.e_entry;
                 PROTABLE[curpid].reg.oesp=0xfffff;
+                for(i=3; i<MAX_FD; i=i+1) {
+                    PROTABLE[curpid].file[i].isused=0;              //关闭所有打开的文件
+                }
+                file_close(&fd);
                 putstring("exec!\n");
                 return 0;
             }while(0);
         }
         putstring("The file is not executable file!\n");
         file_close(&fd);
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }
 }

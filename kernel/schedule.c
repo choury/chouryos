@@ -10,10 +10,12 @@ void schedule() {
 
         if ( PROTABLE[i].status == ready ) {
             curpid = i;
+            PROTABLE[i].status=running;
             return;
         }
         i++;
     }
 
     curpid = 0;
+    PROTABLE[0].status=running;
 }

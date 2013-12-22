@@ -17,20 +17,16 @@ int sys_read(int fd, void *ptr, size_t len) {
     size_t count=0;
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)){
         errno=EBADF;
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }
     switch(PROTABLE[curpid].file[fd].type){
     case TTY:
         while(count<len){
             ((char *)ptr)[count++]=getone();
         }
-        PROTABLE[curpid].reg.eax=len;
         return len;
     case NOMAL_FILE:
-        PROTABLE[curpid].reg.eax=file_read(PROTABLE[curpid].file+fd,ptr,len);
-        return 0;
+        return file_read(PROTABLE[curpid].file+fd,ptr,len);
     }
-    PROTABLE[curpid].reg.eax=-1;
-    return 0;
+    return -1;
 }

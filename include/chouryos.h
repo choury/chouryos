@@ -17,6 +17,10 @@
 #define TSS_DT         4
 #define LDT_START      5
 
+#define L_CDT          ((0<<3)|7)
+#define L_DDT          ((1<<3)|7)
+#define L_KSDT         ((2<<3)|4)
+
 #define charbuff ((u16 *)0xB8000)
 
 #define INTHER  ((void (**)())0x2800)

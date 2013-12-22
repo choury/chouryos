@@ -9,7 +9,7 @@
 ;         2M    ---------       kernel code & date
 ;               ↓       ↓
 ;               .
-;               ↑       ↑       kernel stack
+;               ↑       ↑       kernel stack(with process0)
 ;         3M    ---------
 ;               ↓       ↓       kernel heap
 ;               .
@@ -54,3 +54,12 @@ movetouse:
     popad
     iret
 
+switch_to:
+    push ebp
+    mov ebp, esp
+    mov eax, [ebp+0x8]
+    cmp eax, [curpid]
+    jz rt
+    
+rt:
+    ret

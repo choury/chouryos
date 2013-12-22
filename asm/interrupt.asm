@@ -49,7 +49,9 @@ int%+i:
     push gs
     mov es, ax
     mov gs, ax
-    mov esp, 0x1ffffe
+    mov ax, L_KSDT
+    mov ss, ax
+    mov esp, 0x1000
     call [INTHER+i*4]
     cli
     dec dword [reenter]
@@ -72,6 +74,7 @@ rein%+i:
 
 int80:
     pushad
+    mov ebp, eax
     push ds
     mov ax, KERNELDATA_DT
     mov ds, ax
@@ -82,8 +85,10 @@ int80:
     push gs
     mov es, ax
     mov gs, ax
-    mov eax, [esp+44]
-    mov esp, 0x1ffffe
+    mov ax, L_KSDT
+    mov ss, ax
+    mov esp, 0x1000
+    mov eax, ebp
     sti
     push edi
     push esi
@@ -95,7 +100,7 @@ int80:
     cli
     dec dword [reenter]
     mov esp, [stacktop]
-;    mov [esp+44], eax
+    mov [esp+44], eax
     pop gs
     pop fs
     pop es
@@ -125,7 +130,9 @@ int%+i:
     push gs
     mov es, ax
     mov gs, ax
-    mov esp, 0x1ffffe
+    mov ax, L_KSDT
+    mov ss, ax
+    mov esp, 0x1000
     call [INTHER+i*4]
     cli
     dec dword [reenter]

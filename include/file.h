@@ -39,6 +39,13 @@ typedef struct{
     uint32 firstdatenode;
 }supernode;
 
+struct waitqueue{
+    u32 pid;
+    void* buff;
+    size_t len;
+    DEV  dev;
+};
+
 void initfs();
 int file_open(fileindex *file,const char *path, int flags);
 int file_read(fileindex *file,void *buff,size_t len);

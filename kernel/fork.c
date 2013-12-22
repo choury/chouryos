@@ -14,8 +14,7 @@ int sys_fork() {
     }
     if(i==MAX_PROCESS){
         errno = EAGAIN;
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }
     cli();
     memcpy(PROTABLE+i,PROTABLE+curpid,sizeof(process));
@@ -30,7 +29,6 @@ int sys_fork() {
     memcpy((void *)PROTABLE[i].reg.oesp,(void *)PROTABLE[curpid].reg.oesp,0x400000-PROTABLE[curpid].reg.oesp);
     GDT[LDT_START+i].base0_23=((u32)&PROTABLE[i].cdt)&0xffffff;
     GDT[LDT_START+i].base24_31=(u32)&PROTABLE[i].cdt >> 24;
-    PROTABLE[curpid].reg.eax=i;
     sti();
-    return 0;
+    return i;
 }

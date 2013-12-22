@@ -15,8 +15,7 @@ int sys_write(int fd,const void *ptr,size_t len) {
     size_t count=0;
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)) {
         errno=EBADF;
-        PROTABLE[curpid].reg.eax=-1;
-        return 0;
+        return -1;
     }
     switch(PROTABLE[curpid].file[fd].type) {
     case TTY:
@@ -47,13 +46,10 @@ int sys_write(int fd,const void *ptr,size_t len) {
         outp(0x3d5,(line*80+colume)>>8);
         outp(0x3d4,15);
         outp(0x3d5,line*80+colume);
-        PROTABLE[curpid].reg.eax=len;
-        return 0;
+        return len;
     case NOMAL_FILE:
-        PROTABLE[curpid].reg.eax=file_write(PROTABLE[curpid].file+fd,ptr,len);
-        return 0;
+        return file_write(PROTABLE[curpid].file+fd,ptr,len);
     }
-    PROTABLE[curpid].reg.eax=-1;
-    return 0;
+    return -1;
 }
 
