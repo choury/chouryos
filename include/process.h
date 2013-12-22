@@ -48,6 +48,6 @@ typedef struct{
 }process;
 
 
-#define PROTABLE    ((process *)0x100000)
+#define PROTABLE    ((process *)0x100000)  //同asm中定义相同
 
 #endif

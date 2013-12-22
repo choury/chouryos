@@ -9,7 +9,7 @@
 ;         2M    ---------       kernel code & date
 ;               ↓       ↓
 ;               .
-;               ↑       ↑       kernel stack(with process0)
+;               ↑       ↑       kernel stack
 ;         3M    ---------
 ;               ↓       ↓       kernel heap
 ;               .
@@ -22,6 +22,7 @@
     extern init
     extern setinterrupt
     global movetouse
+    global do_switch_to
 use32
 start:
     cli
@@ -45,7 +46,6 @@ movetouse:
     ltr  ax
     mov ax, LDT_START
     lldt ax
-    dec dword [reenter]
     mov esp, [ebp+0x8]
     pop gs
     pop fs
@@ -54,12 +54,37 @@ movetouse:
     popad
     iret
 
-switch_to:
+do_switch_to:
     push ebp
     mov ebp, esp
-    mov eax, [ebp+0x8]
-    cmp eax, [curpid]
-    jz rt
+    mov dx, es                              ;保存原es
+    mov ax, ss                              ;原ss存到es
+    mov es, ax
+    mov ax, ds                              ;ss改为ds的值，即KERNEL_DATA
+    mov ss, ax
+    mov esp, [es:ebp+0x8]
+    push es                                 ;这两个参数是没有意义的，不会被恢复
+    push ebp                                ;
+    pushf
+    push cs
+    push back
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
     
-rt:
+    mov esp, [es:ebp+12]
+    lldt [es:ebp+16]
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    iret
+back:
+    mov ax, es                              ;将ss恢复为es内容
+    mov ss, ax
+    mov es, dx                              ;恢复es内容
+    leave
     ret

@@ -1,21 +1,33 @@
 #include <chouryos.h>
+#include <schedule.h>
+
+void TimerInitHandler() {
+    outp( 0x20, 0x20 );
+    schedule();
+}
+
 
 void schedule() {
-    int i = curpid + 1;
+    if ( ( curpid == 0 ) && ( PROTABLE[1].status == ready ) ) {
+        switch_to( 1 );
+    } else {
+        switch_to( 0 );
+    }
+}
 
-    while ( i != curpid ) {
-        if ( i == MAX_PROCESS ) {
-            i = 1;
-        }
+void switch_to( u32 pid ) {
+    if ( pid == curpid )
+        return;
 
-        if ( PROTABLE[i].status == ready ) {
-            curpid = i;
-            PROTABLE[i].status=running;
-            return;
-        }
-        i++;
+    if ( PROTABLE[curpid].status == running ) {
+        PROTABLE[curpid].status = ready;
     }
 
-    curpid = 0;
-    PROTABLE[0].status=running;
+    cli();
+    u32 last = curpid;
+    curpid = pid;
+    TSS.esp0=(u32)&(PROTABLE[curpid].pid);
+    PROTABLE[curpid].status = running;
+    do_switch_to( &( PROTABLE[last].pid ), &( PROTABLE[curpid] ),PROTABLE[curpid].ldt);
+    sti();
 }

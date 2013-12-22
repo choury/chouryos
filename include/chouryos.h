@@ -21,6 +21,8 @@
 #define L_DDT          ((1<<3)|7)
 #define L_KSDT         ((2<<3)|4)
 
+#define KSL             0x1000              //内核栈的大小
+
 #define charbuff ((u16 *)0xB8000)
 
 #define INTHER  ((void (**)())0x2800)
@@ -29,7 +31,6 @@
 #define KERNEL_HEAP ((void *)0x300000)
 
 extern u32 curpid;
-extern int reenter;
 
 #define sti()     __asm__("sti\n")
 #define cli()     __asm__("cli\n")
@@ -48,7 +49,6 @@ void inpdn(unsigned int port,void *buff,int n);
 
 void movetouse(process *);
 void process0(void);
-
 
 
 

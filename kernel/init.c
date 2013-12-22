@@ -4,13 +4,10 @@
 #include <floppy.h>
 #include <hd.h>
 #include <keyboad.h>
+#include <schedule.h>
 
-
-
-int reenter;
-u32 curpid;
-process *stacktop;
-
+u32 curpid;                         //当前正在运行进程号
+u32 prolen;                         //进程控制块长度
 
 int* __errno() {
     return (int *)12000;
@@ -27,20 +24,6 @@ void set8253(u16 time) {
     outp(0x40,time >> 8 );
 }
 
-
-void TimerInitHandler() {
-    outp(0x20,0x20);
-    if(!reenter) {
-        if((curpid==0) && (PROTABLE[1].status==ready)) {
-            curpid=1;
-        } else {
-            curpid=0;
-        }
-        TSS.esp0=(u32)&(PROTABLE[curpid].pid);
-        stacktop=PROTABLE+curpid;
-        lldt(PROTABLE[curpid].ldt);
-    }
-}
 
 
 void init() {
@@ -85,9 +68,9 @@ void init() {
     PROTABLE[curpid].ddt.DPL=3;
     PROTABLE[curpid].ddt.Type=DA_WR;
     
-    PROTABLE[curpid].ksdt.base0_23=0x1ff000;
+    PROTABLE[curpid].ksdt.base0_23=0x400000-KSL;
     PROTABLE[curpid].ksdt.base24_31=0;
-    PROTABLE[curpid].ksdt.limit0_15=0x1000;
+    PROTABLE[curpid].ksdt.limit0_15=KSL;
     PROTABLE[curpid].ksdt.limit16_19=0;
     PROTABLE[curpid].ksdt.S=1;
     PROTABLE[curpid].ksdt.D=1;
@@ -98,7 +81,7 @@ void init() {
     PROTABLE[curpid].ksdt.Type=DA_WR;
 
     PROTABLE[curpid].reg.ss=L_DDT;
-    PROTABLE[curpid].reg.oesp=0x3ffffe;
+    PROTABLE[curpid].reg.oesp=0x400000-KSL;
     PROTABLE[curpid].reg.cs=L_CDT;
     PROTABLE[curpid].reg.eip=(u32)process0;
     PROTABLE[curpid].reg.eflags=0x1202;
@@ -138,7 +121,6 @@ void init() {
 
     TSS.ss0=KERNELDATA_DT<<3;
     TSS.esp0=(u32)&(PROTABLE[curpid].pid);
-    stacktop=PROTABLE+curpid;
 
 
     GDT[TSS_DT].base0_23=((u32)&TSS)&0xffffff;
@@ -153,10 +135,10 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
-    reenter=0;
-    sti();
-    initfs();
-    cli();
+    prolen=sizeof(process);
+//    sti();
+//    initfs();
+//    cli();
     movetouse(&(PROTABLE[curpid]));
 }
 
@@ -172,15 +154,12 @@ void process0(void) {
     puts("The process 0 is started!\n");
     if(fork()==0) {
         puts("I'am child process!\n");
-        execve("exe.elf",NULL,NULL);
+//        execve("exe.elf",NULL,NULL);
         while(1);
     } else {
         puts("I forked a process!\n");
-        while(1) {
-            /*        char a;
-                    read(1,&a,1);
-                    write(1,&a,1);*/
-        }
+        while(1);
     }
+    while(1);
 }
 

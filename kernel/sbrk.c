@@ -8,5 +8,5 @@
  */
 void * sys_sbrk(int incr) {
 //    errno = ENOMEM;
-    return (u32)PROTABLE[curpid].heap+incr;
+    return PROTABLE[curpid].heap+incr;
 }

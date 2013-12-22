@@ -21,7 +21,7 @@ int sys_fork() {
     memcpy(GDT+LDT_START+i,GDT+LDT_START+curpid,sizeof(ss));
     PROTABLE[i].status=ready;
     PROTABLE[i].reg.eax=0;
-    PROTABLE[i].ldt=(LDT_START+curpid+i)<<3;
+    PROTABLE[i].ldt=(LDT_START+i)<<3;
     PROTABLE[i].pid=i;
     PROTABLE[i].ppid=curpid;
     PROTABLE[i].reg.oesp=PROTABLE[curpid].reg.oesp+0x100000;

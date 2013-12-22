@@ -39,23 +39,28 @@ setinterrupt:
 %rep 80
 int%+i:
     pushad
+    mov ax, ss
+    cmp ax, L_KSDT
+    je rein%+i
     push ds
-    mov ax, KERNELDATA_DT
-    mov ds, ax
-    inc dword [reenter]
-    jnz rein%+i
     push es
     push fs
     push gs
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     mov es, ax
     mov gs, ax
     mov ax, L_KSDT
     mov ss, ax
-    mov esp, 0x1000
+    mov esp, KSL
     call [INTHER+i*4]
     cli
-    dec dword [reenter]
-    mov esp, [stacktop]
+    mov eax, [prolen]
+    mul dword [curpid]
+    add eax, PROTABLE
+    mov esp, eax
+    mov ax, ds
+    mov ss, ax
     pop gs
     pop fs
     pop es
@@ -63,9 +68,7 @@ int%+i:
     popad
     iret
 rein%+i:
-    pop ds
     call [INTHER+i*4]
-    dec dword [reenter]
     popad
     iret
 %assign i i+1
@@ -75,19 +78,20 @@ rein%+i:
 int80:
     pushad
     mov ebp, eax
+    mov ax, ss
+    cmp ax, L_KSDT
+    je rein80
     push ds
-    mov ax, KERNELDATA_DT
-    mov ds, ax
-    inc dword [reenter]
-    jnz rein80
     push es
     push fs
     push gs
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     mov es, ax
     mov gs, ax
     mov ax, L_KSDT
     mov ss, ax
-    mov esp, 0x1000
+    mov esp, KSL
     mov eax, ebp
     sti
     push edi
@@ -98,9 +102,14 @@ int80:
     push eax
     call [INTHER+80*4]
     cli
-    dec dword [reenter]
-    mov esp, [stacktop]
-    mov [esp+44], eax
+    mov ebx, eax
+    mov eax, [prolen]
+    mul dword [curpid]
+    add eax, PROTABLE
+    mov esp, eax
+    mov ax, ds
+    mov ss, ax
+    mov [esp+44], ebx
     pop gs
     pop fs
     pop es
@@ -108,10 +117,8 @@ int80:
     popad
     iret
 rein80:
-    pop ds
     popad
     mov eax, -1
-    dec dword [reenter]
     iret
 
 
@@ -120,23 +127,28 @@ rein80:
 %rep 174
 int%+i:
     pushad
+    mov ax, ss
+    cmp ax, L_KSDT
+    je rein%+i
     push ds
-    mov ax, KERNELDATA_DT
-    mov ds, ax
-    inc dword [reenter]
-    jnz rein%+i
     push es
     push fs
     push gs
+    mov ax, KERNELDATA_DT
+    mov ds, ax
     mov es, ax
     mov gs, ax
     mov ax, L_KSDT
     mov ss, ax
-    mov esp, 0x1000
+    mov esp, KSL
     call [INTHER+i*4]
     cli
-    dec dword [reenter]
-    mov esp, [stacktop]
+    mov eax, [prolen]
+    mul dword [curpid]
+    add eax, PROTABLE
+    mov esp, eax
+    mov ax, ds
+    mov ss, ax
     pop gs
     pop fs
     pop es
@@ -144,9 +156,7 @@ int%+i:
     popad
     iret
 rein%+i:
-    pop ds
     call [INTHER+i*4]
-    dec dword [reenter]
     popad
     iret
 %assign i i+1
