@@ -53,6 +53,7 @@ void process0(void);
 
 
 int putstring(const char* s);
+int printf(const char *,...);
 
 time_t kernel_mktime(
     unsigned int year, unsigned int mon,

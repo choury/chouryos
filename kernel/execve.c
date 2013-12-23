@@ -14,6 +14,7 @@
 
 
 
+
 int sys_execve(char *name, char **argv, char **env) {
     fileindex fd;
     if(curpid==0){
@@ -64,14 +65,18 @@ int sys_execve(char *name, char **argv, char **env) {
                         return -1;
                     }
                 }
-                PROTABLE[curpid].cdt.base0_23=(int)base;
-                PROTABLE[curpid].cdt.base24_31=(int)base>>24;
-                PROTABLE[curpid].ddt.base0_23=(int)base;
-                PROTABLE[curpid].ddt.base24_31=(int)base>>24;
+                cli();
+                register_status *prs=(register_status*)(0x500000-sizeof(register_status));
+//                PROTABLE[curpid].cdt.base0_23=(int)base;
+//                PROTABLE[curpid].cdt.base24_31=(int)base>>24;
+//                PROTABLE[curpid].ddt.base0_23=(int)base;
+//                PROTABLE[curpid].ddt.base24_31=(int)base>>24;
                 PROTABLE[curpid].heap=heap;
                 PROTABLE[curpid].base=base;
                 PROTABLE[curpid].reg.eip=elf32_eh.e_entry;
-                PROTABLE[curpid].reg.oesp=0xfffff;
+                prs->eip=elf32_eh.e_entry;
+                PROTABLE[curpid].reg.oesp=0x100000-KSL;
+                prs->oesp=0x100000-KSL;
                 for(i=3; i<MAX_FD; i=i+1) {
                     PROTABLE[curpid].file[i].isused=0;              //关闭所有打开的文件
                 }

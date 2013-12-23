@@ -7,7 +7,7 @@ void Init8259();
 
 #define KernelLocation  0x200000
 
-#define kernel          ((void (*)())KernelLocation)
+#define kernel          ((void (*)())0x20000c)
 
 
 #endif

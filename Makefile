@@ -1,4 +1,4 @@
-export CC=gcc
+export CC=gcc -g
 export LD=ld
 export AS=nasm
 export AR=ar
@@ -32,6 +32,7 @@ install:boot kernel exe
 	sudo mount -o loop,offset=1048576,umask=000 hd.img /mnt
 	cp boot/loader /mnt
 	cp kernel/chouryos /mnt
+	cp kernel/chouryos.elf /mnt
 	cp exe/exe.elf /mnt
 	sudo umount /mnt
 #	sync

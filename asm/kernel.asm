@@ -17,21 +17,53 @@
 ;         4M    ---------
 
 %include "asm.h"
-
-
+%include "../boot/pm.h"
+    extern Init8259
     extern init
     extern setinterrupt
+    global start
     global movetouse
     global do_switch_to
+    
+    
+; setting up the Multiboot header - see GRUB docs for details
+
+MODULEALIGN equ  1<<0                   ; align loaded modules on page boundaries
+MEMINFO     equ  1<<1                   ; provide memory map
+FLAGS       equ  MODULEALIGN | MEMINFO  ; this is the Multiboot 'flag' field
+MAGIC       equ   0x1BADB002            ; 'magic number' lets bootloader find the header
+CHECKSUM    equ -(MAGIC + FLAGS)        ; checksum required
+    
+
 use32
+section .text
+align 4
+MultiBootHeader:
+    dd MAGIC
+    dd FLAGS
+    dd CHECKSUM
+
 start:
     cli
+    mov esp, 0x300000
+    cmp eax, 0x2BADB002
+    jne selfboot
+
+    mov esi,LABEL_GDT
+    mov edi,2048
+    mov ecx,2048
+    cld
+    rep movsb
+    lgdt    [GdtPtr]
+    lidt    [IdtPtr]
+    call Init8259
+    jmp    KERNELCODE_DT:selfboot
+selfboot:
     mov ax,KERNELDATA_DT
     mov ds,ax
     mov ss,ax
     mov es,ax
     mov gs,ax
-    mov esp,0x1ffffe
     call setinterrupt
     call init
     jmp $
@@ -88,3 +120,17 @@ back:
     mov es, dx                              ;恢复es内容
     leave
     ret
+    
+section .data
+LABEL_GDT:          Descriptor  0,                  0,       0
+LABEL_DESC_CODE32:  Descriptor  0,                  0xfffff, DA_C   +DA_32+ DA_G
+LABEL_DESC_DATA:    Descriptor  0,                  0xfffff, DA_DRW +DA_32+ DA_G
+LABEL_DESC_VGA:     Descriptor  0,                  0x160,   DA_DRW +DA_32+ DA_G + DA_DPL3
+
+GdtLen equ  $-LABEL_GDT
+GdtPtr: dw  2048               ;GDT Limit
+        dd  2048               ;GDT Base
+
+
+IdtPtr: dw  2048
+        dd  0

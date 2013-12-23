@@ -24,10 +24,17 @@ void set8253(u16 time) {
 }
 
 
+void defultinthandle(int no){
+    printf("The int %d happened!\n",no);
+}
+
 
 void init() {
     int i;
     set8253(0xffff);
+    for(i=0;i<255;i++){
+        Setinterrupt(i,defultinthandle);
+    }
     Setinterrupt(0x20,TimerInitHandler);
     Setinterrupt(0x21,KeyBoadHandler);
     Setinterrupt(0x26,FloppyIntHandler);
@@ -67,15 +74,15 @@ void init() {
     PROTABLE[curpid].ddt.DPL=3;
     PROTABLE[curpid].ddt.Type=DA_WR;
     
-    PROTABLE[curpid].ksdt.base0_23=0x400000-KSL;
+    PROTABLE[curpid].ksdt.base0_23=0;
     PROTABLE[curpid].ksdt.base24_31=0;
-    PROTABLE[curpid].ksdt.limit0_15=KSL;
-    PROTABLE[curpid].ksdt.limit16_19=0;
+    PROTABLE[curpid].ksdt.limit0_15=0xffff;
+    PROTABLE[curpid].ksdt.limit16_19=0xf;
     PROTABLE[curpid].ksdt.S=1;
     PROTABLE[curpid].ksdt.D=1;
     PROTABLE[curpid].ksdt.L=0;
     PROTABLE[curpid].ksdt.P=1;
-    PROTABLE[curpid].ksdt.G=0;
+    PROTABLE[curpid].ksdt.G=1;
     PROTABLE[curpid].ksdt.DPL=0;
     PROTABLE[curpid].ksdt.Type=DA_WR;
 
@@ -119,7 +126,7 @@ void init() {
 
 
     TSS.ss0=L_KSDT;
-    TSS.esp0=KSL;
+    TSS.esp0=0x400000;
 
 
     GDT[TSS_DT].base0_23=((u32)&TSS)&0xffffff;
@@ -134,9 +141,9 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
-    sti();
-    initfs();
-    cli();
+//    sti();
+//    initfs();
+//    cli();
     movetouse(&(PROTABLE[curpid]));
 }
 
@@ -148,16 +155,17 @@ void puts(const char *s){
     write(STDOUT_FILENO,s,strlen(s));
 }
 
+
+
 void process0(void) {
     puts("The process 0 is started!\n");
     if(fork()==0) {
         puts("I'am child process!\n");
-        execve("exe.elf",NULL,NULL);
+//        execve("exe.elf",NULL,NULL);
         while(1);
     } else {
         puts("I forked a process!\n");
         while(1);
     }
-    while(1);
 }
 
