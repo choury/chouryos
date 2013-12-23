@@ -32,6 +32,7 @@ void loadkernel(){
         putstring("Can't find kernel!\n");
     }else{
         file_read(&file,(void *)KernelLocation,0xffffffff);
+        file_close(&file);
         kernel();
     }
 }

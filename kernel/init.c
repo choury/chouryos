@@ -141,9 +141,9 @@ void init() {
     GDT[TSS_DT].DPL=0;
     GDT[TSS_DT].Type=DA_ATSS;
 
-//    sti();
-//    initfs();
-//    cli();
+    sti();
+    initfs();
+    cli();
     movetouse(&(PROTABLE[curpid]));
 }
 

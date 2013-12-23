@@ -1,6 +1,5 @@
 %include "pm.h"
 
-hdinfo equ 0x1300
 
 use16
     extern  Init8259
@@ -58,19 +57,6 @@ s1:
     mov eax,[PhysBasePtr]
     mov ebx,LABEL_DESC_VGA
     call setdtbase
-
-    mov bx, 0104h
-    mov si, [bx]
-    mov ds, [bx+2]
-    mov di, hdinfo
-    mov cx, 0fh
-    cld
-    rep movsb
-    mov bx, 0118h
-    mov si, [bx]
-    mov ds, [bx+2]
-    mov cx, 0fh
-    rep movsb
 
     cli
 

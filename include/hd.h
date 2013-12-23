@@ -60,7 +60,7 @@ typedef struct{
     uint8   reserved;
 }__attribute__ ((packed)) Hdinfo;
 
-#define HdInfo  ((Hdinfo *)0x1300)
+#define HdInfo  ((Hdinfo *)0x1300)      //已废弃
 
 typedef struct{
     uint8 boot_ind;

@@ -21,8 +21,8 @@ static void WaitInit() {
 static void sendcmd(uint8 cmd) {
     while(inp(HD_STATUS) & BUSY_STAT);
     while(!(inp(HD_STATUS) & READY_STAT));
-    outp(HD_CMD,HdInfo[0].ctl);
-    outp(HD_PRECOMP,HdInfo[0].wpcom>>2);
+//    outp(HD_CMD,HdInfo[0].ctl);
+//    outp(HD_PRECOMP,HdInfo[0].wpcom>>2);
     outp(HD_NSECTOR1,nsector>>8);               //读写扇区数，高8位
     outp(HD_LBA3,sector>>24);
     outp(HD_LBA4,0);
@@ -43,22 +43,18 @@ static int win_result(void)
         == (READY_STAT | SEEK_STAT))
         return(0); /* ok */
     if (i&1) i=inp(HD_ERROR);
-    return (1);
+    return 1;
 }
 
 void resetHd(int driver) {
-    int i;
     hdstats=0;
-    outp(HD_CMD,4);
-    for(i=0; i<100; i++)
-        __asm__("nop\n");
-    outp(HD_CMD,HdInfo[0].ctl & 0x0f );
-    drive=driver;
-    nsector=HdInfo[0].spt;
-    head=0xf;
-    sendcmd(WIN_SPECIFY);
-    WaitInit();
     head=0;
+    outp(HD_CMD,4);
+    outp(HD_CMD,0);
+    inp(HD_CMD);
+    inp(HD_CMD);
+    inp(HD_CMD);
+    inp(HD_CMD);
 }
 
 

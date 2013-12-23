@@ -2,7 +2,6 @@
 ;         0x800---0xfff   gdt
 ;         0x1000---0x11ff   floopy buffer
 ;         0x1200---0x1267   tss
-;         0x1300---0x1500  hdd info
 ;         0x2800--0x2c00   realinthandler table
 ;         0xa0000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M------         process table
