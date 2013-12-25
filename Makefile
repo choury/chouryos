@@ -1,4 +1,4 @@
-export CC=gcc -g
+export CC=gcc
 export LD=ld
 export AS=nasm
 export AR=ar
@@ -7,8 +7,8 @@ export OBJCOPY=objcopy
 
 CWD = $(shell pwd)
 export ROOT=$(CWD)
-export CPPFLAGS=-m32 -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
-
+export CPPFLAGS=-m32 -g -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
+export ASFLAGS=-w+orphan-labels -f elf32 -g
 
 .PHONY : all kernel boot asm exe clean
 

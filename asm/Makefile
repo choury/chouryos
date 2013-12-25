@@ -1,21 +1,21 @@
-all:kernel.o Syscall.o crt0.o baseio.o interrupt.o
+all:kernel.o syscall.o crt0.o baseio.o interrupt.o
 
 
 
 kernel.o:kernel.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
-Syscall.o:syscall.asm
-	$(AS) $< -f elf32 -o $@
+syscall.o:syscall.asm
+	$(AS) $(ASFLAGS) $< -o $@
 
 baseio.o: baseio.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 crt0.o:crt0.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 interrupt.o:interrupt.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
 	rm *.o

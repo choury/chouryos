@@ -2,7 +2,7 @@
 
 all:chouryos
 
-chouryos:../asm/kernel.o ../asm/Syscall.o ../asm/baseio.o ../asm/interrupt.o\
+chouryos:../asm/kernel.o ../asm/syscall.o ../asm/baseio.o ../asm/interrupt.o\
 	init.o syscall.o floppy.o hd.o keyboad.o fat.o file.o graphy.o vsprintf.o putstring.o\
 	open.o read.o write.o close.o lseek.o fstat.o sbrk.o fork.o times.o execve.o schedule.o
 	$(LD) -o $@.elf $^  -Tkernel.ld -m elf_i386

@@ -13,8 +13,11 @@ supernode dev[MAX_DEV];
 
 void initfs() {
 //    reset_floppy_controller(0);         //init floppy
+    putstring("I will init hd\n");
     resetHd(0);
+    putstring("I inited hd and will init fat\n");
     FAT_Init();                         //get fat infomation struct
+    putstring("I inited fat\n");
 }
 
 

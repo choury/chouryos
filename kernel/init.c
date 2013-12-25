@@ -39,11 +39,13 @@ void init() {
     Setinterrupt(0x21,KeyBoadHandler);
     Setinterrupt(0x26,FloppyIntHandler);
     Setinterrupt(0x2e,HdIntHandler);
+    Setinterrupt(0x2f,HdIntHandler);
     Setinterrupt(80,(void (*)())syscall);
     outp(0x21,inp(0x21)&0xfd);      //开启键盘中断
     outp(0x21,inp(0x21)&0xfe);      //开启时钟中断
     outp(0x21,inp(0x21)&0xfb);      //允许从片中断
     outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
+    outp(0xa1,inp(0xa1)&0x7f);      //开启第二硬盘中断
     curpid=0;                       //初始化进程0,即闲逛进程
     PROTABLE[curpid].status=running;
     PROTABLE[curpid].pid=0;
@@ -142,7 +144,9 @@ void init() {
     GDT[TSS_DT].Type=DA_ATSS;
 
     sti();
+    putstring("I will init fs\n");
     initfs();
+    putstring("I inited fs\n");
     cli();
     movetouse(&(PROTABLE[curpid]));
 }
@@ -159,6 +163,11 @@ void puts(const char *s){
 
 void process0(void) {
     puts("The process 0 is started!\n");
+    int fd=open("menu.lst",O_RDONLY);
+    char buff[200];
+    int c=read(fd,buff,200);
+    write(STDOUT_FILENO,buff,c);
+    close(fd);
     if(fork()==0) {
         puts("I'am child process!\n");
 //        execve("exe.elf",NULL,NULL);

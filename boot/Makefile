@@ -10,10 +10,10 @@ boot:boot.asm
 	$(AS) $< -f bin -o $@
 
 loader.o: loader.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 interrupt.o: interrupt.asm
-	$(AS) $< -f elf32 -o $@
+	$(AS) $(ASFLAGS) $< -o $@
 
 	
 loader: loader.o interrupt.o loadkernel.o fat.o file.o floppy.o hd.o putstring.o times.o vsprintf.o

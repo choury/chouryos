@@ -124,6 +124,7 @@ int80:
     push eax
     call [INTHER+80*4]
     add esp, 24
+    mov [esp+44], eax
     pop gs
     pop fs
     pop es

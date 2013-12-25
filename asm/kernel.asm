@@ -27,11 +27,12 @@
     
 ; setting up the Multiboot header - see GRUB docs for details
 
-MODULEALIGN equ  1<<0                   ; align loaded modules on page boundaries
-MEMINFO     equ  1<<1                   ; provide memory map
-FLAGS       equ  MODULEALIGN | MEMINFO  ; this is the Multiboot 'flag' field
-MAGIC       equ   0x1BADB002            ; 'magic number' lets bootloader find the header
-CHECKSUM    equ -(MAGIC + FLAGS)        ; checksum required
+MODULEALIGN equ  1<<0                                   ; align loaded modules on page boundaries
+MEMINFO     equ  1<<1                                   ; provide memory map
+VIDINFO     equ  1<<2
+FLAGS       equ  MODULEALIGN | MEMINFO | VIDINFO        ; this is the Multiboot 'flag' field
+MAGIC       equ   0x1BADB002                            ; 'magic number' lets bootloader find the header
+CHECKSUM    equ -(MAGIC + FLAGS)                        ; checksum required
     
 
 use32
@@ -41,6 +42,8 @@ MultiBootHeader:
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
+    dd 0, 0, 0, 0, 0
+    dd 1, 0, 0, 0
 
 start:
     cli
