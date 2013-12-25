@@ -39,9 +39,7 @@ static void sendcmd( uint8 cmd ) {
 }
 
 static int readytrans( void ) {
-    int i;
-
-    for ( i = 0; i < 4; ++i ) {
+    while ( 1 ) {
         int r = inp( BUS + HD_STATUS );
 
         if ( r & 0x80 )
@@ -91,16 +89,13 @@ int Gethdtype( int bus, int drive ) {
 
                 if ( count ) {
                     printf( "The disk has 0x%8X sectors!\n", count );
-                }else{
+                }
 
-                    counth = ( buff[102] << 16 ) | buff[103];
-                    count = ( buff[100] << 16 ) | buff[101];
+                counth = ( buff[102] << 16 ) | buff[103];
+                count = ( buff[100] << 16 ) | buff[101];
 
-                    if ( count || counth ) {
-                        printf( "The disk has 0x%X%8X sectors!\n", counth, count );
-                    }else{
-                        putstring("Can't get the size of HardDisk!\n");
-                    }
+                if ( counth ) {
+                    printf( "The disk has 0x%X%8X sectors!\n", counth, count );
                 }
             } else {
                 putstring( "An unkown error happened!\n" );
@@ -122,73 +117,51 @@ int Gethdtype( int bus, int drive ) {
 
 void resetHd( int driver ) {
     hdstats = 0;
-    CMD=-1;
 
     if ( Gethdtype( PRIMARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
         CMD = PR_CMD;
         BUS = PRIMARY_BUS;
         DRIVE = MASTER_DRIVE;
-    }
-
-
-    if ( Gethdtype( PRIMARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( PRIMARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
         CMD = PR_CMD;
         BUS = PRIMARY_BUS;
         DRIVE = SLAVE_DRIVE;
-    }
-
-    if ( Gethdtype( SECONDARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( SECONDARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
 
         CMD = SE_CMD;
         BUS = SECONDARY_BUS;
         DRIVE = MASTER_DRIVE;
-    }
-
-
-    if ( Gethdtype( SECONDARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( SECONDARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
 
         CMD = SE_CMD;
         BUS = SECONDARY_BUS;
         DRIVE = SLAVE_DRIVE;
-    }
-
-
-    if ( Gethdtype( THIRDARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( THIRDARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
 
         CMD = TH_CMD;
         BUS = THIRDARY_BUS;
         DRIVE = MASTER_DRIVE;
-    }
-
-
-
-    if ( Gethdtype( THIRDARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( THIRDARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
 
         CMD = TH_CMD;
         BUS = THIRDARY_BUS;
         DRIVE = SLAVE_DRIVE;
-    }
-
-
-
-    if ( Gethdtype( FORTHARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( FORTHARY_BUS, MASTER_DRIVE ) == ATADEV_PATA ) {
 
         CMD = FO_CMD;
         BUS = FORTHARY_BUS;
         DRIVE = MASTER_DRIVE;
-    }
-
-
-    if ( Gethdtype( FORTHARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
+    } else if ( Gethdtype( FORTHARY_BUS, SLAVE_DRIVE ) == ATADEV_PATA ) {
 
         CMD = FO_CMD;
         BUS = FORTHARY_BUS;
         DRIVE = SLAVE_DRIVE;
+    } else {
+        putstring( "Can't find a HardDisk!\n" );
+
+        while ( 1 );
     }
-    if(CMD==-1){
-        putstring("Can't find a HardDisk!\n");
-        while(1);
-    }
+
     outp( CMD, 4 );
     outp( CMD, 0 );
 
@@ -213,7 +186,7 @@ void readHd( int sec, int n, void *buff ) {
         buff += 512;
     }
 
-    while ( inp(BUS + HD_STATUS ) & BUSY_STAT );
+    while ( inp( BUS + HD_STATUS ) & BUSY_STAT );
 }
 
 void writeHd( int sec, int nsec, void *buff ) {

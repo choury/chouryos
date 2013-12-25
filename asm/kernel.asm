@@ -2,6 +2,7 @@
 ;         0x800---0xfff   gdt
 ;         0x1000---0x11ff   floopy buffer
 ;         0x1200---0x1267   tss
+;         0x1500---        memory map
 ;         0x2800--0x2c00   realinthandler table
 ;         0xa0000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M------         process table
@@ -20,6 +21,7 @@
     extern Init8259
     extern init
     extern setinterrupt
+    extern getmemmap
     global start
     global movetouse
     global do_switch_to
@@ -50,7 +52,9 @@ start:
     mov esp, 0x300000
     cmp eax, 0x2BADB002
     jne selfboot
-
+    push ebx
+    call getmemmap
+    add esp, 4
     mov esi,LABEL_GDT
     mov edi,2048
     mov ecx,2048
