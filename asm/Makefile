@@ -1,20 +1,10 @@
-all:kernel.o syscall.o crt0.o baseio.o interrupt.o
 
+SRCS=$(wildcard *.asm)
+OBJS=$(patsubst %.asm,$(BUILDDIR)/%.o,$(SRCS))
 
+all:$(OBJS)
 
-kernel.o:kernel.asm
-	$(AS) $(ASFLAGS) $< -o $@
-
-syscall.o:syscall.asm
-	$(AS) $(ASFLAGS) $< -o $@
-
-baseio.o: baseio.asm
-	$(AS) $(ASFLAGS) $< -o $@
-
-crt0.o:crt0.asm
-	$(AS) $(ASFLAGS) $< -o $@
-
-interrupt.o:interrupt.asm
+$(BUILDDIR)/%.o : %.asm
 	$(AS) $(ASFLAGS) $< -o $@
 
 clean:

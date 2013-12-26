@@ -2,8 +2,6 @@
 #include <graphy.h>
 
 
-
-
 void BresenhamLine(int x1, int y1, int x2, int y2,RGB_t color,int mod)
 {
     int x,y,dx,dy,p;

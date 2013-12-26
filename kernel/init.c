@@ -24,8 +24,9 @@ void set8253(u16 time) {
 }
 
 
-void defultinthandle(int no){
-    printf("The int %d happened!\n",no);
+void defultinthandle(int no,int code){
+    printf("The int %d happened:%d!\n",no,code);
+    while(1);
 }
 
 
@@ -50,53 +51,40 @@ void init() {
     PROTABLE[curpid].status=running;
     PROTABLE[curpid].pid=0;
     PROTABLE[curpid].ppid=0;
-    PROTABLE[curpid].ldt=(LDT_START+curpid)<<3;
-    PROTABLE[curpid].cdt.base0_23=0;
-    PROTABLE[curpid].cdt.base24_31=0;
-    PROTABLE[curpid].cdt.limit0_15=0xffff;
-    PROTABLE[curpid].cdt.limit16_19=0xf;
-    PROTABLE[curpid].cdt.S=1;
-    PROTABLE[curpid].cdt.D=1;
-    PROTABLE[curpid].cdt.L=0;
-    PROTABLE[curpid].cdt.P=1;
-    PROTABLE[curpid].cdt.G=1;
-    PROTABLE[curpid].cdt.DPL=3;
-    PROTABLE[curpid].cdt.Type=DA_E | DA_WR;
-
-
-    PROTABLE[curpid].ddt.base0_23=0;
-    PROTABLE[curpid].ddt.base24_31=0;
-    PROTABLE[curpid].ddt.limit0_15=0xffff;
-    PROTABLE[curpid].ddt.limit16_19=0xf;
-    PROTABLE[curpid].ddt.S=1;
-    PROTABLE[curpid].ddt.D=1;
-    PROTABLE[curpid].ddt.L=0;
-    PROTABLE[curpid].ddt.P=1;
-    PROTABLE[curpid].ddt.G=1;
-    PROTABLE[curpid].ddt.DPL=3;
-    PROTABLE[curpid].ddt.Type=DA_WR;
     
-    PROTABLE[curpid].ksdt.base0_23=0;
-    PROTABLE[curpid].ksdt.base24_31=0;
-    PROTABLE[curpid].ksdt.limit0_15=0xffff;
-    PROTABLE[curpid].ksdt.limit16_19=0xf;
-    PROTABLE[curpid].ksdt.S=1;
-    PROTABLE[curpid].ksdt.D=1;
-    PROTABLE[curpid].ksdt.L=0;
-    PROTABLE[curpid].ksdt.P=1;
-    PROTABLE[curpid].ksdt.G=1;
-    PROTABLE[curpid].ksdt.DPL=0;
-    PROTABLE[curpid].ksdt.Type=DA_WR;
+    GDT[UCODEI].base0_23=0;
+    GDT[UCODEI].base24_31=0;
+    GDT[UCODEI].limit0_15=0xffff;
+    GDT[UCODEI].limit16_19=0xf;
+    GDT[UCODEI].S=1;
+    GDT[UCODEI].D=1;
+    GDT[UCODEI].L=0;
+    GDT[UCODEI].P=1;
+    GDT[UCODEI].G=1;
+    GDT[UCODEI].DPL=3;
+    GDT[UCODEI].Type=DA_E | DA_WR;
 
-    PROTABLE[curpid].reg.ss=L_DDT;
+    GDT[UDATAI].base0_23=0;
+    GDT[UDATAI].base24_31=0;
+    GDT[UDATAI].limit0_15=0xffff;
+    GDT[UDATAI].limit16_19=0xf;
+    GDT[UDATAI].S=1;
+    GDT[UDATAI].D=1;
+    GDT[UDATAI].L=0;
+    GDT[UDATAI].P=1;
+    GDT[UDATAI].G=1;
+    GDT[UDATAI].DPL=3;
+    GDT[UDATAI].Type=DA_WR;
+
+    PROTABLE[curpid].reg.ss=KSTACK_DT;
     PROTABLE[curpid].reg.oesp=0x400000-KSL;
-    PROTABLE[curpid].reg.cs=L_CDT;
+    PROTABLE[curpid].reg.cs=UCODE_DT;
     PROTABLE[curpid].reg.eip=(u32)process0;
     PROTABLE[curpid].reg.eflags=0x1202;
-    PROTABLE[curpid].reg.ds=L_DDT;
-    PROTABLE[curpid].reg.es=L_DDT;
-    PROTABLE[curpid].reg.fs=VGA_DT<<3;
-    PROTABLE[curpid].reg.gs=L_DDT;
+    PROTABLE[curpid].reg.ds=UDATA_DT;
+    PROTABLE[curpid].reg.es=UDATA_DT;
+    PROTABLE[curpid].reg.fs=VGA_DT;
+    PROTABLE[curpid].reg.gs=UDATA_DT;
 
     for(i=1; i<MAX_PROCESS; ++i) {
         PROTABLE[i].status=unuse;
@@ -113,35 +101,23 @@ void init() {
     }
     
     PROTABLE[curpid].waitresource=0;
-    
-    GDT[LDT_START].base0_23=((u32)&PROTABLE[curpid].cdt)&0xffffff;
-    GDT[LDT_START].base24_31=(u32)&PROTABLE[curpid].cdt >> 24;
-    GDT[LDT_START].limit0_15=24;
-    GDT[LDT_START].limit16_19=0;
-    GDT[LDT_START].S=0;
-    GDT[LDT_START].D=1;
-    GDT[LDT_START].L=0;
-    GDT[LDT_START].P=1;
-    GDT[LDT_START].G=0;
-    GDT[LDT_START].DPL=0;
-    GDT[LDT_START].Type=DA_LDT;
 
 
-    TSS.ss0=L_KSDT;
+    TSS.ss0=KSTACK_DT;
     TSS.esp0=0x400000;
 
 
-    GDT[TSS_DT].base0_23=((u32)&TSS)&0xffffff;
-    GDT[TSS_DT].base24_31=(u32)&TSS >> 24;
-    GDT[TSS_DT].limit0_15=104;
-    GDT[TSS_DT].limit16_19=0;
-    GDT[TSS_DT].S=0;
-    GDT[TSS_DT].D=1;
-    GDT[TSS_DT].L=0;
-    GDT[TSS_DT].P=1;
-    GDT[TSS_DT].G=0;
-    GDT[TSS_DT].DPL=0;
-    GDT[TSS_DT].Type=DA_ATSS;
+    GDT[TSSI].base0_23=((u32)&TSS)&0xffffff;
+    GDT[TSSI].base24_31=(u32)&TSS >> 24;
+    GDT[TSSI].limit0_15=104;
+    GDT[TSSI].limit16_19=0;
+    GDT[TSSI].S=0;
+    GDT[TSSI].D=1;
+    GDT[TSSI].L=0;
+    GDT[TSSI].P=1;
+    GDT[TSSI].G=0;
+    GDT[TSSI].DPL=0;
+    GDT[TSSI].Type=DA_ATSS;
 
     sti();
     putstring("I will init fs\n");
@@ -150,6 +126,7 @@ void init() {
     cli();
     movetouse(&(PROTABLE[curpid]));
 }
+
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -163,11 +140,6 @@ void puts(const char *s){
 
 void process0(void) {
     puts("The process 0 is started!\n");
-    int fd=open("menu.lst",O_RDONLY);
-    char buff[200];
-    int c=read(fd,buff,200);
-    write(STDOUT_FILENO,buff,c);
-    close(fd);
     if(fork()==0) {
         puts("I'am child process!\n");
 //        execve("exe.elf",NULL,NULL);

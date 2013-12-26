@@ -60,7 +60,7 @@ setinterrupt:
     mov ebx,int%+i
     mov [eax],bx
     add eax,2
-    mov cx,KERNELCODE_DT
+    mov cx,KCODE_DT
     mov [eax],cx
     add eax,2
     mov cx,0xee00
@@ -77,16 +77,16 @@ setinterrupt:
     leave
     ret
 
-
+;无出错码
 %assign i 0
-%rep 80
+%rep 8
 int%+i:
     pushad
     push ds
     push es
     push fs
     push gs
-    mov ax, KERNELDATA_DT
+    mov ax, KDATA_DT
     mov ds, ax
     mov es, ax
     mov gs, ax
@@ -102,6 +102,106 @@ int%+i:
 %assign i i+1
 %endrep
 
+;有出错码的情况
+%assign i 8
+%rep 7
+int%+i:
+    xchg [esp], eax
+    mov [esp-48], eax
+    pop eax
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, KDATA_DT
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    sub esp, 4
+    push dword i
+    call [INTHER+i*4]
+    add esp, 8
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    iret
+%assign i i+1
+%endrep
+
+;intel 保留
+int15:
+    iret
+
+int16:
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, KDATA_DT
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    push dword 16
+    call [INTHER+i*4]
+    add esp, 4
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    iret
+
+int17:
+    xchg [esp], eax
+    mov [esp-48], eax
+    pop eax
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, KDATA_DT
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    sub esp, 4
+    push dword 17
+    call [INTHER+i*4]
+    add esp, 8
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    iret
+
+%assign i 18
+%rep 62
+int%+i:
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, KDATA_DT
+    mov ds, ax
+    mov es, ax
+    mov gs, ax
+    push dword i
+    call [INTHER+i*4]
+    add esp, 4
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popad
+    iret
+%assign i i+1
+%endrep    
 
 int80:
     pushad
@@ -110,7 +210,7 @@ int80:
     push fs
     push gs
     mov ebp, eax
-    mov ax, KERNELDATA_DT
+    mov ax, KDATA_DT
     mov ds, ax
     mov es, ax
     mov gs, ax
@@ -142,7 +242,7 @@ int%+i:
     push es
     push fs
     push gs
-    mov ax, KERNELDATA_DT
+    mov ax, KDATA_DT
     mov ds, ax
     mov es, ax
     mov gs, ax

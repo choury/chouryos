@@ -5,7 +5,7 @@
 void TimerInitHandler();
 void schedule();
 void switch_to(u32 pid);
-void do_switch_to(void *last,void *next,u16 ldt);
+void do_switch_to(void *last,void *next);
 
 
 #endif

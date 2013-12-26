@@ -99,10 +99,11 @@ struct loadmod{
     void * mod_start;
     void * mod_end;
     char * string;
-    uint32 reserved;
+    uint8  reserved;
 }__attribute__ ((packed));
 
 struct memmap{
+    uint32 size;
     void *base_addr;
     void *base_addrh;
     uint32 length;
@@ -115,7 +116,7 @@ struct Bootinfo{
     uint32 mem_lower;
     uint32 mem_upper;
     uint8  boot_device[4];
-    uint32 cmdline;
+    char * cmdline;
     uint32 mods_count;
     struct loadmod * mods_addr;
     union{

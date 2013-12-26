@@ -1,8 +1,8 @@
 ENTRY(start)
-SEARCH_DIR(../asm)
+SEARCH_DIR(../build)
 SEARCH_DIR(../newlib-i386)
-STARTUP(crt0.o)
-INPUT(syscall.o)
+
+INPUT(libsyscall.o)
 INPUT(libc.a)
 OUTPUT_FORMAT("elf32-i386")
 OUTPUT_ARCH(i386)

@@ -27,6 +27,6 @@ void switch_to( u32 pid ) {
     u32 last = curpid;
     curpid = pid;
     PROTABLE[curpid].status = running;
-    do_switch_to( &( PROTABLE[last].pid ), &( PROTABLE[curpid] ),PROTABLE[curpid].ldt);
+    do_switch_to( &( PROTABLE[last].pid ), &( PROTABLE[curpid] ));
     sti();
 }

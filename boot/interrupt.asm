@@ -62,7 +62,7 @@ setinterrupt:
     mov ebx,int%+i
     mov [es:eax],bx
     add eax,2
-    mov cx,KERNELCODE_DT
+    mov cx,KCODE_DT
     mov [es:eax],cx
     add eax,2
     mov cx,0xee00

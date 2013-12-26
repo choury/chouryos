@@ -37,10 +37,13 @@ typedef struct{
     u32 pid;
     u32 ppid;
     u32 status;
-    u16 ldt;                                //局部描述符
-    ss  cdt;                                //代码段的描述符
-    ss  ddt;                                //数据段
-    ss  ksdt;                               //内核栈(4096B)
+/*
+ * 改成平坦的线性地址，不需要这些乱七八糟的东西了
+ */
+//    u16 ldt;                                //局部描述符
+//    ss  cdt;                                //代码段的描述符
+//    ss  ddt;                                //数据段
+//    ss  ksdt;                               //内核栈(4096B) 
     void *base;                             //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址，相对于base
     fileindex file[MAX_FD];                 //打开的文件

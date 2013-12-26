@@ -1,3 +1,5 @@
+KNAME=choury
+
 export CC=gcc
 export LD=ld
 export AS=nasm
@@ -7,12 +9,15 @@ export OBJCOPY=objcopy
 
 CWD = $(shell pwd)
 export ROOT=$(CWD)
-export CPPFLAGS=-m32 -g -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
+export CPPFLAGS=-m32 -g -c -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
 export ASFLAGS=-w+orphan-labels -f elf32 -g
+export BUILDDIR=$(ROOT)/build
 
 .PHONY : all kernel boot asm exe clean
 
 all: boot asm kernel exe
+	$(LD) -o $(KNAME).elf $(wildcard $(BUILDDIR)/*.o)  -Tkernel.ld -m elf_i386
+	$(OBJCOPY) -R .pdr -R .comment -R .note -I elf32-i386 -O binary $(KNAME).elf $(KNAME)
 
 boot:kernel
 	$(MAKE) -C boot
@@ -29,13 +34,13 @@ install:boot kernel exe
 #	cp boot/loader /mnt
 #	cp kernel/chouryos /mnt
 #	sudo umount /mnt
-	sudo mount -o loop,offset=1048576,umask=000 hd.img /mnt
+	sudo mount -o loop,offset=1048576,umask=000 $(BUILDDIR)/hd.img /mnt
 	cp boot/loader /mnt
-	cp kernel/chouryos /mnt
-	cp kernel/chouryos.elf /mnt
+	cp $(KNAME) /mnt
+	cp $(KNAME).elf /mnt
 	cp exe/exe.elf /mnt
+	sync
 	sudo umount /mnt
-#	sync
 
 kernel:asm
 	$(MAKE) -C kernel
@@ -48,8 +53,7 @@ exe:asm
 
 
 clean:
+	@rm -f $(BUILDDIR)/*.o
 	$(MAKE) clean -C boot
-	$(MAKE) clean -C kernel
-	$(MAKE) clean -C asm
 	$(MAKE) clean -C exe
-	@rm -f *.o *.elf loader chouryos
+	@rm -f $(KNAME) $(KNAME).elf

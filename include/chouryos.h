@@ -6,20 +6,22 @@
 #include <sys/types.h>
 
 
-#define IDT     ((gate *)0)
+//#define IDT     ((gate *)0)           不需要它了
 #define GDT     ((ss *)0x800)
 #define TSS     (*(tss_struct *)0x1200)
 
 
-#define KERNELCODE_DT  1
-#define KERNELDATA_DT  2
-#define VGA_DT         3
-#define TSS_DT         4
-#define LDT_START      5
+#define KCODEI          1                           //内核代码段索引
+#define KDATAI          2                           //内核数据段
+#define VGAI            3                           //显存(非扁平模式) 存在fs中
+#define TSSI            4                           //tss段
+#define UCODEI          5                           //用户代码段
+#define UDATAI          6                           //用户数据段
 
-#define L_CDT          ((0<<3)|7)
-#define L_DDT          ((1<<3)|7)
-#define L_KSDT         ((2<<3)|4)
+#define UCODE_DT          ((UCODEI<<3)|3)          //用户cs
+#define UDATA_DT          ((UDATAI<<3)|3)          //用户ds,es,gs
+#define KSTACK_DT         (KDATAI<<3)              //用户内核栈
+#define VGA_DT            (VGAI<<3)
 
 #define KSL             0x1000              //内核栈的大小
 

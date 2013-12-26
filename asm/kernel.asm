@@ -4,7 +4,8 @@
 ;         0x1200---0x1267   tss
 ;         0x1500---        memory map
 ;         0x2800--0x2c00   realinthandler table
-;         0xa0000-0xfffff  bios rom     0xB8000       console buffer
+;         0x3000--0x4000   pte
+;         0x9f000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M------         process table
 ;         2M    ---------       kernel code & date
 ;               ↓       ↓
@@ -15,6 +16,7 @@
 ;               .
 ;               ↑       ↑       process0 stack
 ;         4M    ---------
+
 
 %include "asm.h"
 %include "../boot/pm.h"
@@ -63,9 +65,9 @@ start:
     lgdt    [GdtPtr]
     lidt    [IdtPtr]
     call Init8259
-    jmp    KERNELCODE_DT:selfboot
+    jmp    KCODE_DT:selfboot
 selfboot:
-    mov ax,KERNELDATA_DT
+    mov ax,KDATA_DT
     mov ds,ax
     mov ss,ax
     mov es,ax
@@ -82,8 +84,6 @@ movetouse:
     mov ebp,esp
     mov ax, TSS_DT
     ltr  ax
-    mov ax, LDT_START
-    lldt ax
     mov esp, [ebp+0x8]
     pop gs
     pop fs
@@ -113,7 +113,6 @@ do_switch_to:
     push gs
     
     mov esp, [es:ebp+12]
-    lldt [es:ebp+16]
     pop gs
     pop fs
     pop es
