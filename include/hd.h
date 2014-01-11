@@ -110,7 +110,7 @@ typedef struct{
 
 void HdIntHandler();
 void resetHd(int driver);
-void readHd(int sec,int n,void *buff);
+void readHd(int sec,int n,uint8 *buff);
 void writeHd(int sec,int nsec,void *buff);
 
 #endif

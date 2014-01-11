@@ -122,5 +122,18 @@ typedef struct {
 } __attribute__ ((packed)) tss_struct;
 
 
+typedef struct {
+    u32 P:1;           //是否存在
+    u32 R_W:1;         //0为只读，1为读写(对系统特权级不起作用)
+    u32 U_S:1;         //0为系统级，1为用户级
+    u32 PWT:1;         //0为写回法，1为写直达法 (cache)
+    u32 PCD:1;         //是否禁止缓存(cache)
+    u32 A:1;           //是否被访问过
+    u32 D:1;           //ditty，对于页目录来说这位是无效的，会被处理器忽略
+    u32 PAT:1;         //是否指示一个4M的页，否则必须为0
+    u32 G:1;           //global 只在页表中有用,如果cr4.pge没有置位则会被忽略
+    u32 AVL:3;         //留给操作系统使用
+    u32 base:20;       //基地址
+}__attribute__ ((packed)) ptable;
 
 #endif

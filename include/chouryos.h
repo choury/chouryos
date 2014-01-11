@@ -29,8 +29,9 @@
 
 #define INTHER  ((void (**)())0x2800)
 
-
-#define KERNEL_HEAP ((void *)0x300000)
+#define KPDE  ((ptable*)0x3000)
+#define KPTE  ((ptable*)0x4000)
+#define KHEAP ((void *)0x300000)
 
 extern u32 curpid;
 

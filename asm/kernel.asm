@@ -4,7 +4,8 @@
 ;         0x1200---0x1267   tss
 ;         0x1500---        memory map
 ;         0x2800--0x2c00   realinthandler table
-;         0x3000--0x4000   pte
+;         0x3000--0x3fff   kernel_pde
+;         0x4000--0x4fff   kernel_pte
 ;         0x9f000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M------         process table
 ;         2M    ---------       kernel code & date
@@ -40,7 +41,7 @@ CHECKSUM    equ -(MAGIC + FLAGS)                        ; checksum required
     
 
 use32
-section .text
+section .boothead
 align 4
 MultiBootHeader:
     dd MAGIC
@@ -49,6 +50,7 @@ MultiBootHeader:
     dd 0, 0, 0, 0, 0
     dd 1, 0, 0, 0
 
+section .text
 start:
     cli
     mov esp, 0x300000
@@ -82,6 +84,12 @@ selfboot:
 movetouse:
     push ebp
     mov ebp,esp
+    mov eax, 0x3000
+    mov cr3, eax
+    mov eax, cr0
+    or  eax, 0x80000000
+    mov cr0, eax
+
     mov ax, TSS_DT
     ltr  ax
     mov esp, [ebp+0x8]
@@ -111,7 +119,7 @@ do_switch_to:
     push es
     push fs
     push gs
-    
+
     mov esp, [es:ebp+12]
     pop gs
     pop fs

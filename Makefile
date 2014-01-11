@@ -1,4 +1,4 @@
-KNAME=choury
+KNAME=chouryos
 
 export CC=gcc
 export LD=ld

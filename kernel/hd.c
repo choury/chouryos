@@ -170,7 +170,7 @@ void resetHd( int driver ) {
 
 
 
-void readHd( int sec, int n, void *buff ) {
+void readHd( int sec, int n, uint8 *buff ) {
     sector = sec;
     nsector = n;
     sendcmd( LBA48_READ );

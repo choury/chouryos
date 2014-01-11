@@ -46,8 +46,8 @@ int sys_execve(char *name, char **argv, char **env) {
                 if(elf32_eh.e_phoff == 0)
                     break;
                 int i;
-                void *base=(void *)0x400000;
-                void *heap=base;
+                uint8 *base=(uint8 *)0x400000;
+                uint8 *heap=base;
                 for(i=0;i<elf32_eh.e_phnum;++i){
                     file_lseek(&fd,elf32_eh.e_phoff+i*elf32_eh.e_phentsize,SEEK_SET);
                     printf("file.offset:%d,curnode:%d\n",fd.offset,fd.curnode);
@@ -67,10 +67,6 @@ int sys_execve(char *name, char **argv, char **env) {
                 }
                 cli();
                 register_status *prs=(register_status*)(0x500000-sizeof(register_status));
-//                PROTABLE[curpid].cdt.base0_23=(int)base;
-//                PROTABLE[curpid].cdt.base24_31=(int)base>>24;
-//                PROTABLE[curpid].ddt.base0_23=(int)base;
-//                PROTABLE[curpid].ddt.base24_31=(int)base>>24;
                 PROTABLE[curpid].heap=heap;
                 PROTABLE[curpid].base=base;
                 PROTABLE[curpid].reg.eip=elf32_eh.e_entry;

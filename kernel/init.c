@@ -76,7 +76,7 @@ void init() {
     GDT[UDATAI].DPL=3;
     GDT[UDATAI].Type=DA_WR;
 
-    PROTABLE[curpid].reg.ss=KSTACK_DT;
+    PROTABLE[curpid].reg.ss=UDATA_DT;
     PROTABLE[curpid].reg.oesp=0x400000-KSL;
     PROTABLE[curpid].reg.cs=UCODE_DT;
     PROTABLE[curpid].reg.eip=(u32)process0;
@@ -118,7 +118,30 @@ void init() {
     GDT[TSSI].G=0;
     GDT[TSSI].DPL=0;
     GDT[TSSI].Type=DA_ATSS;
-
+    
+    KPDE[0].base=(u32)KPTE>>12;
+    KPDE[0].PAT=0;
+    KPDE[0].A=0;
+    KPDE[0].PCD=0;
+    KPDE[0].PWT=0;
+    KPDE[0].U_S=1;
+    KPDE[0].R_W=1;
+    KPDE[0].P=1;
+    
+    for(i=1;i<1024;++i){
+        KPDE[i].P=0;
+    }
+    for(i=0;i<1024;++i){
+        KPTE[i].base=i;
+        KPTE[i].PAT=0;
+        KPTE[i].D=0;
+        KPTE[i].A=0;
+        KPTE[i].PCD=0;
+        KPTE[i].PWT=0;
+        KPTE[i].U_S=1;
+        KPTE[i].R_W=1;
+        KPTE[i].P=1;
+    }
     sti();
     putstring("I will init fs\n");
     initfs();
@@ -140,13 +163,14 @@ void puts(const char *s){
 
 void process0(void) {
     puts("The process 0 is started!\n");
-    if(fork()==0) {
+/*    if(fork()==0) {
         puts("I'am child process!\n");
 //        execve("exe.elf",NULL,NULL);
         while(1);
     } else {
         puts("I forked a process!\n");
         while(1);
-    }
+    }*/
+    while(1);
 }
 

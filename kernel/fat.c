@@ -139,7 +139,7 @@ static uint32 DataStartSec(void)
 }
 
 //读一个簇
-static void ReadClus(uint32 Clus,void *buff) {
+static void ReadClus(uint32 Clus,uint8 *buff) {
     uint32 bsec=DataStartSec()+(Clus-2)*BPB_SecPerClus;
     uint32 esec=DataStartSec()+(Clus-1)*BPB_SecPerClus;
     uint32 sec;
@@ -151,7 +151,7 @@ static void ReadClus(uint32 Clus,void *buff) {
 }
 
 //写一个簇
-static void WriteClus(uint32 Clus,void *buff) {
+static void WriteClus(uint32 Clus,uint8 *buff) {
     uint32 bsec=DataStartSec()+(Clus-2)*BPB_SecPerClus;
     uint32 esec=DataStartSec()+(Clus-1)*BPB_SecPerClus;
     uint32 sec;
@@ -412,28 +412,28 @@ int Fat_open(fileindex *file,const char *path) {
     case FAT32:
         i=BPB_RootDirClu;
         while(i<=MaxClus) {
-            ReadClus(i,KERNEL_HEAP);
+            ReadClus(i,KHEAP);
             for(j = 0; j <ClusBytes/sizeof(DIR); j++) {
-                if(cmpname(name, (char *)((DIR*)KERNEL_HEAP)[j].Name)) {
+                if(cmpname(name, (char *)((DIR*)KHEAP)[j].Name)) {
                     file->nodebytes=ClusBytes;
                     file->dirnode=i;
                     file->indexno=j;
-                    file->startnode=((DIR*)KERNEL_HEAP)[j].Starth<<16 | ((DIR*)KERNEL_HEAP)[j].Startl;
-                    file->length=((DIR*)KERNEL_HEAP)[j].Length;
-                    file->createtime=kernel_mktime(((DIR*)KERNEL_HEAP)[j].CreateYear+1980,
-                                                   ((DIR*)KERNEL_HEAP)[j].CreateMonth,
-                                                   ((DIR*)KERNEL_HEAP)[j].CreateDay,
-                                                   ((DIR*)KERNEL_HEAP)[j].CreateHour,
-                                                   ((DIR*)KERNEL_HEAP)[j].CreateMinute,
-                                                   ((DIR*)KERNEL_HEAP)[j].Create2Second*2
+                    file->startnode=((DIR*)KHEAP)[j].Starth<<16 | ((DIR*)KHEAP)[j].Startl;
+                    file->length=((DIR*)KHEAP)[j].Length;
+                    file->createtime=kernel_mktime(((DIR*)KHEAP)[j].CreateYear+1980,
+                                                   ((DIR*)KHEAP)[j].CreateMonth,
+                                                   ((DIR*)KHEAP)[j].CreateDay,
+                                                   ((DIR*)KHEAP)[j].CreateHour,
+                                                   ((DIR*)KHEAP)[j].CreateMinute,
+                                                   ((DIR*)KHEAP)[j].Create2Second*2
                                                   );
 
-                    file->updatetime=kernel_mktime(((DIR*)KERNEL_HEAP)[j].UpdateYear+1980,
-                                                   ((DIR*)KERNEL_HEAP)[j].UpdateMonth,
-                                                   ((DIR*)KERNEL_HEAP)[j].UpdateDay,
-                                                   ((DIR*)KERNEL_HEAP)[j].UpdateHour,
-                                                   ((DIR*)KERNEL_HEAP)[j].UpdateMinute,
-                                                   ((DIR*)KERNEL_HEAP)[j].Update2Second*2
+                    file->updatetime=kernel_mktime(((DIR*)KHEAP)[j].UpdateYear+1980,
+                                                   ((DIR*)KHEAP)[j].UpdateMonth,
+                                                   ((DIR*)KHEAP)[j].UpdateDay,
+                                                   ((DIR*)KHEAP)[j].UpdateHour,
+                                                   ((DIR*)KHEAP)[j].UpdateMinute,
+                                                   ((DIR*)KHEAP)[j].Update2Second*2
                                                   );
                     return 0; //找到对应的目录项,返回
                 }
@@ -446,7 +446,7 @@ int Fat_open(fileindex *file,const char *path) {
 }
 
 //len 必须小于等于 文件长度
-int Fat_read(fileindex *file,void *ptr,size_t len) {
+int Fat_read(fileindex *file,uint8 *ptr,size_t len) {
     int c,readlen=0;
     if(file->offset+len > file->length) {
         return -1;
@@ -455,10 +455,10 @@ int Fat_read(fileindex *file,void *ptr,size_t len) {
         if( (file->offset%ClusBytes == 0) && (file->offset) ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(file->curnode,KERNEL_HEAP);
+        ReadClus(file->curnode,KHEAP);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(ptr+readlen,KERNEL_HEAP+file->offset%ClusBytes,c);
+        memcpy(ptr+readlen,KHEAP+file->offset%ClusBytes,c);
         readlen+=c;
         file->offset+=c;
         len-=c;
@@ -516,7 +516,7 @@ int Fat_seek(uint32 clus,off_t offset) {
 }
 
 //len 必须小于等于 文件长度
-int Fat_write(fileindex *file,const void *ptr,size_t len) {
+int Fat_write(fileindex *file,const uint8 *ptr,size_t len) {
     int c,writelen=0;
     if(file->offset+len>file->length) {
         return -1;
@@ -526,11 +526,11 @@ int Fat_write(fileindex *file,const void *ptr,size_t len) {
         if( (file->offset%ClusBytes == 0) && (file->offset)  ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(DataSec+file->curnode,KERNEL_HEAP);
+        ReadClus(DataSec+file->curnode,KHEAP);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(KERNEL_HEAP+file->offset%ClusBytes,ptr+writelen,c);
-        WriteClus(DataSec+file->curnode,KERNEL_HEAP);
+        memcpy(KHEAP+file->offset%ClusBytes,ptr+writelen,c);
+        WriteClus(DataSec+file->curnode,KHEAP);
         len-=c;
         file->offset+=c;
         writelen+=c;
@@ -569,30 +569,30 @@ int Fat_close(fileindex *file) {
         WriteSector(file->dirnode);
         break;
     case FAT32:
-        ReadClus(file->dirnode,KERNEL_HEAP);
+        ReadClus(file->dirnode,KHEAP);
         time_to_tm(file->createtime,&t);
-        ((DIR*)KERNEL_HEAP)[file->indexno].Create2Second=t.tm_sec/2;
-        ((DIR*)KERNEL_HEAP)[file->indexno].CreateMinute=t.tm_min;
-        ((DIR*)KERNEL_HEAP)[file->indexno].CreateHour=t.tm_hour;
-        ((DIR*)KERNEL_HEAP)[file->indexno].CreateDay=t.tm_mday;
-        ((DIR*)KERNEL_HEAP)[file->indexno].CreateMonth=t.tm_mon+1;
-        ((DIR*)KERNEL_HEAP)[file->indexno].CreateYear=t.tm_year-80;
+        ((DIR*)KHEAP)[file->indexno].Create2Second=t.tm_sec/2;
+        ((DIR*)KHEAP)[file->indexno].CreateMinute=t.tm_min;
+        ((DIR*)KHEAP)[file->indexno].CreateHour=t.tm_hour;
+        ((DIR*)KHEAP)[file->indexno].CreateDay=t.tm_mday;
+        ((DIR*)KHEAP)[file->indexno].CreateMonth=t.tm_mon+1;
+        ((DIR*)KHEAP)[file->indexno].CreateYear=t.tm_year-80;
         time_to_tm(file->accesstime,&t);
-        ((DIR*)KERNEL_HEAP)[file->indexno].AccessDay=t.tm_mday;
-        ((DIR*)KERNEL_HEAP)[file->indexno].AccessMonth=t.tm_mon+1;
-        ((DIR*)KERNEL_HEAP)[file->indexno].AccessYear=t.tm_year-80;
+        ((DIR*)KHEAP)[file->indexno].AccessDay=t.tm_mday;
+        ((DIR*)KHEAP)[file->indexno].AccessMonth=t.tm_mon+1;
+        ((DIR*)KHEAP)[file->indexno].AccessYear=t.tm_year-80;
         time_to_tm(file->updatetime,&t);
-        ((DIR*)KERNEL_HEAP)[file->indexno].Update2Second=t.tm_sec/2;
-        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateMinute=t.tm_min;
-        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateHour=t.tm_hour;
-        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateDay=t.tm_mday;
-        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateMonth=t.tm_mon+1;
-        ((DIR*)KERNEL_HEAP)[file->indexno].UpdateYear=t.tm_year-80;
+        ((DIR*)KHEAP)[file->indexno].Update2Second=t.tm_sec/2;
+        ((DIR*)KHEAP)[file->indexno].UpdateMinute=t.tm_min;
+        ((DIR*)KHEAP)[file->indexno].UpdateHour=t.tm_hour;
+        ((DIR*)KHEAP)[file->indexno].UpdateDay=t.tm_mday;
+        ((DIR*)KHEAP)[file->indexno].UpdateMonth=t.tm_mon+1;
+        ((DIR*)KHEAP)[file->indexno].UpdateYear=t.tm_year-80;
 
-        ((DIR*)KERNEL_HEAP)[file->indexno].Starth=file->startnode>>16;
-        ((DIR*)KERNEL_HEAP)[file->indexno].Startl=file->startnode&0xffff;
-        ((DIR*)KERNEL_HEAP)[file->indexno].Length=file->length;
-        WriteClus(file->dirnode,KERNEL_HEAP);
+        ((DIR*)KHEAP)[file->indexno].Starth=file->startnode>>16;
+        ((DIR*)KHEAP)[file->indexno].Startl=file->startnode&0xffff;
+        ((DIR*)KHEAP)[file->indexno].Length=file->length;
+        WriteClus(file->dirnode,KHEAP);
         break;
     }
 
