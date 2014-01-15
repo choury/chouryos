@@ -44,6 +44,7 @@ typedef struct{
 //    ss  cdt;                                //代码段的描述符
 //    ss  ddt;                                //数据段
 //    ss  ksdt;                               //内核栈(4096B) 
+    ptable *pdt;                            //页目录表
     void *base;                             //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址，相对于base
     fileindex file[MAX_FD];                 //打开的文件

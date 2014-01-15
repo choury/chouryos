@@ -104,8 +104,8 @@ struct loadmod{
 
 struct memmap{
     uint32 size;
-    void *base_addr;
-    void *base_addrh;
+    uint8 *base_addr;
+    uint8 *base_addrh;
     uint32 length;
     uint32 lengthh;
     uint32 type;

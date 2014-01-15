@@ -5,6 +5,7 @@
 #include <hd.h>
 #include <keyboad.h>
 #include <schedule.h>
+#include <memory.h>
 
 u32 curpid;                         //当前正在运行进程号
 
@@ -77,9 +78,9 @@ void init() {
     GDT[UDATAI].Type=DA_WR;
 
     PROTABLE[curpid].reg.ss=UDATA_DT;
-    PROTABLE[curpid].reg.oesp=0x400000-KSL;
+    PROTABLE[curpid].reg.oesp=0xffffffff-KSL;
     PROTABLE[curpid].reg.cs=UCODE_DT;
-    PROTABLE[curpid].reg.eip=(u32)process0;
+    PROTABLE[curpid].reg.eip=(u32)process0+USEBASE;
     PROTABLE[curpid].reg.eflags=0x1202;
     PROTABLE[curpid].reg.ds=UDATA_DT;
     PROTABLE[curpid].reg.es=UDATA_DT;
@@ -99,12 +100,91 @@ void init() {
     for(i=3; i<MAX_FD; i=i+1) {
         PROTABLE[curpid].file[i].isused=0;
     }
+    PROTABLE[curpid].pdt=(ptable *)(getmpage()*PAGESIZE);
+    
+    for(i=0;i<1024;++i){
+        PROTABLE[curpid].pdt[i].P=0;
+    }
+    PROTABLE[curpid].pdt[0].base=(u32)getmpage();                   //内核代码数据
+    PROTABLE[curpid].pdt[0].PAT=0;
+    PROTABLE[curpid].pdt[0].A=0;
+    PROTABLE[curpid].pdt[0].PCD=0;
+    PROTABLE[curpid].pdt[0].PWT=0;
+    PROTABLE[curpid].pdt[0].U_S=0;
+    PROTABLE[curpid].pdt[0].R_W=1;
+    PROTABLE[curpid].pdt[0].P=1;
+    
+    ptable *pte=(ptable *)(PROTABLE[curpid].pdt[0].base<<12);
+    for(i=0;i<1024;++i){
+        pte[i].base=i;
+        pte[i].PAT=0;
+        pte[i].D=0;
+        pte[i].A=0;
+        pte[i].PCD=0;
+        pte[i].PWT=0;
+        pte[i].U_S=0;
+        pte[i].R_W=1;
+        pte[i].P=1;
+    }
+    
+    PROTABLE[curpid].pdt[USEPAGE].base=(u32)getmpage();             //process0代码数据
+    PROTABLE[curpid].pdt[USEPAGE].PAT=0;    
+    PROTABLE[curpid].pdt[USEPAGE].A=0;
+    PROTABLE[curpid].pdt[USEPAGE].PCD=0;
+    PROTABLE[curpid].pdt[USEPAGE].PWT=0;
+    PROTABLE[curpid].pdt[USEPAGE].U_S=1;
+    PROTABLE[curpid].pdt[USEPAGE].R_W=1;
+    PROTABLE[curpid].pdt[USEPAGE].P=1;
+    pte=(ptable *)(PROTABLE[curpid].pdt[USEPAGE].base<<12);
+    for(i=0;i<1024;++i){
+        pte[i].base=i;
+        pte[i].PAT=0;
+        pte[i].D=0;
+        pte[i].A=0;
+        pte[i].PCD=0;
+        pte[i].PWT=0;
+        pte[i].U_S=1;
+        pte[i].R_W=1;
+        pte[i].P=1;
+    }
+    
+    PROTABLE[curpid].pdt[USEENDP].base=(u32)getmpage();             //process0堆栈
+    PROTABLE[curpid].pdt[USEENDP].PAT=0;
+    PROTABLE[curpid].pdt[USEENDP].A=0;
+    PROTABLE[curpid].pdt[USEENDP].PCD=0;
+    PROTABLE[curpid].pdt[USEENDP].PWT=0;
+    PROTABLE[curpid].pdt[USEENDP].U_S=1;
+    PROTABLE[curpid].pdt[USEENDP].R_W=1;
+    PROTABLE[curpid].pdt[USEENDP].P=1;
+    pte=(ptable *)(PROTABLE[curpid].pdt[USEENDP].base<<12);
+    for(i=0;i<1024;++i){
+        pte[i].P=0;
+    }
+    pte[1022].base=(u32)getmpage();                         //用户栈
+    pte[1022].PAT=0;
+    pte[1022].D=0;
+    pte[1022].A=0;
+    pte[1022].PCD=0;
+    pte[1022].PWT=0;
+    pte[1022].U_S=1;
+    pte[1022].R_W=1;
+    pte[1022].P=1;
+    
+    pte[1023].base=(u32)getmpage();                         //系统栈(一个页面)
+    pte[1023].PAT=0;
+    pte[1023].D=0;
+    pte[1023].A=0;
+    pte[1023].PCD=0;
+    pte[1023].PWT=0;
+    pte[1023].U_S=0;
+    pte[1023].R_W=1;
+    pte[1023].P=1;
     
     PROTABLE[curpid].waitresource=0;
 
 
     TSS.ss0=KSTACK_DT;
-    TSS.esp0=0x400000;
+    TSS.esp0=0xffffffff;
 
 
     GDT[TSSI].base0_23=((u32)&TSS)&0xffffff;
@@ -119,35 +199,12 @@ void init() {
     GDT[TSSI].DPL=0;
     GDT[TSSI].Type=DA_ATSS;
     
-    KPDE[0].base=(u32)KPTE>>12;
-    KPDE[0].PAT=0;
-    KPDE[0].A=0;
-    KPDE[0].PCD=0;
-    KPDE[0].PWT=0;
-    KPDE[0].U_S=1;
-    KPDE[0].R_W=1;
-    KPDE[0].P=1;
-    
-    for(i=1;i<1024;++i){
-        KPDE[i].P=0;
-    }
-    for(i=0;i<1024;++i){
-        KPTE[i].base=i;
-        KPTE[i].PAT=0;
-        KPTE[i].D=0;
-        KPTE[i].A=0;
-        KPTE[i].PCD=0;
-        KPTE[i].PWT=0;
-        KPTE[i].U_S=1;
-        KPTE[i].R_W=1;
-        KPTE[i].P=1;
-    }
     sti();
     putstring("I will init fs\n");
     initfs();
     putstring("I inited fs\n");
     cli();
-    movetouse(&(PROTABLE[curpid]));
+    movetouse(&PROTABLE[curpid],PROTABLE[curpid].pdt);
 }
 
 
@@ -156,6 +213,7 @@ void init() {
 #include <string.h>
 
 void puts(const char *s){
+    s+=USEBASE;
     write(STDOUT_FILENO,s,strlen(s));
 }
 

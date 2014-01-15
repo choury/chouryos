@@ -2,22 +2,18 @@
 ;         0x800---0xfff   gdt
 ;         0x1000---0x11ff   floopy buffer
 ;         0x1200---0x1267   tss
-;         0x1500---        memory map
 ;         0x2800--0x2c00   realinthandler table
-;         0x3000--0x3fff   kernel_pde
-;         0x4000--0x4fff   kernel_pte
+;         0x10000--------  tmpmalloc
 ;         0x9f000-0xfffff  bios rom     0xB8000       console buffer
-;         1M------         process table
+;         1M    ---------       
+;               process table
 ;         2M    ---------       kernel code & date
 ;               ↓       ↓
 ;               .
-;               ↑       ↑       kernel stack
+;               ↑       ↑       kernel&process0 stack
 ;         3M    ---------
-;               ↓       ↓       kernel heap
-;               .
-;               ↑       ↑       process0 stack
-;         4M    ---------
-
+;               memory map(128k -- 4G)
+;         4M    --------- 
 
 %include "asm.h"
 %include "../boot/pm.h"
@@ -43,7 +39,6 @@ CHECKSUM    equ -(MAGIC + FLAGS)                        ; checksum required
 use32
 section .boothead
 align 4
-MultiBootHeader:
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
@@ -84,7 +79,7 @@ selfboot:
 movetouse:
     push ebp
     mov ebp,esp
-    mov eax, 0x3000
+    mov eax, [ebp+12]
     mov cr3, eax
     mov eax, cr0
     or  eax, 0x80000000

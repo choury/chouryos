@@ -29,9 +29,13 @@
 
 #define INTHER  ((void (**)())0x2800)
 
-#define KPDE  ((ptable*)0x3000)
-#define KPTE  ((ptable*)0x4000)
-#define KHEAP ((void *)0x300000)
+//#define KPDE  ((ptable*)0x3000)
+//#define KPTE  ((ptable*)0x4000)
+#define KHEAP ((void *) 0x10000)
+#define MMAP  ((uint8 *)0x300000)
+#define USEBASE 0x40000000  //1G以上为用户空间
+#define USEPAGE USEBASE>>22
+#define USEENDP 1023
 
 extern u32 curpid;
 
@@ -50,7 +54,7 @@ void inpn(unsigned int port,void *buff,int n);
 void inpwn(unsigned int port,void *buff,int n);
 void inpdn(unsigned int port,void *buff,int n);
 
-void movetouse(process *);
+void movetouse(process *,ptable *pdt);
 void process0(void);
 
 
