@@ -1,11 +1,12 @@
 #ifndef __SCHEDULT_H__
 #define __SCHEDULT_H__
 
+#include <process.h>
 
 void TimerInitHandler();
 void schedule();
-void switch_to(u32 pid);
-void do_switch_to(void *last,void *next);
+void switch_to(pid_t pid);
+void do_switch_to(pid_t *last,process *next,ptable *pdt);
 
 
 #endif

@@ -30,13 +30,13 @@ typedef struct{
     u32 ss;
 }__attribute__ ((packed)) register_status;
 
-
+//typedef u32 pid_t;
 
 typedef struct{
     register_status reg;
-    u32 pid;
-    u32 ppid;
-    u32 status;
+    pid_t pid;
+    pid_t ppid;
+    pstatus status;
 /*
  * 改成平坦的线性地址，不需要这些乱七八糟的东西了
  */

@@ -31,11 +31,19 @@
 
 //#define KPDE  ((ptable*)0x3000)
 //#define KPTE  ((ptable*)0x4000)
-#define KHEAP ((void *) 0x10000)
-#define MMAP  ((uint8 *)0x300000)
+#define KHEAP   ((void *) 0x10000)
+#define MMAP    ((uint8 *)0x300000)
+#define KINDEX  ((ptable *)0x380000)
 #define USEBASE 0x40000000  //1G以上为用户空间
-#define USEPAGE USEBASE>>22
+#define USEPAGE (USEBASE>>22)
 #define USEENDP 1023
+#define ENDPAGE (USEENDP+1)
+
+#define CPYDEST   1019
+#define CPYSRC    1020
+#define TMPINDEX0 1021
+#define TMPINDEX1 1022
+#define TMPINDEX2 1023
 
 extern u32 curpid;
 

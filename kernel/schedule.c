@@ -15,7 +15,7 @@ void schedule() {
     }
 }
 
-void switch_to( u32 pid ) {
+void switch_to( pid_t pid ) {
     if ( pid == curpid )
         return;
 
@@ -24,9 +24,9 @@ void switch_to( u32 pid ) {
     }
 
     cli();
-    u32 last = curpid;
+    pid_t last = curpid;
     curpid = pid;
     PROTABLE[curpid].status = running;
-    do_switch_to( &( PROTABLE[last].pid ), &( PROTABLE[curpid] ));
+    do_switch_to( &( PROTABLE[last].pid ),PROTABLE+curpid,PROTABLE[curpid].pdt);
     sti();
 }

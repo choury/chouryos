@@ -10,9 +10,13 @@
 ;         2M    ---------       kernel code & date
 ;               ↓       ↓
 ;               .
-;               ↑       ↑       kernel&process0 stack
+;               ↑       ↑       init &process0 stack
 ;         3M    ---------
 ;               memory map(128k -- 4G)
+;                   |
+;                   |
+;         3.5M  ---------
+;               内核页目录
 ;         4M    --------- 
 
 %include "asm.h"
@@ -115,6 +119,8 @@ do_switch_to:
     push fs
     push gs
 
+    mov eax, [es:ebp+16]
+    mov cr3, eax
     mov esp, [es:ebp+12]
     pop gs
     pop fs

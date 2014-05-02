@@ -8,10 +8,13 @@
 #define unsavl(x) MMAP[(x)>>3] &= ~(1<<((x)%8))          //将某页面设为不可用
 #define isavl(x)  MMAP[(x)>>3] &   (1<<((x)%8))          //测试某页是否可用
 
+
+
 #define RESPAGE   0x500                                 //前5M空间保留
 #define MAXPAGE   0x100000                              //最多4G
 
 void getmemmap(struct Bootinfo *boot){
+    memset(charbuff,0,80*25*2);  //清屏
     memset(MMAP,0x00,MAXPAGE>>3);
     if(boot->flags&(1<<6)){
         struct memmap *map;
@@ -52,6 +55,14 @@ int getmpage(){
             return i;
         }
     }
+    printf("Can't get more memory!");
     return -1;
 }
 
+
+void pagecpy(uint32 dest,uint32 src){
+    KINDEX[CPYDEST].base=dest;
+    KINDEX[CPYSRC].base=src;
+    memcpy(getvmaddr(0,CPYDEST),getvmaddr(0,CPYSRC),PAGESIZE);
+
+}

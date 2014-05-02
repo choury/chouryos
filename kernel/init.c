@@ -105,7 +105,7 @@ void init() {
     for(i=0;i<1024;++i){
         PROTABLE[curpid].pdt[i].P=0;
     }
-    PROTABLE[curpid].pdt[0].base=(u32)getmpage();                   //内核代码数据
+    PROTABLE[curpid].pdt[0].base=(u32)KINDEX/PAGESIZE;                   //内核代码数据
     PROTABLE[curpid].pdt[0].PAT=0;
     PROTABLE[curpid].pdt[0].A=0;
     PROTABLE[curpid].pdt[0].PCD=0;
@@ -114,17 +114,16 @@ void init() {
     PROTABLE[curpid].pdt[0].R_W=1;
     PROTABLE[curpid].pdt[0].P=1;
     
-    ptable *pte=(ptable *)(PROTABLE[curpid].pdt[0].base<<12);
     for(i=0;i<1024;++i){
-        pte[i].base=i;
-        pte[i].PAT=0;
-        pte[i].D=0;
-        pte[i].A=0;
-        pte[i].PCD=0;
-        pte[i].PWT=0;
-        pte[i].U_S=0;
-        pte[i].R_W=1;
-        pte[i].P=1;
+        KINDEX[i].base=i;
+        KINDEX[i].PAT=0;
+        KINDEX[i].D=0;
+        KINDEX[i].A=0;
+        KINDEX[i].PCD=0;
+        KINDEX[i].PWT=0;
+        KINDEX[i].U_S=0;
+        KINDEX[i].R_W=1;
+        KINDEX[i].P=1;
     }
     
     PROTABLE[curpid].pdt[USEPAGE].base=(u32)getmpage();             //process0代码数据
@@ -135,7 +134,7 @@ void init() {
     PROTABLE[curpid].pdt[USEPAGE].U_S=1;
     PROTABLE[curpid].pdt[USEPAGE].R_W=1;
     PROTABLE[curpid].pdt[USEPAGE].P=1;
-    pte=(ptable *)(PROTABLE[curpid].pdt[USEPAGE].base<<12);
+    ptable *pte=(ptable *)(PROTABLE[curpid].pdt[USEPAGE].base*PAGESIZE);
     for(i=0;i<1024;++i){
         pte[i].base=i;
         pte[i].PAT=0;
@@ -156,7 +155,7 @@ void init() {
     PROTABLE[curpid].pdt[USEENDP].U_S=1;
     PROTABLE[curpid].pdt[USEENDP].R_W=1;
     PROTABLE[curpid].pdt[USEENDP].P=1;
-    pte=(ptable *)(PROTABLE[curpid].pdt[USEENDP].base<<12);
+    pte=(ptable *)(PROTABLE[curpid].pdt[USEENDP].base*PAGESIZE);
     for(i=0;i<1024;++i){
         pte[i].P=0;
     }
@@ -221,14 +220,14 @@ void puts(const char *s){
 
 void process0(void) {
     puts("The process 0 is started!\n");
-/*    if(fork()==0) {
+    if(fork()==0) {
         puts("I'am child process!\n");
 //        execve("exe.elf",NULL,NULL);
         while(1);
     } else {
         puts("I forked a process!\n");
         while(1);
-    }*/
+    }
     while(1);
 }
 
