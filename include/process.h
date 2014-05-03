@@ -37,11 +37,11 @@ typedef struct{
     pid_t pid;
     pid_t ppid;
     pstatus status;
-    ptable *pdt;                            //页目录表
-    void *base;                             //进程空间基址，也是cdt,ddt的基址
-    void *heap;                             //进程堆的起始地址，相对于base
+    uint32 pdt;                              //页目录表
+//    void *base;                            //进程空间基址，也是cdt,ddt的基址
+    void *heap;                             //进程堆的起始地址
     fileindex file[MAX_FD];                 //打开的文件
-    u32 waitresource;                       //正在等待的资源数，当它为0时该进程状态应该为就绪
+    u32 waitresource;                      //正在等待的资源数，当它为0时该进程状态应该为就绪
 }process;
 
 

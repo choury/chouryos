@@ -27,15 +27,15 @@ int sys_fork() {
     PROTABLE[newpid].reg.eax=0;
     PROTABLE[newpid].pid=newpid;
     PROTABLE[newpid].ppid=curpid;
-    PROTABLE[newpid].pdt=(ptable *)(getmpage()*PAGESIZE);                                  //创建新的页目录
-    pagecpy((u32)PROTABLE[newpid].pdt/PAGESIZE,(u32)PROTABLE[curpid].pdt/PAGESIZE);                  //父子进程的内存映射相同
+    PROTABLE[newpid].pdt=getmpage();                                  //创建新的页目录
+    pagecpy(PROTABLE[newpid].pdt,PROTABLE[curpid].pdt);                  //父子进程的内存映射相同
     
     
-    KINDEX[TMPINDEX0].base=(uint32)PROTABLE[curpid].pdt/PAGESIZE;
+    KINDEX[TMPINDEX0].base=PROTABLE[curpid].pdt;
     ptable *pdt_cur=getvmaddr(0,TMPINDEX0);
     invlpg(pdt_cur);
     
-    KINDEX[TMPINDEX1].base=(uint32)PROTABLE[newpid].pdt/PAGESIZE;
+    KINDEX[TMPINDEX1].base=PROTABLE[newpid].pdt;
     ptable *pdt_new=getvmaddr(0,TMPINDEX1);
     invlpg(pdt_new);
     
@@ -45,14 +45,20 @@ int sys_fork() {
             pagecpy(pdt_new[i].base,pdt_cur[i].base);
             
             KINDEX[TMPINDEX2].base=pdt_cur[i].base;
-            ptable *opte=getvmaddr(0,TMPINDEX2);
-            invlpg(opte);
-//            opte->R_W=0;               //写时复制
+            ptable *pte_cur=getvmaddr(0,TMPINDEX2);
+            invlpg(pte_cur);
             
             KINDEX[TMPINDEX3].base=pdt_new[i].base;
-            ptable *npte=getvmaddr(0,TMPINDEX3);
-            invlpg(opte);
-//            npte->R_W=0;
+            ptable *pte_new=getvmaddr(0,TMPINDEX3);
+            invlpg(pte_new);
+            
+            int j;
+            for(j=0;j<ENDPAGE;++j){
+                if(pte_cur[j].P){
+                    pte_cur[j].R_W=0;               //写时复制
+                    pte_new[j].R_W=0;
+                }
+            }
         }
     }
     
@@ -64,11 +70,14 @@ int sys_fork() {
     invlpg(getvmaddr(0,TMPINDEX3));
     ptable *pte_nks=getvmaddr(0,TMPINDEX3);
     
-    
     pte_nks[1022].base=getmpage();
+    pte_nks[1022].R_W=1;
+    pte_cks[1022].R_W=1;
     pagecpy(pte_nks[1022].base,pte_cks[1022].base);
     
     pte_nks[1023].base=getmpage();
+    pte_nks[1023].R_W=1;
+    pte_cks[1023].R_W=1;
     pagecpy(pte_nks[1023].base,pte_cks[1023].base);
 
     sti();

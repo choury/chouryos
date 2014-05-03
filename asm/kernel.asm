@@ -121,6 +121,7 @@ do_switch_to:
 
     mov eax, [es:ebp+16]
     mov ecx, [es:ebp+12]
+    shl eax, 12
     mov cr3, eax
     mov esp, ecx
     pop gs

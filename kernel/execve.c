@@ -4,82 +4,110 @@
 #include <syscall.h>
 #include <string.h>
 #include <unistd.h>
+#include <memory.h>
 
-#define MAX(x,y)    ((x)>(y)?(x):(y))
+#define MAX(x,y)    ((uint32)(x)>(uint32)(y)?(uint32)(x):(uint32)(y))
 
 /*
  * execve
  * Transfer control to a new process.
  */
 
-
-
-
-int sys_execve(char *name, char **argv, char **env) {
+int sys_execve(char *name, char **argv, char **env)
+{
     fileindex fd;
-    if(curpid==0){
+    if (curpid == 0) {
         putstring("The process 0 can't call execve!\n");
         return -1;
     }
-    if( file_open(&fd, name, O_RDONLY ) < 0 ){
+    if (file_open(&fd, name, O_RDONLY) < 0) {
         putstring("No such file!\n");
         return -1;
-    }else{
+    } else {
         Elf32_Ehdr elf32_eh;
         Elf32_Phdr elf32_ph;
-        if( file_read( &fd, &elf32_eh, sizeof(Elf32_Ehdr) ) == sizeof(Elf32_Ehdr) ){
-            do{
-                if(strncmp( ELFMAG, (const char*)elf32_eh.e_ident, SELFMAG ) != 0)
+        if (file_read(&fd, &elf32_eh, sizeof(Elf32_Ehdr)) == sizeof(Elf32_Ehdr)) {
+            do {
+                if (strncmp(ELFMAG, (const char *)elf32_eh.e_ident, SELFMAG) != 0)
                     break;
-                if(elf32_eh.e_ident[EI_CLASS] != ELFCLASS32)
+                if (elf32_eh.e_ident[EI_CLASS] != ELFCLASS32)
                     break;
-                if(elf32_eh.e_ident[EI_DATA] != ELFDATA2LSB)
+                if (elf32_eh.e_ident[EI_DATA] != ELFDATA2LSB)
                     break;
-                if(elf32_eh.e_ident[EI_VERSION] != EV_CURRENT )
+                if (elf32_eh.e_ident[EI_VERSION] != EV_CURRENT)
                     break;
-                if(elf32_eh.e_type != ET_EXEC )
+                if (elf32_eh.e_type != ET_EXEC)
                     break;
-                if(elf32_eh.e_machine != EM_386 )
+                if (elf32_eh.e_machine != EM_386)
                     break;
-                if(elf32_eh.e_version != EV_CURRENT)
+                if (elf32_eh.e_version != EV_CURRENT)
                     break;
-                if(elf32_eh.e_phoff == 0)
+                if (elf32_eh.e_phoff == 0)
                     break;
+                
+                KINDEX[TMPINDEX0].base = PROTABLE[curpid].pdt;
+                ptable *pdt = getvmaddr(0, TMPINDEX0);
+                invlpg(pdt);
+
+                KINDEX[TMPINDEX1].base = pdt[USEPAGE].base;
+                ptable *pte = getvmaddr(0, TMPINDEX1);
+                invlpg(pte);
+
+
+                uint8 *heap = USEBASE;
                 int i;
-                uint8 *base=(uint8 *)0x400000;
-                uint8 *heap=base;
-                for(i=0;i<elf32_eh.e_phnum;++i){
-                    file_lseek(&fd,elf32_eh.e_phoff+i*elf32_eh.e_phentsize,SEEK_SET);
-                    printf("file.offset:%d,curnode:%d\n",fd.offset,fd.curnode);
-                    if(file_read(&fd,&elf32_ph,elf32_eh.e_phentsize )== elf32_eh.e_phentsize ){
-                        printf("ptype:%ud,pvaddr:%u,poffset:%u,pfilesz:%u,pmemsz:%u\n",
-                               elf32_ph.p_type,elf32_ph.p_vaddr,elf32_ph.p_offset,elf32_ph.p_filesz,elf32_ph.p_memsz);
-                        if(elf32_ph.p_type == PT_LOAD){
-                            file_lseek(&fd,elf32_ph.p_offset,SEEK_SET);
-                            file_read(&fd,base+elf32_ph.p_vaddr,elf32_ph.p_filesz);
-                            heap=MAX(heap,base+elf32_ph.p_vaddr+elf32_ph.p_memsz);
+                for (i = 0; i < elf32_eh.e_phnum; ++i) {
+                    file_lseek(&fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
+                    if (file_read(&fd, &elf32_ph, elf32_eh.e_phentsize) == elf32_eh.e_phentsize) {
+                        printf("ptype:%u,pvaddr:0x%X,poffset:0x%X,pfilesz:0x%X,pmemsz:0x%X\n",
+                               elf32_ph.p_type, elf32_ph.p_vaddr, elf32_ph.p_offset, elf32_ph.p_filesz, elf32_ph.p_memsz);
+                        if (elf32_ph.p_type == PT_LOAD) {
+                            int count = 0;
+                            for (count = getpagec(elf32_ph.p_vaddr);
+                                    count <= getpagec(elf32_ph.p_vaddr + elf32_ph.p_memsz);
+                                    count ++) {
+                          
+                                printf("count:%d\n",count);
+                                if (pte[count].P == 0) {
+                                    pte[count].base = getmpage();
+                                    pte[count].PAT = 0;
+                                    pte[count].D = 0;
+                                    pte[count].A = 0;
+                                    pte[count].PCD = 0;
+                                    pte[count].PWT = 0;
+                                    pte[count].U_S = 1;
+                                    pte[count].R_W = 1;
+                                    pte[count].P = 1;
+                                    continue;
+                                }
+                                if (pte[count].R_W == 0) {
+                                    pte[count].base = getmpage();
+                                    pte[count].R_W = 1;
+                                }
+                            }
+                            file_lseek(&fd, elf32_ph.p_offset, SEEK_SET);
+                            file_read(&fd, (void *)elf32_ph.p_vaddr, elf32_ph.p_filesz);
+                            heap = (void *)MAX(heap, elf32_ph.p_vaddr + elf32_ph.p_memsz);
                         }
-                    }else{
+                    } else {
                         file_close(&fd);
                         putstring("The file is broken!\n");
                         return -1;
                     }
                 }
                 cli();
-                register_status *prs=(register_status*)(0x500000-sizeof(register_status));
-                PROTABLE[curpid].heap=heap;
-                PROTABLE[curpid].base=base;
-                PROTABLE[curpid].reg.eip=elf32_eh.e_entry;
-                prs->eip=elf32_eh.e_entry;
-                PROTABLE[curpid].reg.oesp=0x100000-KSL;
-                prs->oesp=0x100000-KSL;
-                for(i=3; i<MAX_FD; i=i+1) {
-                    PROTABLE[curpid].file[i].isused=0;              //关闭所有打开的文件
+                register_status *prs = (register_status*)(0xffffffff-sizeof(register_status));
+                PROTABLE[curpid].heap = heap;
+                PROTABLE[curpid].reg.eip = elf32_eh.e_entry;
+                prs->eip = elf32_eh.e_entry;
+                PROTABLE[curpid].reg.oesp = 0xffffffff - KSL;
+                prs->oesp = 0xffffffff - KSL;
+                for (i = 3; i < MAX_FD; i = i + 1) {
+                    PROTABLE[curpid].file[i].isused = 0;            //关闭所有打开的文件
                 }
                 file_close(&fd);
-                putstring("exec!\n");
                 return 0;
-            }while(0);
+            } while (0);
         }
         putstring("The file is not executable file!\n");
         file_close(&fd);

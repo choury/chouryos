@@ -9,7 +9,7 @@ OUTPUT_ARCH(i386)
 
 SECTIONS
 {
-. = 0x00000;
+. = 0x40000000;
 .text : { *(.text) }
 .data : { *(.data) }
 .bss : { *(.bss) }

@@ -34,8 +34,8 @@
 #define KHEAP   ((void *) 0x10000)
 #define MMAP    ((uint8 *)0x300000)
 #define KINDEX  ((ptable *)0x380000)
-#define USEBASE 0x40000000  //1G以上为用户空间
-#define USEPAGE (USEBASE>>22)
+#define USEBASE ((void *)0x40000000)  //1G以上为用户空间
+#define USEPAGE ((uint32)USEBASE>>22)
 #define USEENDP 1023
 #define ENDPAGE (USEENDP+1)
 
@@ -48,11 +48,18 @@
 
 extern u32 curpid;
 
-#define sti()     __asm__("sti\n")
-#define cli()     __asm__("cli\n")
-#define nop()     __asm__("nop\n")
-#define lldt(x)   __asm__ ("lldt %0" : :"r"(x))
-#define invlpg(x) __asm__("invlpg (%0)" : :"r"(x))
+#define sti()     asm volatile ("sti\n")
+#define cli()     asm volatile ("cli\n")
+#define nop()     asm volatile ("nop\n")
+#define lldt(x)   asm volatile ("lldt %0" : :"r"(x))
+#define invlpg(x) asm volatile ("invlpg (%0)" : :"r"(x))
+
+static inline uint32 getcr2(void)
+{
+    uint32 val;
+    asm volatile ( "mov %%cr2, %0" : "=r"(val) );
+    return val;
+}
 
 void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);

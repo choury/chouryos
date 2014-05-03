@@ -6,7 +6,7 @@
 void TimerInitHandler();
 void schedule();
 void switch_to(pid_t pid);
-void do_switch_to(pid_t *last,process *next,ptable *pdt);
+void do_switch_to(pid_t *last,process *next,uint32 pdt);
 
 
 #endif
