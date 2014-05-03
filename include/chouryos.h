@@ -39,11 +39,12 @@
 #define USEENDP 1023
 #define ENDPAGE (USEENDP+1)
 
-#define CPYDEST   1019
-#define CPYSRC    1020
-#define TMPINDEX0 1021
-#define TMPINDEX1 1022
-#define TMPINDEX2 1023
+#define CPYDEST   1018
+#define CPYSRC    1019
+#define TMPINDEX0 1020
+#define TMPINDEX1 1021
+#define TMPINDEX2 1022
+#define TMPINDEX3 1023
 
 extern u32 curpid;
 
@@ -51,6 +52,7 @@ extern u32 curpid;
 #define cli()     __asm__("cli\n")
 #define nop()     __asm__("nop\n")
 #define lldt(x)   __asm__ ("lldt %0" : :"r"(x))
+#define invlpg(x) __asm__("invlpg (%0)" : :"r"(x))
 
 void outp(unsigned int port,unsigned int data);
 void outpw(unsigned int port,unsigned int data);

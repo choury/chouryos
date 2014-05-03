@@ -37,13 +37,6 @@ typedef struct{
     pid_t pid;
     pid_t ppid;
     pstatus status;
-/*
- * 改成平坦的线性地址，不需要这些乱七八糟的东西了
- */
-//    u16 ldt;                                //局部描述符
-//    ss  cdt;                                //代码段的描述符
-//    ss  ddt;                                //数据段
-//    ss  ksdt;                               //内核栈(4096B) 
     ptable *pdt;                            //页目录表
     void *base;                             //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址，相对于base

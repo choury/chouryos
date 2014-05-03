@@ -26,8 +26,11 @@ void set8253(u16 time) {
 
 
 void defultinthandle(int no,int code){
-    printf("The int %d happened:%d!\n",no,code);
-    while(1);
+    switch(no){
+    default:
+        printf("The int %d happened:%d!\n",no,code);
+        while(1);
+    }
 }
 
 

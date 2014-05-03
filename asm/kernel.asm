@@ -120,8 +120,9 @@ do_switch_to:
     push gs
 
     mov eax, [es:ebp+16]
+    mov ecx, [es:ebp+12]
     mov cr3, eax
-    mov esp, [es:ebp+12]
+    mov esp, ecx
     pop gs
     pop fs
     pop es

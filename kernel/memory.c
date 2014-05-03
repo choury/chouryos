@@ -62,7 +62,12 @@ int getmpage(){
 
 void pagecpy(uint32 dest,uint32 src){
     KINDEX[CPYDEST].base=dest;
+    char *pdest=getvmaddr(0,CPYDEST);
+    invlpg(pdest);
+    
     KINDEX[CPYSRC].base=src;
-    memcpy(getvmaddr(0,CPYDEST),getvmaddr(0,CPYSRC),PAGESIZE);
-
+    char *psrc=getvmaddr(0,CPYSRC);
+    invlpg(psrc);
+    
+    memcpy(pdest,psrc,PAGESIZE);
 }
