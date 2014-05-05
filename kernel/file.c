@@ -22,7 +22,7 @@ void initfs() {
 
 
 #define upto(x,y) ((x)+(y)-((((long)x)-1)%(y)+1))       //x对y向上取整 比如 upto(12,10）= 20
-#define upone(x,y) ((x)+(y)-1)/(y)                      //x除以y取天棚  ┌x/y┐ 比如 upone(12,5)=3
+
 
 
 int file_open(fileindex *file,const char *path, int flags) {
@@ -64,7 +64,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
             errno=EINVAL;
             return -1;
         }
-        tmpnode=Fat_seek(file->startnode,upone(offset,file->nodebytes)-1);
+        tmpnode=Fat_seek(file->startnode,offset/file->nodebytes);
         break;
     case SEEK_CUR:
         offset+=file->offset;
@@ -73,7 +73,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
             return -1;
         }
         tmpnode=Fat_seek(file->curnode,
-                         upone(offset,file->nodebytes)-upone(file->offset,file->nodebytes)
+                         offset/file->nodebytes-file->offset/file->nodebytes
                         );
         break;
     case SEEK_END:
@@ -83,7 +83,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
             return -1;
         }
         tmpnode=Fat_seek(file->curnode,
-                         upone(offset,file->nodebytes)-upone(file->offset,file->nodebytes)
+                         offset/file->nodebytes-file->offset/file->nodebytes
                         );
         break;
     default:
@@ -108,10 +108,10 @@ int file_write(fileindex *file,const void *ptr,size_t len) {
     file->updatetime=kernel_getnowtime();
     if(len+file->offset>file->length) {
         tmpnode=Fat_seek(file->curnode,
-                         upone(file->length,file->nodebytes)-upone(file->offset,file->nodebytes)
+                         file->length/file->nodebytes-file->offset/file->nodebytes
                         );
         int c=Fat_expand(tmpnode,
-                         upone(file->offset+len,file->nodebytes)-upone(file->length,file->nodebytes),
+                         (file->offset+len)/(file->nodebytes)-file->length/file->nodebytes,
                          FALSE
                         );
         if(c<=0){

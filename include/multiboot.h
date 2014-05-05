@@ -1,8 +1,7 @@
-#include <type.h>
-
 #ifndef __MULTIBOOT_H__
 #define __MULTIBOOT_H__
 
+#include <type.h>
 
 /*
              +-------------------+

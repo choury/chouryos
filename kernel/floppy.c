@@ -6,7 +6,7 @@
 
 //#define  drive 0
 
-static u8 floppystatus;
+static uint8 floppystatus;
 
 static unsigned char st0,current_track;
 

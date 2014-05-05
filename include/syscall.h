@@ -8,7 +8,7 @@
 #include <type.h>
 #include <graphy.h>
 
-int syscall(u32 eax,u32 ebx,u32 ecx,u32 edx,u32 esi,u32 edi);
+int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi);
 
 //char **environ; /* pointer to array of char * strings that define the current environment variables */
 

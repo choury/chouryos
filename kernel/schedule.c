@@ -8,22 +8,29 @@ void TimerInitHandler() {
 
 
 void schedule() {
-    if ( ( curpid == 0 ) && ( PROTABLE[1].status == ready ) ) {
-        switch_to( 1 );
-    } else {
-        switch_to( 0 );
+    if(PROTABLE[1].status == ready){
+        switch_to(1);
+    }else{
+        switch_to(0);
     }
+/*    int i;
+    for(i=curpid+1;i!=curpid;++i){
+        if(i==MAX_PROCESS)i=0;
+        if(PROTABLE[i].status == ready){
+            switch_to(i);
+        }
+    }*/
 }
 
 void switch_to( pid_t pid ) {
     if ( pid == curpid )
         return;
-
+    
+    cli();
     if ( PROTABLE[curpid].status == running ) {
         PROTABLE[curpid].status = ready;
     }
 
-    cli();
     pid_t last = curpid;
     curpid = pid;
     PROTABLE[curpid].status = running;

@@ -3,10 +3,10 @@
 
 static int keyhead=0;
 static int keytail=0;
-static u8  keybuff[10];
+static uint8  keybuff[10];
 
 void KeyBoadHandler(){
-    u8 a=inp(0x60);
+    uint8 a=inp(0x60);
     int h=keyhead;
     h=(h+1)%10;
     if(h!=keytail){

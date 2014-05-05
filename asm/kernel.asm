@@ -1,23 +1,23 @@
-;mem map  0---0x7ff      idt
-;         0x800---0xfff   gdt
-;         0x1000---0x11ff   floopy buffer
-;         0x1200---0x1267   tss
-;         0x2800--0x2c00   realinthandler table
+;mem map  0--------0x7ff   idt
+;         0x800----0xfff   gdt
+;         0x1000---0x11ff  floopy buffer
+;         0x1200---0x1267  tss
+;         0x2800---0x2bff  real interupt handler table
+;         0x2c00---0x2dff  tmp map bit mask
+;         0x3000---0x3fff  a page for tmp map
 ;         0x10000--------  tmpmalloc
 ;         0x9f000-0xfffff  bios rom     0xB8000       console buffer
 ;         1M    ---------       
 ;               process table
-;         2M    ---------       kernel code & date
+;         2M    ---------       kernel(process0) code & date
 ;               ↓       ↓
-;               .
-;               ↑       ↑       init &process0 stack
+;               .       .
+;               ↑       ↑       init's stack
 ;         3M    ---------
-;               memory map(128k -- 4G)
-;                   |
-;                   |
-;         3.5M  ---------
-;               内核页目录
+;               memory map(1M)
 ;         4M    --------- 
+;               内存共享链
+;         5M    ---------
 
 %include "asm.h"
 %include "../boot/pm.h"

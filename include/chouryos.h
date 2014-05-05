@@ -1,10 +1,9 @@
 #ifndef __CHOURYOS_H__
 #define __CHOURYOS_H__
 
-#include <process.h>
 #include <type.h>
 #include <sys/types.h>
-
+#include <time.h>
 
 //#define IDT     ((gate *)0)           不需要它了
 #define GDT     ((ss *)0x800)
@@ -23,30 +22,27 @@
 #define KSTACK_DT         (KDATAI<<3)              //用户内核栈
 #define VGA_DT            (VGAI<<3)
 
-#define KSL             0x1000              //内核栈的大小
+#define KSL             PAGESIZE                      //每个进程内核栈的大小
 
-#define charbuff ((u16 *)0xB8000)
+#define charbuff ((uint16 *)0xB8000)
 
 #define INTHER  ((void (**)())0x2800)
+#define MTMAP   ((uint8 *)0x2c00)
+#define TMPMAP  ((ptable *)0x3000)
 
-//#define KPDE  ((ptable*)0x3000)
-//#define KPTE  ((ptable*)0x4000)
 #define KHEAP   ((void *) 0x10000)
 #define MMAP    ((uint8 *)0x300000)
-#define KINDEX  ((ptable *)0x380000)
-#define USEBASE ((void *)0x40000000)  //1G以上为用户空间
+#define PSL   ((pageshlist*)0x400000)
+#define USEBASE 0x40000000                          //1G以上为用户空间
+#define USECODE (USEBASE+PAGESIZE)                  //进程代码开始地址
 #define USEPAGE ((uint32)USEBASE>>22)
 #define USEENDP 1023
 #define ENDPAGE (USEENDP+1)
 
-#define CPYDEST   1018
-#define CPYSRC    1019
-#define TMPINDEX0 1020
-#define TMPINDEX1 1021
-#define TMPINDEX2 1022
-#define TMPINDEX3 1023
+#define MAPINDEX USEPAGE-1
 
-extern u32 curpid;
+
+extern pid_t curpid;
 
 #define sti()     asm volatile ("sti\n")
 #define cli()     asm volatile ("cli\n")
@@ -71,7 +67,7 @@ void inpn(unsigned int port,void *buff,int n);
 void inpwn(unsigned int port,void *buff,int n);
 void inpdn(unsigned int port,void *buff,int n);
 
-void movetouse(process *,ptable *pdt);
+
 void process0(void);
 
 

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <memory.h>
+#include <file.h>
+#include <process.h>
 
 #define MAX(x,y)    ((uint32)(x)>(uint32)(y)?(uint32)(x):(uint32)(y))
 
@@ -45,16 +47,11 @@ int sys_execve(char *name, char **argv, char **env)
                 if (elf32_eh.e_phoff == 0)
                     break;
                 
-                KINDEX[TMPINDEX0].base = PROTABLE[curpid].pdt;
-                ptable *pdt = getvmaddr(0, TMPINDEX0);
-                invlpg(pdt);
-
-                KINDEX[TMPINDEX1].base = pdt[USEPAGE].base;
-                ptable *pte = getvmaddr(0, TMPINDEX1);
-                invlpg(pte);
+                ptable *pdt = mappage(PROTABLE[curpid].pdt);
+                ptable *pte = mappage(pdt[USEPAGE].base);
 
 
-                uint8 *heap = USEBASE;
+                uint8 *heap = (void *)USECODE;
                 int i;
                 for (i = 0; i < elf32_eh.e_phnum; ++i) {
                     file_lseek(&fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
@@ -66,8 +63,6 @@ int sys_execve(char *name, char **argv, char **env)
                             for (count = getpagec(elf32_ph.p_vaddr);
                                     count <= getpagec(elf32_ph.p_vaddr + elf32_ph.p_memsz);
                                     count ++) {
-                          
-                                printf("count:%d\n",count);
                                 if (pte[count].P == 0) {
                                     pte[count].base = getmpage();
                                     pte[count].PAT = 0;
@@ -92,10 +87,13 @@ int sys_execve(char *name, char **argv, char **env)
                     } else {
                         file_close(&fd);
                         putstring("The file is broken!\n");
+                        unmappage(pdt);
+                        unmappage(pte);
                         return -1;
                     }
                 }
-                cli();
+                unmappage(pdt);
+                unmappage(pte);
                 register_status *prs = (register_status*)(0xffffffff-sizeof(register_status));
                 PROTABLE[curpid].heap = heap;
                 PROTABLE[curpid].reg.eip = elf32_eh.e_entry;

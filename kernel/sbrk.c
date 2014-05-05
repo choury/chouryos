@@ -1,5 +1,6 @@
 #include <syscall.h>
 #include <chouryos.h>
+#include <process.h>
 
 /*
  sbrk

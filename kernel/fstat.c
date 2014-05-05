@@ -1,6 +1,6 @@
 #include <sys/stat.h>
 #include <chouryos.h>
-
+#include <process.h>
 
 /*
  fstat

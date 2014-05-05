@@ -1,6 +1,8 @@
 #include <syscall.h>
 #include <chouryos.h>
 #include <string.h>
+#include <file.h>
+#include <process.h>
 
 int line=1;
 int colume=0;

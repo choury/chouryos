@@ -40,7 +40,7 @@ typedef struct{
 }supernode;
 
 struct waitqueue{
-    u32 pid;
+    pid_t pid;
     void* buff;
     size_t len;
     DEV  dev;

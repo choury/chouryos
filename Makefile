@@ -15,9 +15,9 @@ export BUILDDIR=$(ROOT)/build
 
 .PHONY : all kernel boot asm exe clean
 
-all: boot asm kernel exe
+all:asm kernel exe #boot
 	$(LD) -o $(KNAME).elf $(wildcard $(BUILDDIR)/*.o)  -Tkernel.ld -m elf_i386
-	$(OBJCOPY) -R .pdr -R .comment -R .note -I elf32-i386 -O binary $(KNAME).elf $(KNAME)
+#	$(OBJCOPY) -R .pdr -R .comment -R .note -I elf32-i386 -O binary $(KNAME).elf $(KNAME)
 
 boot:kernel
 	$(MAKE) -C boot
@@ -29,14 +29,14 @@ boot.img:
 
 
 
-install:boot kernel exe
+install:all
 #	sudo mount -o umask=000 /dev/sdb1 /mnt
 #	cp boot/loader /mnt
 #	cp kernel/chouryos /mnt
 #	sudo umount /mnt
 	sudo mount -o loop,offset=1048576,umask=000 $(BUILDDIR)/hd.img /mnt
-	cp boot/loader /mnt
-	cp $(KNAME) /mnt
+#	cp boot/loader /mnt
+#	cp $(KNAME) /mnt
 	cp $(KNAME).elf /mnt
 	cp exe/exe.elf /mnt
 	sync
@@ -54,6 +54,6 @@ exe:asm
 
 clean:
 	@rm -f $(BUILDDIR)/*.o
-	$(MAKE) clean -C boot
+#	$(MAKE) clean -C boot
 	$(MAKE) clean -C exe
 	@rm -f $(KNAME) $(KNAME).elf

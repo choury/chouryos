@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <floppy.h>
 #include <hd.h>
-
+#include <file.h>
 
 int line=1;
 int colume=0;

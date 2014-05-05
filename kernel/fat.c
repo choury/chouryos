@@ -4,7 +4,7 @@
 #include <file.h>
 #include <chouryos.h>
 #include <hd.h>
-#include <stdlib.h>
+#include <malloc.h>
 
 
 typedef struct
@@ -139,7 +139,7 @@ static uint32 DataStartSec(void)
 }
 
 //读一个簇
-static void ReadClus(uint32 Clus,uint8 *buff) {
+static void ReadClus(uint32 Clus,void *buff) {
     uint32 bsec=DataStartSec()+(Clus-2)*BPB_SecPerClus;
     uint32 esec=DataStartSec()+(Clus-1)*BPB_SecPerClus;
     uint32 sec;
@@ -151,7 +151,7 @@ static void ReadClus(uint32 Clus,uint8 *buff) {
 }
 
 //写一个簇
-static void WriteClus(uint32 Clus,uint8 *buff) {
+static void WriteClus(uint32 Clus,void *buff) {
     uint32 bsec=DataStartSec()+(Clus-2)*BPB_SecPerClus;
     uint32 esec=DataStartSec()+(Clus-1)*BPB_SecPerClus;
     uint32 sec;
@@ -284,11 +284,11 @@ static uint32 getblankclus(uint32 clus) {
 }
 
 //释放node以后所有节点，如果flag为TRUE 则node也被释放
-static int releaseclus(u32 clus,u8 flag) {
+static int releaseclus(uint32 clus,uint8 flag) {
     if(clus<2 || clus >=BEOC) {
         return -1;
     }
-    u32 tmpclus=getnextclus(clus);
+    uint32 tmpclus=getnextclus(clus);
     if(flag) {
         writenextclus(clus,0);
     } else {
@@ -304,10 +304,10 @@ static int releaseclus(u32 clus,u8 flag) {
 }
 
 
-u8 getchecksum (const unsigned char Name[11])
+uint8 getchecksum (const unsigned char Name[11])
 {
     int i;
-    unsigned char sum=0;
+    uint8 sum=0;
 
     for (i=11; i; i--)
         sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1) + *Name++;
@@ -411,35 +411,37 @@ int Fat_open(fileindex *file,const char *path) {
         break;
     case FAT32:
         i=BPB_RootDirClu;
+        DIR *buff=malloc(ClusBytes);
         while(i<=MaxClus) {
-            ReadClus(i,KHEAP);
+            ReadClus(i,buff);
             for(j = 0; j <ClusBytes/sizeof(DIR); j++) {
-                if(cmpname(name, (char *)((DIR*)KHEAP)[j].Name)) {
+                if(cmpname(name, (char *)buff[j].Name)) {
                     file->nodebytes=ClusBytes;
                     file->dirnode=i;
                     file->indexno=j;
-                    file->startnode=((DIR*)KHEAP)[j].Starth<<16 | ((DIR*)KHEAP)[j].Startl;
-                    file->length=((DIR*)KHEAP)[j].Length;
-                    file->createtime=kernel_mktime(((DIR*)KHEAP)[j].CreateYear+1980,
-                                                   ((DIR*)KHEAP)[j].CreateMonth,
-                                                   ((DIR*)KHEAP)[j].CreateDay,
-                                                   ((DIR*)KHEAP)[j].CreateHour,
-                                                   ((DIR*)KHEAP)[j].CreateMinute,
-                                                   ((DIR*)KHEAP)[j].Create2Second*2
+                    file->startnode=buff[j].Starth<<16 | buff[j].Startl;
+                    file->length=buff[j].Length;
+                    file->createtime=kernel_mktime(buff[j].CreateYear+1980,
+                                                   buff[j].CreateMonth,
+                                                   buff[j].CreateDay,
+                                                   buff[j].CreateHour,
+                                                   buff[j].CreateMinute,
+                                                   buff[j].Create2Second*2
                                                   );
 
-                    file->updatetime=kernel_mktime(((DIR*)KHEAP)[j].UpdateYear+1980,
-                                                   ((DIR*)KHEAP)[j].UpdateMonth,
-                                                   ((DIR*)KHEAP)[j].UpdateDay,
-                                                   ((DIR*)KHEAP)[j].UpdateHour,
-                                                   ((DIR*)KHEAP)[j].UpdateMinute,
-                                                   ((DIR*)KHEAP)[j].Update2Second*2
+                    file->updatetime=kernel_mktime(buff[j].UpdateYear+1980,
+                                                   buff[j].UpdateMonth,
+                                                   buff[j].UpdateDay,
+                                                   buff[j].UpdateHour,
+                                                   buff[j].UpdateMinute,
+                                                   buff[j].Update2Second*2
                                                   );
                     return 0; //找到对应的目录项,返回
                 }
             }
             i=getnextclus(i);
         }
+        free(buff);
         break;
     }
     return -1; //没有找到对应的目录项,返回
@@ -451,18 +453,21 @@ int Fat_read(fileindex *file,uint8 *ptr,size_t len) {
     if(file->offset+len > file->length) {
         return -1;
     }
+    void *buff=malloc(ClusBytes);
     while(len>0) {
         if( (file->offset%ClusBytes == 0) && (file->offset) ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(file->curnode,KHEAP);
+        
+        ReadClus(file->curnode,buff);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(ptr+readlen,KHEAP+file->offset%ClusBytes,c);
+        memcpy(ptr+readlen,buff+file->offset%ClusBytes,c);
         readlen+=c;
         file->offset+=c;
         len-=c;
     }
+    free(buff);
     return readlen;
 }
 
@@ -522,24 +527,27 @@ int Fat_write(fileindex *file,const uint8 *ptr,size_t len) {
         return -1;
     }
     uint16 DataSec=DataStartSec();
+    void *buff=malloc(ClusBytes);
     while(len>0) {
         if( (file->offset%ClusBytes == 0) && (file->offset)  ) {
             file->curnode=getnextclus(file->curnode);
         }
-        ReadClus(DataSec+file->curnode,KHEAP);
+        ReadClus(DataSec+file->curnode,buff);
         c=(ClusBytes-file->offset%ClusBytes)<len?
           (ClusBytes-file->offset%ClusBytes):len;
-        memcpy(KHEAP+file->offset%ClusBytes,ptr+writelen,c);
-        WriteClus(DataSec+file->curnode,KHEAP);
+        memcpy(buff+file->offset%ClusBytes,ptr+writelen,c);
+        WriteClus(DataSec+file->curnode,buff);
         len-=c;
         file->offset+=c;
         writelen+=c;
     }
+    free(buff);
     return writelen;
 }
 
 int Fat_close(fileindex *file) {
     struct tm t;
+    DIR *buff=malloc(ClusBytes);
     switch(ft) {
     case FAT12:
     case FAT16:
@@ -569,33 +577,34 @@ int Fat_close(fileindex *file) {
         WriteSector(file->dirnode);
         break;
     case FAT32:
-        ReadClus(file->dirnode,KHEAP);
+        
+        ReadClus(file->dirnode,buff);
         time_to_tm(file->createtime,&t);
-        ((DIR*)KHEAP)[file->indexno].Create2Second=t.tm_sec/2;
-        ((DIR*)KHEAP)[file->indexno].CreateMinute=t.tm_min;
-        ((DIR*)KHEAP)[file->indexno].CreateHour=t.tm_hour;
-        ((DIR*)KHEAP)[file->indexno].CreateDay=t.tm_mday;
-        ((DIR*)KHEAP)[file->indexno].CreateMonth=t.tm_mon+1;
-        ((DIR*)KHEAP)[file->indexno].CreateYear=t.tm_year-80;
+        buff[file->indexno].Create2Second=t.tm_sec/2;
+        buff[file->indexno].CreateMinute=t.tm_min;
+        buff[file->indexno].CreateHour=t.tm_hour;
+        buff[file->indexno].CreateDay=t.tm_mday;
+        buff[file->indexno].CreateMonth=t.tm_mon+1;
+        buff[file->indexno].CreateYear=t.tm_year-80;
         time_to_tm(file->accesstime,&t);
-        ((DIR*)KHEAP)[file->indexno].AccessDay=t.tm_mday;
-        ((DIR*)KHEAP)[file->indexno].AccessMonth=t.tm_mon+1;
-        ((DIR*)KHEAP)[file->indexno].AccessYear=t.tm_year-80;
+        buff[file->indexno].AccessDay=t.tm_mday;
+        buff[file->indexno].AccessMonth=t.tm_mon+1;
+        buff[file->indexno].AccessYear=t.tm_year-80;
         time_to_tm(file->updatetime,&t);
-        ((DIR*)KHEAP)[file->indexno].Update2Second=t.tm_sec/2;
-        ((DIR*)KHEAP)[file->indexno].UpdateMinute=t.tm_min;
-        ((DIR*)KHEAP)[file->indexno].UpdateHour=t.tm_hour;
-        ((DIR*)KHEAP)[file->indexno].UpdateDay=t.tm_mday;
-        ((DIR*)KHEAP)[file->indexno].UpdateMonth=t.tm_mon+1;
-        ((DIR*)KHEAP)[file->indexno].UpdateYear=t.tm_year-80;
+        buff[file->indexno].Update2Second=t.tm_sec/2;
+        buff[file->indexno].UpdateMinute=t.tm_min;
+        buff[file->indexno].UpdateHour=t.tm_hour;
+        buff[file->indexno].UpdateDay=t.tm_mday;
+        buff[file->indexno].UpdateMonth=t.tm_mon+1;
+        buff[file->indexno].UpdateYear=t.tm_year-80;
 
-        ((DIR*)KHEAP)[file->indexno].Starth=file->startnode>>16;
-        ((DIR*)KHEAP)[file->indexno].Startl=file->startnode&0xffff;
-        ((DIR*)KHEAP)[file->indexno].Length=file->length;
-        WriteClus(file->dirnode,KHEAP);
+        buff[file->indexno].Starth=file->startnode>>16;
+        buff[file->indexno].Startl=file->startnode&0xffff;
+        buff[file->indexno].Length=file->length;
+        WriteClus(file->dirnode,buff);
         break;
     }
-
+    free(buff);
     return 0;
 }
 
