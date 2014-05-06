@@ -135,6 +135,6 @@ typedef struct{
     uint32 pagec;
     uint16 index;
     uint16 next;
-}pageshlist;
+}pageshrlist;
 
 #endif

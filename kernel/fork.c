@@ -51,10 +51,7 @@ int sys_fork() {
                     continue;
                 }
                 if(pte_cur[j].P){
-                    pte_cur[j].R_W=0;               //写时复制
-                    pte_cur[j].AVL=1;
-                    pte_new[j].R_W=0;
-                    pte_new[j].AVL=1;
+                    sharepage(pdt_cur[i].base,j,pdt_new[i].base,j);               //写时复制
                 }
             }
             unmappage(pte_cur);
@@ -65,14 +62,9 @@ int sys_fork() {
     ptable *pte_cks=mappage(pdt_cur[USEENDP].base); //复制栈
     ptable *pte_nks=mappage(pdt_new[USEENDP].base);
     
-    pte_nks[1022].base=getmpage();
-    pte_nks[1022].R_W=1;
-    pte_cks[1022].R_W=1;
-    pagecpy(pte_nks[1022].base,pte_cks[1022].base);
-    
+  
+    devpage(pdt_new[USEENDP].base,1023);
     pte_nks[1023].base=getmpage();
-    pte_nks[1023].R_W=1;
-    pte_cks[1023].R_W=1;
     pagecpy(pte_nks[1023].base,pte_cks[1023].base);
 
     unmappage(pte_cks);

@@ -48,38 +48,47 @@ int sys_execve(char *name, char **argv, char **env)
                     break;
                 
                 ptable *pdt = mappage(PROTABLE[curpid].pdt);
-                ptable *pte = mappage(pdt[USEPAGE].base);
-
+                int i,j;
+                for(i=USEPAGE;i<ENDPAGE;++i){
+                    if(pdt[i].P){                                                           //关闭所有共享页面
+                        ptable *pte = mappage(pdt[i].base);
+                        for(j=0;j<ENDPAGE;++j){
+                            if(pte[j].AVL){
+                                devpage(pdt[i].base,j);
+                                pte[j].P=0;
+                            }
+                        }
+                        unmappage(pte);
+                    }
+                }
 
                 uint8 *heap = (void *)USECODE;
-                int i;
+
                 for (i = 0; i < elf32_eh.e_phnum; ++i) {
                     file_lseek(&fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
                     if (file_read(&fd, &elf32_ph, elf32_eh.e_phentsize) == elf32_eh.e_phentsize) {
                         printf("ptype:%u,pvaddr:0x%X,poffset:0x%X,pfilesz:0x%X,pmemsz:0x%X\n",
                                elf32_ph.p_type, elf32_ph.p_vaddr, elf32_ph.p_offset, elf32_ph.p_filesz, elf32_ph.p_memsz);
                         if (elf32_ph.p_type == PT_LOAD) {
+                            ptable *pte = mappage(pdt[getpagec(elf32_ph.p_vaddr)].base);
                             int count = 0;
-                            for (count = getpagec(elf32_ph.p_vaddr);
-                                    count <= getpagec(elf32_ph.p_vaddr + elf32_ph.p_memsz);
+                            for (count = getpagei(elf32_ph.p_vaddr);
+                                    count <= getpagei(elf32_ph.p_vaddr + elf32_ph.p_memsz);
                                     count ++) {
                                 if (pte[count].P == 0) {
                                     pte[count].base = getmpage();
                                     pte[count].PAT = 0;
                                     pte[count].D = 0;
                                     pte[count].A = 0;
+                                    pte[count].AVL=0;
                                     pte[count].PCD = 0;
                                     pte[count].PWT = 0;
                                     pte[count].U_S = 1;
                                     pte[count].R_W = 1;
                                     pte[count].P = 1;
-                                    continue;
-                                }
-                                if (pte[count].R_W == 0) {
-                                    pte[count].base = getmpage();
-                                    pte[count].R_W = 1;
                                 }
                             }
+                            unmappage(pte);
                             file_lseek(&fd, elf32_ph.p_offset, SEEK_SET);
                             file_read(&fd, (void *)elf32_ph.p_vaddr, elf32_ph.p_filesz);
                             heap = (void *)MAX(heap, elf32_ph.p_vaddr + elf32_ph.p_memsz);
@@ -88,12 +97,10 @@ int sys_execve(char *name, char **argv, char **env)
                         file_close(&fd);
                         putstring("The file is broken!\n");
                         unmappage(pdt);
-                        unmappage(pte);
                         return -1;
                     }
                 }
                 unmappage(pdt);
-                unmappage(pte);
                 register_status *prs = (register_status*)(0xffffffff-sizeof(register_status));
                 PROTABLE[curpid].heap = heap;
                 PROTABLE[curpid].reg.eip = elf32_eh.e_entry;

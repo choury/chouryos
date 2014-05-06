@@ -38,43 +38,45 @@ void defultinthandle(int no, int code)
             break;
         ptable *pdt = mappage(PROTABLE[curpid].pdt);
         
-        switch (code) {
+        switch (code & 0xf) {
         case 4: 
-            if (pdt[getpagei(cr2)].P == 0) {
-                pdt[getpagei(cr2)].base = getmpage();
-                pdt[getpagei(cr2)].PAT = 0;
-                pdt[getpagei(cr2)].D = 0;
-                pdt[getpagei(cr2)].A = 0;
-                pdt[getpagei(cr2)].PCD = 0;
-                pdt[getpagei(cr2)].PWT = 0;
-                pdt[getpagei(cr2)].U_S = 1;
-                pdt[getpagei(cr2)].R_W = 1;
-                pdt[getpagei(cr2)].P = 1;
+            if (pdt[getpagec(cr2)].P == 0) {
+                pdt[getpagec(cr2)].base = getmpage();
+                pdt[getpagec(cr2)].PAT = 0;
+                pdt[getpagec(cr2)].D = 0;
+                pdt[getpagec(cr2)].A = 0;
+                pdt[getpagec(cr2)].PCD = 0;
+                pdt[getpagec(cr2)].PWT = 0;
+                pdt[getpagec(cr2)].U_S = 1;
+                pdt[getpagec(cr2)].R_W = 1;
+                pdt[getpagec(cr2)].P = 1;
             }
             
-            ptable *pte = mappage(pdt[getpagei(cr2)].base);
-            if (pte[getpagec(cr2)].P == 0) {
-                pte[getpagec(cr2)].base = getmpage();
-                pte[getpagec(cr2)].PAT = 0;
-                pte[getpagec(cr2)].D = 0;
-                pte[getpagec(cr2)].A = 0;
-                pte[getpagec(cr2)].PCD = 0;
-                pte[getpagec(cr2)].PWT = 0;
-                pte[getpagec(cr2)].U_S = 1;
-                pte[getpagec(cr2)].R_W = 1;
-                pte[getpagec(cr2)].P = 1;
+            ptable *pte = mappage(pdt[getpagec(cr2)].base);
+            if (pte[getpagei(cr2)].P == 0) {
+                pte[getpagei(cr2)].base = getmpage();
+                pte[getpagei(cr2)].PAT = 0;
+                pte[getpagei(cr2)].D = 0;
+                pte[getpagei(cr2)].A = 0;
+                pte[getpagei(cr2)].PCD = 0;
+                pte[getpagei(cr2)].PWT = 0;
+                pte[getpagei(cr2)].U_S = 1;
+                pte[getpagei(cr2)].R_W = 1;
+                pte[getpagei(cr2)].P = 1;
             }
-            unmappage(pdt);
             unmappage(pte);
+            unmappage(pdt);
             return;
         case 7:
-            pte = mappage(pdt[getpagei(cr2)].base);
-            if (pte[getpagec(cr2)].R_W == 0) {
-                pte[getpagec(cr2)].base = getmpage();
-                pte[getpagec(cr2)].R_W = 1;
+            pte = mappage(pdt[getpagec(cr2)].base);
+            if(pte[getpagei(cr2)].AVL == 1){
+                devpage(pdt[getpagec(cr2)].base,getpagei(cr2));
+                uint32 newpage=getmpage();
+                pagecpy(newpage,pte[getpagei(cr2)].base);
+                pte[getpagei(cr2)].base=newpage;
             }
-            unmappage(pdt);
             unmappage(pte);
+            unmappage(pdt);
             return;
         }
         unmappage(pdt);

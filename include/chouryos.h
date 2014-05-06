@@ -32,9 +32,12 @@
 
 #define KHEAP   ((void *) 0x10000)
 #define MMAP    ((uint8 *)0x300000)
-#define PSL   ((pageshlist*)0x400000)
+#define PSL   ((pageshrlist*)0x400000)
 #define USEBASE 0x40000000                          //1G以上为用户空间
 #define USECODE (USEBASE+PAGESIZE)                  //进程代码开始地址
+
+#define MAX_SHRLC (0x100000/sizeof(pageshrlist))
+
 #define USEPAGE ((uint32)USEBASE>>22)
 #define USEENDP 1023
 #define ENDPAGE (USEENDP+1)
