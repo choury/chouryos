@@ -24,14 +24,12 @@ void getmemmap(struct Bootinfo *boot)
         for (map = boot->mmap_addr;
                 (uint32)map < (uint32)boot->mmap_addr + boot->mmap_length;
                 map = (struct memmap *)((uint32)map + map->size + sizeof(map->size))) {
-            printf("The first size:%d,addr:0x%X%08X,lenth:0x%X%08X,type:%d\n",
-                   map->size,
-                   map->base_addrh,
-                   map->base_addr,
-                   map->lengthh,
-                   map->length,
-                   map->type);
             if (map->type == 1) {
+                printf("Avalable memory,addr:0x%X%08X,lenth:0x%X%08X\n",
+                       map->base_addrh,
+                       map->base_addr,
+                       map->lengthh,
+                       map->length);
                 uint8 *tmpaddr = upto(map->base_addr, PAGESIZE);
                 map->length -= (tmpaddr - map->base_addr);
                 map->base_addr = tmpaddr;
@@ -137,11 +135,11 @@ void sharepage(uint32 pageca, uint16 pageia, uint32 pagecb, uint16 pageib)
         for (i = 1; PSL[i].pagec != 0 && i < MAX_SHRLC; ++i);
         PSL[i].pagec = pagea[pageia].base;
         PSL[i].index = 2;
-        for (j = i+1; PSL[j].pagec != 0 && j < MAX_SHRLC; ++j);
+        for (j = i + 1; PSL[j].pagec != 0 && j < MAX_SHRLC; ++j);
         PSL[i].next = j;
         PSL[j].pagec = pageca;
         PSL[j].index = pageia;
-        for (i = j+1; PSL[i].pagec != 0 && i < MAX_SHRLC; ++i);
+        for (i = j + 1; PSL[i].pagec != 0 && i < MAX_SHRLC; ++i);
         PSL[j].next = i;
         PSL[i].pagec = pagecb;
         PSL[i].index = pageib;
@@ -177,18 +175,18 @@ void devpage(uint32 pagec, uint16 pagei)
             pagef[PSL[j].index].R_W = 1;
         }
         unmappage(pagef);
-        
+
         PSL[PSL[j].next].pagec = 0;
         PSL[j].pagec = 0;
         PSL[i].pagec = 0;
     } else {
         PSL[i].index--;
         for (j = i; PSL[PSL[j].next].pagec != pagec ; j = PSL[j].next);
-        PSL[PSL[j].next].pagec=0;
-        PSL[j].next=PSL[PSL[j].next].next;
+        PSL[PSL[j].next].pagec = 0;
+        PSL[j].next = PSL[PSL[j].next].next;
     }
-    
-    paged[pagei].AVL=0;
-    paged[pagei].R_W=1;
+
+    paged[pagei].AVL = 0;
+    paged[pagei].R_W = 1;
     unmappage(paged);
 }

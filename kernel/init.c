@@ -58,6 +58,7 @@ void defultinthandle(int no, int code)
                 pte[getpagei(cr2)].PAT = 0;
                 pte[getpagei(cr2)].D = 0;
                 pte[getpagei(cr2)].A = 0;
+                pte[getpagei(cr2)].AVL = 0;
                 pte[getpagei(cr2)].PCD = 0;
                 pte[getpagei(cr2)].PWT = 0;
                 pte[getpagei(cr2)].U_S = 1;
@@ -66,6 +67,7 @@ void defultinthandle(int no, int code)
             }
             unmappage(pte);
             unmappage(pdt);
+            invlpg(cr2);
             return;
         case 7:
             pte = mappage(pdt[getpagec(cr2)].base);
@@ -77,6 +79,7 @@ void defultinthandle(int no, int code)
             }
             unmappage(pte);
             unmappage(pdt);
+            invlpg(cr2);
             return;
         }
         unmappage(pdt);
@@ -99,6 +102,7 @@ void init()
     Setinterrupt(0x2e, HdIntHandler);
     Setinterrupt(0x2f, HdIntHandler);
     Setinterrupt(80, (void ( *)())syscall);
+    outp(0x21, 0xff);               //先关闭所有中断
     outp(0x21, inp(0x21) & 0xfd);   //开启键盘中断
     outp(0x21, inp(0x21) & 0xfe);   //开启时钟中断
     outp(0x21, inp(0x21) & 0xfb);   //允许从片中断
@@ -106,14 +110,14 @@ void init()
     outp(0xa1, inp(0xa1) & 0x7f);   //开启第二硬盘中断
     
     sti();
-    putstring("I will init fs\n");
+    putstring("Initing file system ...\n");
     initfs();
-    putstring("I inited fs\n");
+    putstring("File system inited.\n");
     cli();
     
     
     curpid = 0;                     //初始化进程0,即闲逛进程
-    PROTABLE[curpid].status = running;
+    PROTABLE[curpid].status = ready;
     PROTABLE[curpid].pid = 0;
     PROTABLE[curpid].ppid = 0;
 
@@ -328,15 +332,15 @@ void puts(const char *s)
 
 void process0(void)
 {
-    puts("The process 0 is started!\n");
+//    puts("The process 0 is started!\n");
     if (fork() == 0) {
-        puts("I'am child process!\n");
+//        puts("I'am child process!\n");
         execve("exe.elf", NULL, NULL);
         while (1);
     } else {
-        puts("I forked a process!\n");
+//        puts("I forked a process!\n");
         while (1);
-    }
+    } 
     while (1);
 }
 

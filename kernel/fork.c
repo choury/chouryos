@@ -52,6 +52,7 @@ int sys_fork() {
                 }
                 if(pte_cur[j].P){
                     sharepage(pdt_cur[i].base,j,pdt_new[i].base,j);               //写时复制
+                    invlpg(getvmaddr(i,j));
                 }
             }
             unmappage(pte_cur);
@@ -62,11 +63,12 @@ int sys_fork() {
     ptable *pte_cks=mappage(pdt_cur[USEENDP].base); //复制栈
     ptable *pte_nks=mappage(pdt_new[USEENDP].base);
     
-  
+    
     devpage(pdt_new[USEENDP].base,1023);
     pte_nks[1023].base=getmpage();
     pagecpy(pte_nks[1023].base,pte_cks[1023].base);
-
+    
+    
     unmappage(pte_cks);
     unmappage(pte_nks);
     unmappage(pdt_cur);

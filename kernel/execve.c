@@ -70,6 +70,18 @@ int sys_execve(char *name, char **argv, char **env)
                         printf("ptype:%u,pvaddr:0x%X,poffset:0x%X,pfilesz:0x%X,pmemsz:0x%X\n",
                                elf32_ph.p_type, elf32_ph.p_vaddr, elf32_ph.p_offset, elf32_ph.p_filesz, elf32_ph.p_memsz);
                         if (elf32_ph.p_type == PT_LOAD) {
+                            if (pdt[getpagec(elf32_ph.p_vaddr)].P == 0) {
+                                pdt[getpagec(elf32_ph.p_vaddr)].base = getmpage();
+                                pdt[getpagec(elf32_ph.p_vaddr)].PAT = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].D = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].A = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].AVL = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].PCD = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].PWT = 0;
+                                pdt[getpagec(elf32_ph.p_vaddr)].U_S = 1;
+                                pdt[getpagec(elf32_ph.p_vaddr)].R_W = 1;
+                                pdt[getpagec(elf32_ph.p_vaddr)].P = 1;
+                            }
                             ptable *pte = mappage(pdt[getpagec(elf32_ph.p_vaddr)].base);
                             int count = 0;
                             for (count = getpagei(elf32_ph.p_vaddr);

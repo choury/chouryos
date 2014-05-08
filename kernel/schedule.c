@@ -8,18 +8,26 @@ void TimerInitHandler() {
 
 
 void schedule() {
-    if(PROTABLE[1].status == ready){
-        switch_to(1);
+    int i;
+    if(curpid==0){
+        for(i=1;i<MAX_PROCESS;++i){
+            if(PROTABLE[i].status == ready){
+                switch_to(i);
+                return;
+            }
+        }
     }else{
+        for(i=curpid+1;i!=curpid;++i){
+            if(PROTABLE[i].status == ready){
+                switch_to(i);
+                return;
+            }
+            if(i==MAX_PROCESS-1)i=0;
+        }
+    }
+    if(PROTABLE[curpid].status != running){
         switch_to(0);
     }
-/*    int i;
-    for(i=curpid+1;i!=curpid;++i){
-        if(i==MAX_PROCESS)i=0;
-        if(PROTABLE[i].status == ready){
-            switch_to(i);
-        }
-    }*/
 }
 
 void switch_to( pid_t pid ) {
