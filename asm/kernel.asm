@@ -54,7 +54,7 @@ start:
     cli
     mov esp, 0x300000
     cmp eax, 0x2BADB002
-    jne selfboot
+    jne wrongboot
     push ebx
     call getmemmap
     add esp, 4
@@ -65,16 +65,15 @@ start:
     rep movsb
     lgdt    [GdtPtr]
     lidt    [IdtPtr]
-    call Init8259
-    jmp    KCODE_DT:selfboot
-selfboot:
+    jmp    KCODE_DT:next
+next:
     mov ax,KDATA_DT
     mov ds,ax
     mov ss,ax
     mov es,ax
     mov gs,ax
-    call setinterrupt
     call init
+wrongboot:
     jmp $
 
 

@@ -1,8 +1,9 @@
-#include <syscall.h>
-#include <chouryos.h>
+#include <common.h>
 #include <string.h>
 #include <memory.h>
 #include <process.h>
+#include <errno.h>
+
 
 /*
  fork

@@ -1,9 +1,8 @@
-#include <syscall.h>
 #include <keyboad.h>
 #include <file.h>
-#include <chouryos.h>
+#include <common.h>
 #include <process.h>
-
+#include <errno.h>
 
 /*
  read

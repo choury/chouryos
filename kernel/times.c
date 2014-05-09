@@ -1,8 +1,8 @@
-#include <chouryos.h>
-#include <syscall.h>
-#include <sys/time.h>
+#include <common.h>
 
-#define CURRENT_YEAR        2013                            // Change this each year!
+
+
+#define CURRENT_YEAR        2014                            // Change this each year!
 
 static int century_register = 0x00;                                // Set by ACPI table parsing code if possible
 

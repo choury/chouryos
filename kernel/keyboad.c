@@ -1,4 +1,4 @@
-#include <chouryos.h>
+#include <common.h>
 #include <keyboad.h>
 
 static int keyhead=0;

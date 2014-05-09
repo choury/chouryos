@@ -1,5 +1,4 @@
-#include <sys/stat.h>
-#include <chouryos.h>
+#include <common.h>
 #include <process.h>
 
 /*

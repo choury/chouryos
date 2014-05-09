@@ -1,5 +1,5 @@
 #include <hd.h>
-#include <chouryos.h>
+#include <common.h>
 
 static uint8 hdstats;
 

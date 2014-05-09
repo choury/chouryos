@@ -1,6 +1,6 @@
 %include "asm.h"
     global  Init8259
-    global  setinterrupt
+;    global  setinterrupt
 use32
 section .text
 
@@ -37,7 +37,7 @@ Init8259:
     out 0a1h,al  ;slave,icw4
     nop
 
-    mov al,0bfh
+    mov al,0ffh
     out 21h,al   ;maser,ocw1
     nop
 

@@ -1,9 +1,7 @@
-#include <chouryos.h>
+#include <common.h>
 #include <elf.h>
-#include <fcntl.h>
-#include <syscall.h>
+#include <chouryos.h>
 #include <string.h>
-#include <unistd.h>
 #include <memory.h>
 #include <file.h>
 #include <process.h>
@@ -17,18 +15,18 @@
 
 int sys_execve(char *name, char **argv, char **env)
 {
-    fileindex fd;
+    int fd;
     if (curpid == 0) {
         putstring("The process 0 can't call execve!\n");
         return -1;
     }
-    if (file_open(&fd, name, O_RDONLY) < 0) {
+    if ((fd=open(name, O_RDONLY)) < 0) {
         putstring("No such file!\n");
         return -1;
     } else {
         Elf32_Ehdr elf32_eh;
         Elf32_Phdr elf32_ph;
-        if (file_read(&fd, &elf32_eh, sizeof(Elf32_Ehdr)) == sizeof(Elf32_Ehdr)) {
+        if (read(fd, &elf32_eh, sizeof(Elf32_Ehdr)) == sizeof(Elf32_Ehdr)) {
             do {
                 if (strncmp(ELFMAG, (const char *)elf32_eh.e_ident, SELFMAG) != 0)
                     break;
@@ -65,8 +63,8 @@ int sys_execve(char *name, char **argv, char **env)
                 uint8 *heap = (void *)USECODE;
 
                 for (i = 0; i < elf32_eh.e_phnum; ++i) {
-                    file_lseek(&fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
-                    if (file_read(&fd, &elf32_ph, elf32_eh.e_phentsize) == elf32_eh.e_phentsize) {
+                    lseek(fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
+                    if (read(fd, &elf32_ph, elf32_eh.e_phentsize) == elf32_eh.e_phentsize) {
                         printf("ptype:%u,pvaddr:0x%X,poffset:0x%X,pfilesz:0x%X,pmemsz:0x%X\n",
                                elf32_ph.p_type, elf32_ph.p_vaddr, elf32_ph.p_offset, elf32_ph.p_filesz, elf32_ph.p_memsz);
                         if (elf32_ph.p_type == PT_LOAD) {
@@ -101,12 +99,12 @@ int sys_execve(char *name, char **argv, char **env)
                                 }
                             }
                             unmappage(pte);
-                            file_lseek(&fd, elf32_ph.p_offset, SEEK_SET);
-                            file_read(&fd, (void *)elf32_ph.p_vaddr, elf32_ph.p_filesz);
+                            lseek(fd, elf32_ph.p_offset, SEEK_SET);
+                            read(fd, (void *)elf32_ph.p_vaddr, elf32_ph.p_filesz);
                             heap = (void *)MAX(heap, elf32_ph.p_vaddr + elf32_ph.p_memsz);
                         }
                     } else {
-                        file_close(&fd);
+                        close(fd);
                         putstring("The file is broken!\n");
                         unmappage(pdt);
                         return -1;
@@ -120,14 +118,13 @@ int sys_execve(char *name, char **argv, char **env)
                 PROTABLE[curpid].reg.oesp = 0xffffffff - KSL;
                 prs->oesp = 0xffffffff - KSL;
                 for (i = 3; i < MAX_FD; i = i + 1) {
-                    PROTABLE[curpid].file[i].isused = 0;            //关闭所有打开的文件
+                    close(i);            //关闭所有打开的文件
                 }
-                file_close(&fd);
                 return 0;
             } while (0);
         }
         putstring("The file is not executable file!\n");
-        file_close(&fd);
+        close(fd);
         return -1;
     }
 }

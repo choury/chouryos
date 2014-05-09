@@ -1,5 +1,5 @@
 #include <multiboot.h>
-#include <chouryos.h>
+#include <common.h>
 #include <string.h>
 #include <memory.h>
 

@@ -1,7 +1,7 @@
-#include <chouryos.h>
-#include <syscall.h>
+#include <common.h>
 #include <file.h>
 #include <process.h>
+#include <errno.h>
 
 int sys_close(int fd) {
     if((fd<0)||(fd>=MAX_FD)||!PROTABLE[curpid].file[fd].isused){

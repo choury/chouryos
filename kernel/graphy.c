@@ -1,4 +1,3 @@
-#include <chouryos.h>
 #include <graphy.h>
 
 

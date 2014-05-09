@@ -1,5 +1,5 @@
 #include <string.h>
-#include <chouryos.h>
+#include <common.h>
 
 
 extern int line;

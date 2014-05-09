@@ -1,8 +1,8 @@
-#include <syscall.h>
-#include <chouryos.h>
+#include <common.h>
 #include <string.h>
 #include <file.h>
 #include <process.h>
+#include <errno.h>
 
 int line=1;
 int colume=0;

@@ -2,7 +2,7 @@
 #include <floppy.h>
 #include <string.h>
 #include <file.h>
-#include <chouryos.h>
+#include <common.h>
 #include <hd.h>
 #include <malloc.h>
 

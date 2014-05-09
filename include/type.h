@@ -14,6 +14,7 @@ typedef unsigned long long  uint64;
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef unsigned int size_t;
+typedef unsigned int off_t;
 #endif
 
 
@@ -136,5 +137,42 @@ typedef struct{
     uint16 index;
     uint16 next;
 }pageshrlist;
+
+
+typedef long clock_t;
+typedef long time_t;
+typedef long pid_t;
+typedef uint32 uid_t;
+typedef uint32 gid_t;
+
+struct timeval{
+  time_t      tv_sec;
+  time_t      tv_usec;
+};
+
+struct timezone{
+    
+};
+
+/*  Get Process Times, P1003.1b-1993, p. 92 */
+struct tms {
+    clock_t tms_utime;      /* user time */
+    clock_t tms_stime;      /* system time */
+    clock_t tms_cutime;     /* user time, children */
+    clock_t tms_cstime;     /* system time, children */
+};
+
+struct tm
+{
+  int   tm_sec;
+  int   tm_min;
+  int   tm_hour;
+  int   tm_mday;
+  int   tm_mon;
+  int   tm_year;
+  int   tm_wday;
+  int   tm_yday;
+  int   tm_isdst;
+};
 
 #endif

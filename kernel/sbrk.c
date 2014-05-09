@@ -1,5 +1,4 @@
-#include <syscall.h>
-#include <chouryos.h>
+#include <common.h>
 #include <process.h>
 
 /*

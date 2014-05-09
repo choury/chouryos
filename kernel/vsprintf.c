@@ -12,7 +12,7 @@
 
 #include <stdarg.h>
 #include <string.h>
-#include <chouryos.h>
+#include <common.h>
 
 static char printbuf[1024];
 

@@ -1,4 +1,4 @@
-#include <chouryos.h>
+#include <common.h>
 #include <schedule.h>
 
 void TimerInitHandler() {

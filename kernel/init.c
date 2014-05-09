@@ -1,5 +1,4 @@
 #include <process.h>
-#include <chouryos.h>
 #include <syscall.h>
 #include <floppy.h>
 #include <hd.h>
@@ -8,9 +7,9 @@
 #include <memory.h>
 #include <string.h>
 
-pid_t curpid;                         //当前正在运行进程号
+pid_t curpid=0;                         //当前正在运行进程号
 
-int *__errno()
+int *__errno_location()
 {
     return (int *)12000;
 }
@@ -40,6 +39,7 @@ void defultinthandle(int no, int code)
         
         switch (code & 0xf) {
         case 4: 
+        case 6:
             if (pdt[getpagec(cr2)].P == 0) {
                 pdt[getpagec(cr2)].base = getmpage();
                 pdt[getpagec(cr2)].PAT = 0;
@@ -93,6 +93,10 @@ void init()
 {
     int i;
     set8253(0xffff);
+    Init8259();
+    while((inp(0x64) & 1) == 1){        //清空键盘缓冲区
+      inp(0x60);
+    }
     for (i = 0; i < 255; i++) {
         Setinterrupt(i, defultinthandle);
     }
@@ -102,7 +106,7 @@ void init()
     Setinterrupt(0x2e, HdIntHandler);
     Setinterrupt(0x2f, HdIntHandler);
     Setinterrupt(80, (void ( *)())syscall);
-    outp(0x21, 0xff);               //先关闭所有中断
+
     outp(0x21, inp(0x21) & 0xfd);   //开启键盘中断
     outp(0x21, inp(0x21) & 0xfe);   //开启时钟中断
     outp(0x21, inp(0x21) & 0xfb);   //允许从片中断
@@ -319,28 +323,18 @@ void init()
 }
 
 
-#include <fcntl.h>
-#include <unistd.h>
+#include <chouryos.h>
 
-void puts(const char *s)
-{
-    s += (uint32)USECODE;
-    write(STDOUT_FILENO, s, strlen(s));
-}
 
 
 
 void process0(void)
 {
-//    puts("The process 0 is started!\n");
     if (fork() == 0) {
-//        puts("I'am child process!\n");
         execve("exe.elf", NULL, NULL);
         while (1);
     } else {
-//        puts("I forked a process!\n");
         while (1);
-    } 
-    while (1);
+    }
 }
 

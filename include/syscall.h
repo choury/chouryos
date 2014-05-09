@@ -1,11 +1,9 @@
 #ifndef __SYSCALL_H__
 #define __SYSCALL_H__
 
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/times.h>
+
 #include <type.h>
+#include <file.h>
 #include <graphy.h>
 
 int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi);

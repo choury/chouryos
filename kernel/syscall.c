@@ -7,10 +7,10 @@
  */
 
 
-#include <chouryos.h>
+#include <common.h>
 #include <syscall.h>
-#include <file.h>
 #include <process.h>
+#include <errno.h>
 
 int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
     switch(eax){

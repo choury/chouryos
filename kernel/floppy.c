@@ -1,6 +1,5 @@
-#include <stdio.h>
 #include <string.h>
-#include <chouryos.h>
+#include <common.h>
 #include <floppy.h>
 
 

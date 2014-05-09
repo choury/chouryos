@@ -2,11 +2,10 @@
 #include <file.h>
 #include <fat.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <chouryos.h>
+#include <common.h>
 #include <hd.h>
 #include <floppy.h>
+#include <chouryos.h>
 
 supernode dev[MAX_DEV];
 
