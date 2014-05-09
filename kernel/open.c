@@ -4,8 +4,6 @@
 #include <errno.h>
 
 
-
-
 int sys_open(const char *path, int flags, ...){
     int i;
     int fd=-1;

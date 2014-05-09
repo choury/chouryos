@@ -3,6 +3,7 @@
 #include <common.h>
 #include <process.h>
 #include <errno.h>
+#include <socket.h>
 
 /*
  read
@@ -21,9 +22,14 @@ int sys_read(int fd, void *ptr, size_t len) {
     switch(PROTABLE[curpid].file[fd].type){
     case TTY:
         while(count<len){
-            ((char *)ptr)[count++]=getone();
+            char a=getone();
+            ((char *)ptr)[count++]=a;
+            if(a=='\n')
+                return count;
         }
         return len;
+    case SOCKET:
+        return socket_read(PROTABLE[curpid].file+fd,ptr,len);
     case NOMAL_FILE:
         return file_read(PROTABLE[curpid].file+fd,ptr,len);
     }

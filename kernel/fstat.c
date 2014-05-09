@@ -1,5 +1,6 @@
 #include <common.h>
 #include <process.h>
+#include <sys/stat.h>
 
 /*
  fstat

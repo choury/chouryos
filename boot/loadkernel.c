@@ -27,7 +27,7 @@ void loadkernel(){
     outp(0xa1,inp(0xa1)&0xbf);      //开启硬盘中断
     sti();
     initfs();
-    fileindex file;
+    filedes file;
     if(file_open(&file,"chouryos",O_RDWR)<0){
         putstring("Can't find kernel!\n");
     }else{

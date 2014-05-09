@@ -9,6 +9,8 @@ global isatty
 global sbrk
 global fork
 global execve
+global socket
+global getpid
 global setpoint
 
 
@@ -155,6 +157,28 @@ isatty:
     leave
     ret
 
+socket:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    mov eax, 11
+    mov ebx, [ebp+8]
+    mov ecx, [ebp+12]
+    int 80
+    pop ecx
+    pop ebx
+    leave
+    ret
+
+getpid:
+    push ebp
+    mov ebp, esp
+    mov eax, 20
+    int 80
+    leave
+    ret
+    
 ;(x+y*800)*3
 setpoint:
     push ebp

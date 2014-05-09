@@ -3,6 +3,7 @@
 #include <file.h>
 #include <process.h>
 #include <errno.h>
+#include <socket.h>
 
 int line=1;
 int colume=0;
@@ -49,6 +50,8 @@ int sys_write(int fd,const void *ptr,size_t len) {
         outp(0x3d4,15);
         outp(0x3d5,line*80+colume);
         return len;
+    case SOCKET:
+        return socket_write(PROTABLE[curpid].file+fd,ptr,len);
     case NOMAL_FILE:
         return file_write(PROTABLE[curpid].file+fd,ptr,len);
     }

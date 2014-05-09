@@ -5,7 +5,8 @@
 #include <common.h>
 #include <hd.h>
 #include <floppy.h>
-#include <chouryos.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 supernode dev[MAX_DEV];
 
@@ -24,7 +25,7 @@ void initfs() {
 
 
 
-int file_open(fileindex *file,const char *path, int flags) {
+int file_open(filedes *file,const char *path, int flags) {
     if(Fat_open(file,path)<0) {
         errno=ENOENT;
         return -1; //没有找到对应的目录项,返回
@@ -47,7 +48,7 @@ int file_open(fileindex *file,const char *path, int flags) {
 }
 
 
-int file_read(fileindex *file,void *buff,size_t len) {
+int file_read(filedes *file,void *buff,size_t len) {
     if(len+file->offset > file->length) {
         len=file->length-file->offset;
     }
@@ -55,7 +56,7 @@ int file_read(fileindex *file,void *buff,size_t len) {
 }
 
 
-off_t file_lseek(fileindex *file,off_t offset, int whence) {
+off_t file_lseek(filedes *file,off_t offset, int whence) {
     int tmpnode;
     switch(whence) {
     case SEEK_SET:
@@ -102,7 +103,7 @@ off_t file_lseek(fileindex *file,off_t offset, int whence) {
     return file->offset;
 }
 
-int file_write(fileindex *file,const void *ptr,size_t len) {
+int file_write(filedes *file,const void *ptr,size_t len) {
     uint32 tmpnode=file->curnode;
     file->updatetime=kernel_getnowtime();
     if(len+file->offset>file->length) {
@@ -123,6 +124,6 @@ int file_write(fileindex *file,const void *ptr,size_t len) {
 }
 
 
-int file_close(fileindex *file) {
+int file_close(filedes *file) {
     return Fat_close(file);
 }

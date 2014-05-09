@@ -11,6 +11,7 @@
 #include <syscall.h>
 #include <process.h>
 #include <errno.h>
+#include <fcntl.h>
 
 int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
     switch(eax){
@@ -34,6 +35,10 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
         return sys_execve((char *)ebx,(char **)ecx,(char **)edx);
     case 10:
         return sys_isatty(ebx);
+    case 11:
+        return sys_socket(ebx,ecx);
+    case 20:
+        return sys_getpid();
     }
     return -1;
 }

@@ -9,7 +9,7 @@ export OBJCOPY=objcopy
 
 CWD = $(shell pwd)
 export ROOT=$(CWD)
-export CPPFLAGS=-m32 -g -c -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib-i386/include
+export CPPFLAGS=-m32 -g -c -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/include -I$(ROOT)/newlib/include
 export ASFLAGS=-w+orphan-labels -f elf32 -g
 export BUILDDIR=$(ROOT)/build
 

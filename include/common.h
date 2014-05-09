@@ -2,7 +2,7 @@
 #define __COMMON_H__
 
 #include <type.h>
-
+#include <time.h>
 
 //#define IDT     ((gate *)0)           不需要它了
 #define GDT     ((ss *)0x800)

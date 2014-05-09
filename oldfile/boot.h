@@ -130,7 +130,7 @@ typedef struct{
     uint16 startnode;
     uint16 curnode;
     uint32 length;
-} fileindex;
+} filedes;
 
 
 #endif

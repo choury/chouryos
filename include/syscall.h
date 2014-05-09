@@ -3,8 +3,11 @@
 
 
 #include <type.h>
-#include <file.h>
-#include <graphy.h>
+//#include <graphy.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/times.h>
+
 
 int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi);
 
@@ -30,5 +33,5 @@ clock_t sys_times(struct tms *buf);
 int sys_unlink(char *name);
 int sys_wait(int *status);
 int sys_write(int fd, const void *ptr, size_t len);
-
+int sys_socket(pid_t pid,uint32 flags);
 #endif

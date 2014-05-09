@@ -9,7 +9,7 @@
 
 pid_t curpid=0;                         //当前正在运行进程号
 
-int *__errno_location()
+int *__errno()
 {
     return (int *)12000;
 }
@@ -122,6 +122,7 @@ void init()
     
     curpid = 0;                     //初始化进程0,即闲逛进程
     PROTABLE[curpid].status = ready;
+    PROTABLE[curpid].waitresource=0;
     PROTABLE[curpid].pid = 0;
     PROTABLE[curpid].ppid = 0;
 
@@ -323,7 +324,7 @@ void init()
 }
 
 
-#include <chouryos.h>
+#include <unistd.h>
 
 
 

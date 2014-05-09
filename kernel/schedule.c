@@ -30,6 +30,23 @@ void schedule() {
     }
 }
 
+
+void block(pid_t pid){
+    if(PROTABLE[pid].status == unuse)
+        return;
+    PROTABLE[pid].waitresource++;
+    PROTABLE[pid].status=waiting;
+    schedule();
+}
+
+void unblock(pid_t pid){
+    if(PROTABLE[pid].status == unuse)
+        return;
+    if(--PROTABLE[pid].waitresource == 0){
+        PROTABLE[pid].status=ready;
+    }
+}
+
 void switch_to( pid_t pid ) {
     if ( pid == curpid )
         return;

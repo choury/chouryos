@@ -371,7 +371,7 @@ static void splitpath(const char *path,char name[11]) {
     }
 }
 
-int Fat_open(fileindex *file,const char *path) {
+int Fat_open(filedes *file,const char *path) {
     uint32 DirSecCut, DirStart, i, j;
     DirSecCut = DataStartSec();
     DirStart = DirStartSec();
@@ -448,7 +448,7 @@ int Fat_open(fileindex *file,const char *path) {
 }
 
 //len 必须小于等于 文件长度
-int Fat_read(fileindex *file,uint8 *ptr,size_t len) {
+int Fat_read(filedes *file,uint8 *ptr,size_t len) {
     int c,readlen=0;
     if(file->offset+len > file->length) {
         return -1;
@@ -521,7 +521,7 @@ int Fat_seek(uint32 clus,off_t offset) {
 }
 
 //len 必须小于等于 文件长度
-int Fat_write(fileindex *file,const uint8 *ptr,size_t len) {
+int Fat_write(filedes *file,const uint8 *ptr,size_t len) {
     int c,writelen=0;
     if(file->offset+len>file->length) {
         return -1;
@@ -545,7 +545,7 @@ int Fat_write(fileindex *file,const uint8 *ptr,size_t len) {
     return writelen;
 }
 
-int Fat_close(fileindex *file) {
+int Fat_close(filedes *file) {
     struct tm t;
     DIR *buff=malloc(ClusBytes);
     switch(ft) {

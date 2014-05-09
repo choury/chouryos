@@ -84,12 +84,12 @@ typedef struct{
 void FAT_Init(void);
 
 
-int Fat_open(fileindex *file,const char *path);
-int Fat_read(fileindex *file,uint8 *buff,size_t len);
-int Fat_write(fileindex *file,const uint8 *ptr,size_t len);
+int Fat_open(filedes *file,const char *path);
+int Fat_read(filedes *file,uint8 *buff,size_t len);
+int Fat_write(filedes *file,const uint8 *ptr,size_t len);
 int Fat_expand(uint32 clus,size_t len,BOOL flag);
 int Fat_cut(uint32 clus);
 int Fat_seek(uint32,off_t offset);
-int Fat_close(fileindex *file);
+int Fat_close(filedes *file);
 
 #endif
