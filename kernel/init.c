@@ -122,7 +122,6 @@ void init()
     
     curpid = 0;                     //初始化进程0,即闲逛进程
     PROTABLE[curpid].status = ready;
-    PROTABLE[curpid].waitresource=0;
     PROTABLE[curpid].pid = 0;
     PROTABLE[curpid].ppid = 0;
 
@@ -200,6 +199,7 @@ void init()
         pte[i].R_W = 1;
         pte[i].P = 1;
     }
+    pte[0].R_W=0;                           //idt和gdt不可写
     
     pdt[1].base = getmpage();               //4M-5M
     pdt[1].PAT = 0;
@@ -301,7 +301,6 @@ void init()
     pte[1023].R_W = 1;
     pte[1023].P = 1;
 
-    PROTABLE[curpid].waitresource = 0;
 
 
     TSS.ss0 = KSTACK_DT;

@@ -13,6 +13,7 @@ struct msglist{
     pid_t to;
     void *buff;
     size_t len;
+    uint32 flags;
     struct msglist *next;
 };
 
@@ -48,16 +49,12 @@ int socket_read(filedes *file,void *buff,size_t len){
     struct msglist *ptmp=tmp;
     cli();
     while(tmp){
-        if(tmp->to==curpid && tmp->from == file->taget.dest){
+        if(tmp->to==curpid && tmp->from == file->taget.dest && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(buff,tmp->buff,ret);
-            if(ptmp == msghead){
-                msghead=NULL;
-            }else{
-                ptmp->next=tmp;
-            }
+            tmp->len=ret;
+            tmp->flags=1;
             unblock(tmp->from);
-            free(tmp);
             return ret;
         }
         ptmp=tmp;
@@ -69,6 +66,7 @@ int socket_read(filedes *file,void *buff,size_t len){
     tmp->to=curpid;
     tmp->from=file->taget.dest;
     tmp->next=NULL;
+    tmp->flags=0;
     if(msghead == NULL){
         msghead = tmp;
     }else{
@@ -76,7 +74,18 @@ int socket_read(filedes *file,void *buff,size_t len){
     }
     sti();
     block(curpid);
-    return 0;
+    cli();
+    int ret=tmp->len;
+    if(msghead == tmp){
+        msghead=NULL;
+    }else{
+        ptmp=msghead;
+        while(ptmp->next!=tmp)ptmp=ptmp->next;
+        ptmp->next=tmp->next;
+    }
+    sti();
+    free(tmp);
+    return ret;
 }
 
 int socket_write(filedes *file,const void *ptr,size_t len){
@@ -84,16 +93,12 @@ int socket_write(filedes *file,const void *ptr,size_t len){
     struct msglist *ptmp=tmp;
     cli();
     while(tmp){
-        if(tmp->from==curpid && tmp->to == file->taget.dest){
+        if(tmp->from==curpid && tmp->to == file->taget.dest && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(tmp->buff,ptr,ret);
-            if(ptmp == msghead){
-                msghead=NULL;
-            }else{
-                ptmp->next=tmp;
-            }
+            tmp->len=ret;
+            tmp->flags=1;
             unblock(tmp->to);
-            free(tmp);
             return ret;
         }
         ptmp=tmp;
@@ -105,6 +110,7 @@ int socket_write(filedes *file,const void *ptr,size_t len){
     tmp->to=file->taget.dest;
     tmp->from=curpid;
     tmp->next=NULL;
+    tmp->flags=0;
     if(msghead == NULL){
         msghead = tmp;
     }else{
@@ -112,5 +118,16 @@ int socket_write(filedes *file,const void *ptr,size_t len){
     }
     sti();
     block(curpid);
-    return len;
+    cli();
+    int ret=tmp->len;
+    if(msghead == tmp){
+        msghead=NULL;
+    }else{
+        ptmp=msghead;
+        while(ptmp->next!=tmp)ptmp=ptmp->next;
+        ptmp->next=tmp->next;
+    }
+    sti();
+    free(tmp);
+    return ret;
 }

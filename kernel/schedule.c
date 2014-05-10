@@ -34,7 +34,6 @@ void schedule() {
 void block(pid_t pid){
     if(PROTABLE[pid].status == unuse)
         return;
-    PROTABLE[pid].waitresource++;
     PROTABLE[pid].status=waiting;
     schedule();
 }
@@ -42,9 +41,7 @@ void block(pid_t pid){
 void unblock(pid_t pid){
     if(PROTABLE[pid].status == unuse)
         return;
-    if(--PROTABLE[pid].waitresource == 0){
-        PROTABLE[pid].status=ready;
-    }
+    PROTABLE[pid].status=ready;
 }
 
 void switch_to( pid_t pid ) {

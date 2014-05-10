@@ -7,7 +7,7 @@
 #define MAX_PROCESS 10
 
 typedef enum{
-  unuse,ready,running,waiting
+  unuse,ready,running,waiting,deaded
 }pstatus;
 
 typedef struct{
@@ -41,7 +41,7 @@ typedef struct{
 //    void *base;                            //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址
     filedes file[MAX_FD];                 //打开的文件
-    uint32 waitresource;                      //正在等待的资源数，当它为0时该进程状态应该为就绪
+    int  ret;                               //返回值
 }process;
 
 
@@ -54,7 +54,6 @@ struct env{
     char **argv;
     char **env;
     int  errno;
-    int  ret;
     void *endp;
 };
 

@@ -51,6 +51,12 @@ extern pid_t curpid;
 #define nop()     asm volatile ("nop\n")
 #define lldt(x)   asm volatile ("lldt %0" : :"r"(x))
 #define invlpg(x) asm volatile ("invlpg (%0)" : :"r"(x))
+#define invlapg()\
+do {unsigned long tmpreg; \
+    asm volatile ("movl %%cr3,%0\nmovl %0,%%cr3":"=r" (tmpreg): :"memory");\
+    }\
+while (0)
+ 
 
 static inline uint32 getcr2(void)
 {

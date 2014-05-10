@@ -15,10 +15,12 @@ int sys_fork() {
     for(i=1;i<MAX_PROCESS;++i){
         if(PROTABLE[i].status==unuse)break;
     }
+    
     if(i==MAX_PROCESS){
         errno = EAGAIN;
         return -1;
     }
+    
     newpid=i;
     register_status *prs=(register_status*)(0xffffffff-sizeof(register_status));          //父进程系统栈压入了一个register_status的副本
     memcpy(PROTABLE+newpid,PROTABLE+curpid,sizeof(process));                              //复制进程控制块

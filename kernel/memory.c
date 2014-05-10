@@ -2,6 +2,7 @@
 #include <common.h>
 #include <string.h>
 #include <memory.h>
+#include <process.h>
 
 #define upto(x,y) ((x)+(y)-((((long)x)-1)%(y)+1))       //x对y向上取整 比如 upto(12,10）= 20
 #define setavl(map,x) (map[(x)>>3] |=  (1<<((x)%8)))          //将某页面设为可用(1为可用）
@@ -190,3 +191,6 @@ void devpage(uint32 pagec, uint16 pagei)
     paged[pagei].R_W = 1;
     unmappage(paged);
 }
+
+
+

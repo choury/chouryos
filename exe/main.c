@@ -1,23 +1,27 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 int socket(pid_t pid,int flags);
 
 int main(int argc,char **argv){
     pid_t child;
-    pid_t parent=getpid();
     if((child=fork())==0){
-        int fd=socket(parent,0);
-        lseek(fd,1,SEEK_SET);
-        printf("errno=%d\n",errno);
+        int fd=socket(getppid(),0);
         char buff[20];
-        read(fd,buff,20);
-        printf(buff);
+        int ret=read(fd,buff,20);
+        printf("read:%s:%d\n",buff,ret);
+        return 2;
     }else{
         int fd=socket(child,0);
-        write(fd,"hello child!\n",14);
-        printf("sended!\n");
+        int ret=write(fd,"hello child!",13);
+        printf("sended:%d!\n",ret);
+        while(1){
+            int ret;
+            child=wait(&ret);
+            printf("%d exit:%d\n",child,ret);
+        }
     }
     return 0;
 }

@@ -37,30 +37,19 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
         return sys_isatty(ebx);
     case 11:
         return sys_socket(ebx,ecx);
+    case 18:
+        return sys_wait((int *)ebx);
     case 19:
         sys_exit(ebx);
         break;
     case 20:
         return sys_getpid();
+    case 21:
+        return sys_getppid();
     }
     return -1;
 }
 
-
-/*
- environ
- A pointer to a list of environment variables and their values.
- For a minimal environment, this empty list is adequate:
- */
-//char *__env[1] = { 0 };
-//char **environ = __env;
-
-
-void sys_exit(int status) {
-    while (1) {
-        ;
-    }
-}
 
 
 /*
@@ -68,8 +57,13 @@ void sys_exit(int status) {
  Process-ID; this is sometimes used to generate strings unlikely to conflict with other processes. Minimal implementation, for a system without processes:
  */
 
-int sys_getpid() {
+pid_t sys_getpid() {
     return curpid;
+}
+
+
+pid_t sys_getppid(){
+    return PROTABLE[curpid].ppid;
 }
 
 /*
@@ -132,13 +126,6 @@ int sys_unlink(char *name) {
     return -1;
 }
 
-/*
- wait
- Wait for a child process. Minimal implementation:
- */
-int sys_wait(int *status) {
-    errno = ECHILD;
-    return -1;
-}
+
 
 
