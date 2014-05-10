@@ -13,9 +13,9 @@ export CPPFLAGS=-m32 -g -c -Wall -fno-leading-underscore -fno-builtin -I$(ROOT)/
 export ASFLAGS=-w+orphan-labels -f elf32 -g
 export BUILDDIR=$(ROOT)/build
 
-.PHONY : all kernel boot asm exe clean
+.PHONY : all kernel boot asm init clean
 
-all:asm kernel exe #boot
+all:asm kernel init #boot
 	$(LD) -o $(KNAME).elf $(wildcard $(BUILDDIR)/*.o)  -Tkernel.ld -m elf_i386
 #	$(OBJCOPY) -R .pdr -R .comment -R .note -I elf32-i386 -O binary $(KNAME).elf $(KNAME)
 
@@ -38,7 +38,8 @@ install:all
 #	cp boot/loader /mnt
 #	cp $(KNAME) /mnt
 	cp $(KNAME).elf /mnt
-	cp exe/exe.elf /mnt
+	cp init/init /mnt
+	cp init/echo /mnt
 	sync
 	sudo umount /mnt
 
@@ -48,12 +49,12 @@ kernel:asm
 asm:
 	$(MAKE) -C asm
 
-exe:asm
-	$(MAKE) -C exe
+init:asm
+	$(MAKE) -C init
 
 
 clean:
 	@rm -f $(BUILDDIR)/*.o
 #	$(MAKE) clean -C boot
-	$(MAKE) clean -C exe
+	$(MAKE) clean -C init
 	@rm -f $(KNAME) $(KNAME).elf

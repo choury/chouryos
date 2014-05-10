@@ -24,6 +24,7 @@ int sys_read(int fd, void *ptr, size_t len) {
         while(count<len){
             char a=getone();
             ((char *)ptr)[count++]=a;
+            printf("%c",a);
             if(a=='\n')
                 return count;
         }

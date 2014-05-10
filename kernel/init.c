@@ -11,7 +11,7 @@ pid_t curpid=0;                         //当前正在运行进程号
 
 int *__errno()
 {
-    return &(PENV->errno);
+    return &(PINF->errno);
 }
 
 
@@ -325,14 +325,15 @@ void init()
 
 #include <unistd.h>
 
-static char *const argv[]={"./exe.elf","hello",NULL};
+static char *const argv[]={"./init","hello",NULL};
 static char *const env[]={"PATH=/",NULL};
 
 void process0(void)
 {
     if (fork() == 0) {
-        execve("exe.elf", argv, env);
-        while (1);
+        execve("init", argv, env);
+        write(STDOUT_FILENO,"init not fount!\n",16);
+        while(1);
     } else {
         while (1);
     }

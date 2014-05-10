@@ -49,7 +49,7 @@ typedef struct{
 
 void movetouse(process *,ptable *pdt);
 
-struct env{
+struct pinfo{
     int argc;
     char **argv;
     char **env;
@@ -57,6 +57,6 @@ struct env{
     void *endp;
 };
 
-#define PENV       ((struct env *)USEBASE)
+#define PINF       ((struct pinfo *)USEBASE)
 
 #endif

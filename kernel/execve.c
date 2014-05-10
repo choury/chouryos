@@ -6,8 +6,11 @@
 #include <file.h>
 #include <process.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define MAX(x,y)    ((uint32)(x)>(uint32)(y)?(uint32)(x):(uint32)(y))
+
+
 
 /*
  * execve
@@ -22,7 +25,7 @@ int sys_execve(char *name, char *const argv[], char *const env[])
         return -1;
     }
     if ((fd = open(name, O_RDONLY)) < 0) {
-        putstring("No such file!\n");
+        errno=ENOENT;
         return -1;
     } else {
         Elf32_Ehdr elf32_eh;
@@ -45,13 +48,16 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                     break;
                 if (elf32_eh.e_phoff == 0)
                     break;
-
+                
                 ptable *pdt = mappage(PROTABLE[curpid].pdt);
                 int i, j;
                 for (i = USEPAGE; i < USEENDP; ++i) {
                     if (pdt[i].P) {                                                         //关闭所有共享页面
                         ptable *pte = mappage(pdt[i].base);
                         for (j = 0; j < ENDPAGE; ++j) {
+                            if(i==USEPAGE && j==0){
+                                continue;
+                            }
                             if (pte[j].P) {
                                 if (pte[j].AVL) {
                                     devpage(pdt[i].base, j);
@@ -62,18 +68,42 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                             }
                         }
                         unmappage(pte);
-                        freempage(pdt[i].base);
-                        pdt[i].P = 0;
                     }
                 }
                 
+                
+                int envpage=getmpage();
+                struct pinfo *buff=mappage(envpage);
+                char *pbuff=(char*)buff;
+        
+                int argc = 0;
+                int envc = 0;
+                while (argv[argc])argc++;
+                while (env[envc++]);
+                buff->argc = argc;
+                buff->argv = (char **)((uint32)PINF + sizeof(struct pinfo));
+                buff->env = (char **)((uint32)(buff->argv)+argc*sizeof(void *));
+                buff->endp=buff->argv + (argc+envc) * sizeof(void *);
+                pbuff=(char *)((uint32)buff+sizeof(struct pinfo)+(argc+envc)*sizeof(void *));
+                
+                char **bargv=(char **)((uint32)buff + sizeof(struct pinfo));
+                for (i = 0; i < argc; ++i) {
+                    bargv[i] = (char *)((uint32)PINF + (uint32)pbuff - (uint32)buff);
+                    pbuff += strlen(strcpy(pbuff, argv[i])) + 1;
+                }
+                
+                char **benv = (char **)((uint32)bargv+argc*sizeof(void *));
+                for (i = 0; i < envc - 1; ++i) {
+                    benv[i] = (char *)((uint32)PINF + (uint32)pbuff - (uint32)buff);;
+                    pbuff += strlen(strcpy(pbuff, env[i])) + 1;
+                }
+                benv[envc - 1] = NULL;
+                buff->endp=(char *)((uint32)PINF + (uint32)pbuff - (uint32)buff);
+                
                 uint8 *heap = (void *)USECODE;
-
                 for (i = 0; i < elf32_eh.e_phnum; ++i) {
                     lseek(fd, elf32_eh.e_phoff + i * elf32_eh.e_phentsize, SEEK_SET);
                     if (read(fd, &elf32_ph, elf32_eh.e_phentsize) == elf32_eh.e_phentsize) {
-                        printf("ptype:%u,pvaddr:0x%X,poffset:0x%X,pfilesz:0x%X,pmemsz:0x%X\n",
-                               elf32_ph.p_type, elf32_ph.p_vaddr, elf32_ph.p_offset, elf32_ph.p_filesz, elf32_ph.p_memsz);
                         if (elf32_ph.p_type == PT_LOAD) {
                             int count = 0;
 
@@ -121,12 +151,12 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                         }
                     } else {
                         close(fd);
-                        putstring("The file is broken!\n");
                         unmappage(pdt);
-                        return -1;
+                        _exit(ENOEXEC);
                     }
                 }
                 unmappage(pdt);
+                
                 register_status *prs = (register_status *)(0xffffffff - sizeof(register_status));
                 PROTABLE[curpid].heap = heap;
                 PROTABLE[curpid].reg.eip = elf32_eh.e_entry;
@@ -136,31 +166,18 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                 for (i = 3; i < MAX_FD; i = i + 1) {
                     close(i);            //关闭所有打开的文件
                 }
-                PENV->argv = (char **)((uint32)PENV + sizeof(struct env));
-                int argc = 0;
-                while (argv[argc])argc++;
-                PENV->argc = argc;
-                char *arg = (char *)((uint32)(PENV->argv) + argc * sizeof(void *));
-                for (i = 0; i < argc; ++i) {
-                    PENV->argv[i] = arg;
-                    arg += strlen(strcpy(arg, argv[i])) + 1;
-                }
-                PENV->env = (char **)arg;
-                int envc = 0;
-                while (env[envc++]);
-                char *penv = (char *)((uint32)(PENV->env) + envc * sizeof(void *));
-                for (i = 0; i < envc - 1; ++i) {
-                    PENV->env[i] = penv;
-                    penv += strlen(strcpy(penv, env[i])) + 1;
-                }
-                PENV->env[envc - 1] = NULL;
-                PENV->endp = penv;
+                
+                memcpy(PINF,buff,(uint32)pbuff-(uint32)buff);
+                unmappage(buff);
+                freempage(envpage);
+                
                 invlapg();
                 return 0;
             } while (0);
         }
-        putstring("The file is not executable file!\n");
+
         close(fd);
+        errno=ENOEXEC;
         return -1;
     }
 }

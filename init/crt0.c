@@ -5,16 +5,15 @@
 int main(int argc,char **argv);
 pid_t _wait(int *status);
 
-char ** env;
 
 int *__errno()
 {
-    return &(PENV->errno);
+    return &(PINF->errno);
 }
 
 void start(){
-    env=PENV->env;
-    _exit(main(PENV->argc,PENV->argv));
+    environ=PINF->env;
+    _exit(main(PINF->argc,PINF->argv));
 }
 
 pid_t wait(int *status){

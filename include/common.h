@@ -4,6 +4,8 @@
 #include <type.h>
 #include <time.h>
 
+#define MAXARGLEN       1024                        //最长参数长度
+
 //#define IDT     ((gate *)0)           不需要它了
 #define GDT     ((ss *)0x800)
 #define TSS     (*(tss_struct *)0x1200)
