@@ -11,7 +11,7 @@ pid_t curpid=0;                         //当前正在运行进程号
 
 int *__errno()
 {
-    return (int *)12000;
+    return &(PENV->errno);
 }
 
 
@@ -326,13 +326,13 @@ void init()
 
 #include <unistd.h>
 
-
-
+static char *const argv[]={"./exe.elf","hello",NULL};
+static char *const env[]={"PATH=/",NULL};
 
 void process0(void)
 {
     if (fork() == 0) {
-        execve("exe.elf", NULL, NULL);
+        execve("exe.elf", argv, env);
         while (1);
     } else {
         while (1);

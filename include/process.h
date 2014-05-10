@@ -48,4 +48,16 @@ typedef struct{
 #define PROTABLE    ((process *)0x100000)  //同asm中定义相同
 
 void movetouse(process *,ptable *pdt);
+
+struct env{
+    int argc;
+    char **argv;
+    char **env;
+    int  errno;
+    int  ret;
+    void *endp;
+};
+
+#define PENV       ((struct env *)USEBASE)
+
 #endif

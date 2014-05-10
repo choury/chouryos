@@ -7,8 +7,8 @@ all:exe.elf
 exe.elf: main.o crt0.o
 	$(LD) -o $@ $^ -Texe.ld
 
-crt0.o:crt0.asm
-	$(AS) $(ASFLAGS) $< -o $@
+#crt0.o:crt0.asm
+#	$(AS) $(ASFLAGS) $< -o $@
 
 clean:
 	rm *.o exe.elf

@@ -14,7 +14,7 @@
  * Transfer control to a new process.
  */
 
-int sys_execve(char *name, char **argv, char **env)
+int sys_execve(char *name, char *const argv[], char *const env[])
 {
     int fd;
     if (curpid == 0) {
@@ -109,6 +109,25 @@ int sys_execve(char *name, char **argv, char **env)
                 for (i = 3; i < MAX_FD; i = i + 1) {
                     close(i);            //关闭所有打开的文件
                 }
+                PENV->argv=(char **)((uint32)PENV+sizeof(struct env));
+                int argc = 0;
+                while(argv[argc])argc++;
+                PENV->argc=argc;
+                char *arg=(char *)((uint32)(PENV->argv)+argc*sizeof(void *));
+                for(i=0;i<argc;++i){
+                    PENV->argv[i]=arg;
+                    arg +=strlen(strcpy(arg,argv[i]))+1;
+                }
+                PENV->env=(char **)arg;
+                int envc = 0;
+                while(env[envc++]);
+                char *penv=(char *)((uint32)(PENV->env)+envc*sizeof(void *));
+                for(i=0;i<envc-1;++i){
+                    PENV->env[i]=penv;
+                    penv +=strlen(strcpy(penv,env[i]))+1;
+                }
+                PENV->env[envc-1]=NULL;
+                PENV->endp=penv;
                 return 0;
             } while (0);
         }

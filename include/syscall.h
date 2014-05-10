@@ -16,7 +16,7 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi);
 void sys_exit();
 int sys_open(const char *, int, ...);
 int sys_close(int fd);
-int sys_execve(char *name, char **argv, char **env);
+int sys_execve(char *name, char *const argv[], char *env[]);
 int sys_fork();
 int sys_fstat(int fd, struct stat *st);
 int sys_getpid();

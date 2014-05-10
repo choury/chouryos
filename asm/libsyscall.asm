@@ -10,6 +10,7 @@ global sbrk
 global fork
 global execve
 global socket
+global _exit
 global getpid
 global setpoint
 
@@ -171,6 +172,17 @@ socket:
     leave
     ret
 
+_exit:
+    push ebp
+    mov ebp, esp
+    push ebx
+    mov eax, 19
+    mov ebx, [ebp+8]
+    int 80
+    pop ebx
+    leave
+    ret
+    
 getpid:
     push ebp
     mov ebp, esp

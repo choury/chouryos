@@ -37,6 +37,9 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
         return sys_isatty(ebx);
     case 11:
         return sys_socket(ebx,ecx);
+    case 19:
+        sys_exit(ebx);
+        break;
     case 20:
         return sys_getpid();
     }
