@@ -11,7 +11,7 @@ int sys_close(int fd) {
     PROTABLE[curpid].file[fd].isused=0;
     switch(PROTABLE[curpid].file[fd].type){
     case TTY:
-    case SOCKET:
+    case MSG:
         return 0;
     case NOMAL_FILE:
         return file_close(PROTABLE[curpid].file+fd);

@@ -8,12 +8,8 @@
 #define MAX_DEV 10
 
 typedef enum{
-    NOMAL_FILE,TTY,SOCKET
+    NOMAL_FILE,TTY,MSG
 }Filetype;
-
-typedef enum{
-    Floopy,HardDisk
-}DEV;
 
 
 typedef struct{

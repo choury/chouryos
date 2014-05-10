@@ -30,7 +30,7 @@ unsigned char get_byte(){
             return inp(DATA_REGISTER);
         }
     }
-    putstring("Unable to get byte from FDC!\n");
+    printf("Unable to get byte from FDC!\n");
     return 0;
 }
 
@@ -45,7 +45,7 @@ void send_byte(unsigned char command) {
             return;
         }
     }
-    putstring("Unable to send byte to FDC!\n");
+    printf("Unable to send byte to FDC!\n");
 
 
 }
@@ -146,7 +146,7 @@ void seek_track(unsigned char head,unsigned char track,unsigned char drive) {
     waitinterrupt();
     result();
     if(current_track!=track){
-        putstring("Seek failed\n");
+        printf("Seek failed\n");
         seek_track(head,track,drive);
     }
     return;
@@ -175,7 +175,7 @@ void rw_sector(unsigned char drive,unsigned int block,unsigned char * buffer,uns
         send_byte(WRITE_SECTOR);
         break;
     default:
-        putstring("Wrong Floppy command!\n");
+        printf("Wrong Floppy command!\n");
         return;
     }
     send_byte(head<<2|drive);

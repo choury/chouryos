@@ -137,7 +137,9 @@ typedef struct{
     uint16 next;
 }pageshrlist;
 
-
+typedef enum{
+    DFloopy,DHardDisk,DTTY,DMSG,DTIME,DCHILD
+}DEV;
 
 typedef long time_t;
 

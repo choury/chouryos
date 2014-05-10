@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <common.h>
+#include <tty.h>
 
 static char printbuf[1024];
 
@@ -300,7 +301,7 @@ int printf(const char *fmt, ...)
 
     va_start(args, fmt);
     i=vsprintf(printbuf, fmt, args);
-    putstring(printbuf);
+    tty_write(printbuf,strlen(printbuf));
     va_end(args);
     return i;
 }

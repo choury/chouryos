@@ -1,5 +1,4 @@
 #include <common.h>
-#include <file.h>
 #include <process.h>
 #include <errno.h>
 #include <string.h>
@@ -8,18 +7,18 @@
 
 #define MIN(x,y)    ((uint32)(x)<(uint32)(y)?(uint32)(x):(uint32)(y))
 
-struct msglist{
+struct wmlist{
     pid_t from;
     pid_t to;
     void *buff;
     size_t len;
     uint32 flags;
-    struct msglist *next;
+    struct wmlist *next;
 };
 
-static struct msglist *msghead=NULL;
+static struct wmlist *wmhead=NULL;
 
-int sys_socket(pid_t pid,uint32 flags){
+int sys_message(pid_t pid,uint32 flags){
     int i;
     int fd=-1;
     for(i=0;i<MAX_FD;i++){
@@ -39,17 +38,17 @@ int sys_socket(pid_t pid,uint32 flags){
     }
     
     PROTABLE[curpid].file[fd].isused=1;
-    PROTABLE[curpid].file[fd].type=SOCKET;
+    PROTABLE[curpid].file[fd].type=MSG;
     PROTABLE[curpid].file[fd].taget.dest=pid;
     return fd;
 }
 
-int socket_read(filedes *file,void *buff,size_t len){
-    struct msglist *tmp=msghead;
-    struct msglist *ptmp=tmp;
+int msg_read(pid_t pid,void *buff,size_t len){
+    struct wmlist *tmp=wmhead;
+    struct wmlist *ptmp=tmp;
     cli();
     while(tmp){
-        if(tmp->to==curpid && tmp->from == file->taget.dest && tmp->flags == 0){
+        if(tmp->to==curpid && tmp->from == pid && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(buff,tmp->buff,ret);
             tmp->len=ret;
@@ -60,26 +59,26 @@ int socket_read(filedes *file,void *buff,size_t len){
         ptmp=tmp;
         tmp=tmp->next;
     }
-    tmp=malloc(sizeof(struct msglist));
+    tmp=malloc(sizeof(struct wmlist));
     tmp->buff=buff;
     tmp->len=len;
     tmp->to=curpid;
-    tmp->from=file->taget.dest;
+    tmp->from=pid;
     tmp->next=NULL;
     tmp->flags=0;
-    if(msghead == NULL){
-        msghead = tmp;
+    if(wmhead == NULL){
+        wmhead = tmp;
     }else{
         ptmp->next=tmp;
     }
     sti();
-    block(curpid);
+    block(curpid,DMSG);
     cli();
     int ret=tmp->len;
-    if(msghead == tmp){
-        msghead=NULL;
+    if(wmhead == tmp){
+        wmhead=NULL;
     }else{
-        ptmp=msghead;
+        ptmp=wmhead;
         while(ptmp->next!=tmp)ptmp=ptmp->next;
         ptmp->next=tmp->next;
     }
@@ -88,12 +87,12 @@ int socket_read(filedes *file,void *buff,size_t len){
     return ret;
 }
 
-int socket_write(filedes *file,const void *ptr,size_t len){
-    struct msglist *tmp=msghead;
-    struct msglist *ptmp=tmp;
+int msg_write(pid_t pid,const void *ptr,size_t len){
+    struct wmlist *tmp=wmhead;
+    struct wmlist *ptmp=tmp;
     cli();
     while(tmp){
-        if(tmp->from==curpid && tmp->to == file->taget.dest && tmp->flags == 0){
+        if(tmp->from==curpid && tmp->to == pid && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(tmp->buff,ptr,ret);
             tmp->len=ret;
@@ -104,26 +103,26 @@ int socket_write(filedes *file,const void *ptr,size_t len){
         ptmp=tmp;
         tmp=tmp->next;
     }
-    tmp=malloc(sizeof(struct msglist));
+    tmp=malloc(sizeof(struct wmlist));
     tmp->buff=(void *)ptr;
     tmp->len=len;
-    tmp->to=file->taget.dest;
+    tmp->to=pid;
     tmp->from=curpid;
     tmp->next=NULL;
     tmp->flags=0;
-    if(msghead == NULL){
-        msghead = tmp;
+    if(wmhead == NULL){
+        wmhead = tmp;
     }else{
         ptmp->next=tmp;
     }
     sti();
-    block(curpid);
+    block(curpid,DMSG);
     cli();
     int ret=tmp->len;
-    if(msghead == tmp){
-        msghead=NULL;
+    if(wmhead == tmp){
+        wmhead=NULL;
     }else{
-        ptmp=msghead;
+        ptmp=wmhead;
         while(ptmp->next!=tmp)ptmp=ptmp->next;
         ptmp->next=tmp->next;
     }

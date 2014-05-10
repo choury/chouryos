@@ -34,5 +34,5 @@ clock_t sys_times(struct tms *buf);
 int sys_unlink(char *name);
 int sys_wait(int *status);
 int sys_write(int fd, const void *ptr, size_t len);
-int sys_socket(pid_t pid,uint32 flags);
+int sys_message(pid_t pid,uint32 flags);
 #endif

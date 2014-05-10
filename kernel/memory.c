@@ -44,7 +44,7 @@ void getmemmap(struct Bootinfo *boot)
             }
         }
     } else {
-        putstring("Can't get memory map!\n");
+        printf("Can't get memory map!\n");
     }
     memset(MMAP, 0x00, RESPAGE >> 3);
 }

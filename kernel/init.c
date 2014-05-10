@@ -114,9 +114,9 @@ void init()
     outp(0xa1, inp(0xa1) & 0x7f);   //开启第二硬盘中断
     
     sti();
-    putstring("Initing file system ...\n");
+    printf("Initing file system ...\n");
     initfs();
-    putstring("File system inited.\n");
+    printf("File system inited.\n");
     cli();
     
     
@@ -335,7 +335,9 @@ void process0(void)
         write(STDOUT_FILENO,"init not fount!\n",16);
         while(1);
     } else {
-        while (1);
+        while (1){
+//            write(STDOUT_FILENO,"0",1);
+        }
     }
 }
 

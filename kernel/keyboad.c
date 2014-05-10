@@ -1,9 +1,12 @@
 #include <common.h>
 #include <keyboad.h>
+#include <schedule.h>
+#include <malloc.h>
 
 static int keyhead=0;
 static int keytail=0;
 static uint8  keybuff[10];
+
 
 void KeyBoadHandler(){
     uint8 a=inp(0x60);
@@ -12,6 +15,13 @@ void KeyBoadHandler(){
     if(h!=keytail){
         keybuff[keyhead]=a;
         keyhead=h;
+    }
+    int i;
+    for(i=1;i<MAX_PROCESS;++i){
+        if(PROTABLE[i].status == waiting &&
+            PROTABLE[i].waitfor == DTTY){
+            unblock(i);
+        }
     }
     outp(0x20,0x20);
 }
@@ -32,7 +42,9 @@ char getone() {
                                  };
     static int flag=0;
 goback:
-    while(keyhead==keytail);
+    while(keyhead==keytail){
+        block(curpid,DTTY);
+    }
     unsigned char a=keybuff[keytail];
     if(++keytail==10)
         keytail=0;

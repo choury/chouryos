@@ -9,7 +9,7 @@ global isatty
 global sbrk
 global fork
 global execve
-global socket
+global message
 global _wait
 global _exit
 global getpid
@@ -160,7 +160,7 @@ isatty:
     leave
     ret
 
-socket:
+message:
     push ebp
     mov ebp, esp
     push ebx

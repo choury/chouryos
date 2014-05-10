@@ -82,7 +82,7 @@ int Gethdtype( int bus, int drive ) {
                 inpwn( bus + HD_DATA, buff, 256 );
 
                 if ( buff[83] & ( 1 << 10 ) ) {
-                    putstring( "The disk suport LBA48!\n" );
+                    printf( "The disk suport LBA48!\n" );
                 }
 
                 count = ( buff[60] << 16 | buff[61] );
@@ -98,7 +98,7 @@ int Gethdtype( int bus, int drive ) {
                     printf( "The disk has 0x%X%8X sectors!\n", counth, count );
                 }
             } else {
-                putstring( "An unkown error happened!\n" );
+                printf( "An unkown error happened!\n" );
                 return ATADEV_UNKNOWN;
             }
 
@@ -157,7 +157,7 @@ void resetHd( int driver ) {
         BUS = FORTHARY_BUS;
         DRIVE = SLAVE_DRIVE;
     } else {
-        putstring( "Can't find a HardDisk!\n" );
+        printf( "Can't find a HardDisk!\n" );
 
         while ( 1 );
     }
@@ -179,7 +179,7 @@ void readHd( int sec, int n, uint8 *buff ) {
         WaitInit();
 
         if ( readytrans() ) {
-            putstring( "HardDisk Read Error!\n" );
+            printf( "HardDisk Read Error!\n" );
         }
 
         inpwn( BUS + HD_DATA, buff, 256 );

@@ -21,7 +21,7 @@ int sys_execve(char *name, char *const argv[], char *const env[])
 {
     int fd;
     if (curpid == 0) {
-        putstring("The process 0 can't call execve!\n");
+        printf("The process 0 can't call execve!\n");
         return -1;
     }
     if ((fd = open(name, O_RDONLY)) < 0) {

@@ -1,12 +1,10 @@
 #include <common.h>
-#include <string.h>
 #include <file.h>
 #include <process.h>
 #include <errno.h>
-#include <socket.h>
+#include <msg.h>
+#include <tty.h>
 
-int line=1;
-int colume=0;
 
 /*
  write
@@ -15,43 +13,15 @@ int colume=0;
  */
 
 int sys_write(int fd,const void *ptr,size_t len) {
-    size_t count=0;
     if((fd < 0) || (fd >= MAX_FD) || (!PROTABLE[curpid].file[fd].isused)) {
         errno=EBADF;
         return -1;
     }
     switch(PROTABLE[curpid].file[fd].type) {
     case TTY:
-        while(count<len) {
-            char c=((char *)ptr)[count++];
-            if(c=='\n') {
-                line++;
-                colume=0;
-            } else if(c=='\b') {
-                colume--;
-                if(colume<0) {
-                    colume=0;
-                }
-                charbuff[line*80+colume]= 0x0720;
-            } else {
-                charbuff[line*80+colume++]=c | 0x0700;
-            }
-            if(colume==80) {
-                line++;
-                colume=0;
-            }
-            if(line==25){
-                memcpy(charbuff,charbuff+80,80*26*2);
-                line=24;
-            }
-        }
-        outp(0x3d4,14);
-        outp(0x3d5,(line*80+colume)>>8);
-        outp(0x3d4,15);
-        outp(0x3d5,line*80+colume);
-        return len;
-    case SOCKET:
-        return socket_write(PROTABLE[curpid].file+fd,ptr,len);
+        return tty_write(ptr,len);
+    case MSG:
+        return msg_write(PROTABLE[curpid].file[fd].taget.dest,ptr,len);
     case NOMAL_FILE:
         return file_write(PROTABLE[curpid].file+fd,ptr,len);
     }

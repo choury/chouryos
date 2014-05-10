@@ -82,8 +82,6 @@ void inpdn(unsigned int port,void *buff,int n);
 void process0(void);
 
 
-
-int putstring(const char* s);
 int printf(const char *,...);
 
 time_t kernel_mktime(

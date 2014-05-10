@@ -38,10 +38,10 @@ typedef struct{
     pid_t ppid;
     pstatus status;
     uint32 pdt;                              //页目录表
-//    void *base;                            //进程空间基址，也是cdt,ddt的基址
     void *heap;                             //进程堆的起始地址
     filedes file[MAX_FD];                 //打开的文件
     int  ret;                               //返回值
+    DEV  waitfor;
 }process;
 
 

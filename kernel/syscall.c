@@ -36,7 +36,7 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
     case 10:
         return sys_isatty(ebx);
     case 11:
-        return sys_socket(ebx,ecx);
+        return sys_message(ebx,ecx);
     case 18:
         return sys_wait((int *)ebx);
     case 19:

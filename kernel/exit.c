@@ -58,14 +58,19 @@ void sys_exit(int status)
     PROTABLE[curpid].status=deaded;
     
     
-    if (PROTABLE[PROTABLE[curpid].ppid].status == waiting) {
+    if (PROTABLE[PROTABLE[curpid].ppid].status == waiting && 
+        PROTABLE[PROTABLE[curpid].ppid].waitfor== DCHILD
+    ) {
         unblock(PROTABLE[curpid].ppid);
     }
 
     for (i = 0; i < MAX_PROCESS; ++i) {
         if (PROTABLE[i].ppid == curpid) {
             PROTABLE[i].ppid = 1;
-            if (PROTABLE[i].status == deaded && PROTABLE[1].status == waiting) {
+            if (PROTABLE[i].status == deaded && 
+                PROTABLE[1].status == waiting &&
+                PROTABLE[1].waitfor== DCHILD
+            ) {
                 unblock(1);
             }
         }
@@ -106,7 +111,7 @@ pid_t sys_wait(int *status)
         }
     }
     if (haschild) {
-        block(curpid);
+        block(curpid,DCHILD);
         for (i = 0; i < MAX_PROCESS; ++i) {
             if (PROTABLE[i].ppid == curpid && PROTABLE[i].status == deaded) {
                 if (status) {

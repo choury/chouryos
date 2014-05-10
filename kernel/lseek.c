@@ -14,7 +14,7 @@ off_t sys_lseek(int fd, off_t ptr, int dir) {
     }
     switch(PROTABLE[curpid].file[fd].type){
     case TTY:
-    case SOCKET:
+    case MSG:
         errno=ESPIPE;
         return -1;
     case NOMAL_FILE:
