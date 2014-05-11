@@ -4,9 +4,21 @@
 #include <schedule.h>
 #include <errno.h>
 #include <unistd.h>
+#include <malloc.h>
+
+void clearsiglist(pid_t pid){
+    struct siglist *tmp=PROTABLE[pid].sighead.next;
+    while(tmp){
+        struct siglist *ttmp=tmp->next;
+        free(tmp);
+        tmp=ttmp;
+    }
+}
+
 
 void cleanup(pid_t pid)
 {
+    clearsiglist(pid);
     ptable *pdt = mappage(PROTABLE[pid].pdt);
     int i, j;
     for (i = USEPAGE; i < USEENDP; ++i) {
@@ -46,6 +58,9 @@ void cleanup(pid_t pid)
 
 void sys_exit(int status)
 {
+    if(curpid ==0){
+        return;
+    }
     int i;
     for(i=0;i<MAX_PROCESS;++i){
         close(i);

@@ -16,7 +16,7 @@ struct wmlist{
     struct wmlist *next;
 };
 
-static struct wmlist *wmhead=NULL;
+static struct wmlist wmhead={0,0,NULL,0,0,NULL};
 
 int sys_message(pid_t pid,uint32 flags){
     int i;
@@ -43,12 +43,16 @@ int sys_message(pid_t pid,uint32 flags){
     return fd;
 }
 
-int msg_read(pid_t pid,void *buff,size_t len){
-    struct wmlist *tmp=wmhead;
-    struct wmlist *ptmp=tmp;
+
+//from=0 则表示接受所有进程发来的消息
+int msg_read(pid_t from,void *buff,size_t len){
+    struct wmlist *tmp=wmhead.next;
+    struct wmlist *ptmp=&wmhead;
     cli();
     while(tmp){
-        if(tmp->to==curpid && tmp->from == pid && tmp->flags == 0){
+        if(tmp->to==curpid && 
+            (tmp->from == from || curpid == 0) && 
+            tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(buff,tmp->buff,ret);
             tmp->len=ret;
@@ -63,36 +67,32 @@ int msg_read(pid_t pid,void *buff,size_t len){
     tmp->buff=buff;
     tmp->len=len;
     tmp->to=curpid;
-    tmp->from=pid;
+    tmp->from=from;
     tmp->next=NULL;
     tmp->flags=0;
-    if(wmhead == NULL){
-        wmhead = tmp;
-    }else{
-        ptmp->next=tmp;
-    }
+    
+    ptmp->next=tmp;
+
     sti();
     block(curpid,DMSG);
     cli();
     int ret=tmp->len;
-    if(wmhead == tmp){
-        wmhead=NULL;
-    }else{
-        ptmp=wmhead;
-        while(ptmp->next!=tmp)ptmp=ptmp->next;
-        ptmp->next=tmp->next;
-    }
+    
+    ptmp=&wmhead;
+    while(ptmp->next!=tmp)ptmp=ptmp->next;
+    ptmp->next=tmp->next;
+    
     sti();
     free(tmp);
     return ret;
 }
 
-int msg_write(pid_t pid,const void *ptr,size_t len){
-    struct wmlist *tmp=wmhead;
-    struct wmlist *ptmp=tmp;
+int msg_write(pid_t to,const void *ptr,size_t len){
+    struct wmlist *tmp=wmhead.next;
+    struct wmlist *ptmp=&wmhead;
     cli();
     while(tmp){
-        if(tmp->from==curpid && tmp->to == pid && tmp->flags == 0){
+        if(tmp->from==curpid && tmp->to == to && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             memcpy(tmp->buff,ptr,ret);
             tmp->len=ret;
@@ -106,26 +106,22 @@ int msg_write(pid_t pid,const void *ptr,size_t len){
     tmp=malloc(sizeof(struct wmlist));
     tmp->buff=(void *)ptr;
     tmp->len=len;
-    tmp->to=pid;
+    tmp->to=to;
     tmp->from=curpid;
     tmp->next=NULL;
     tmp->flags=0;
-    if(wmhead == NULL){
-        wmhead = tmp;
-    }else{
-        ptmp->next=tmp;
-    }
+    
+    ptmp->next=tmp;
+    
     sti();
     block(curpid,DMSG);
     cli();
     int ret=tmp->len;
-    if(wmhead == tmp){
-        wmhead=NULL;
-    }else{
-        ptmp=wmhead;
-        while(ptmp->next!=tmp)ptmp=ptmp->next;
-        ptmp->next=tmp->next;
-    }
+
+    ptmp=&wmhead;
+    while(ptmp->next!=tmp)ptmp=ptmp->next;
+    ptmp->next=tmp->next;
+        
     sti();
     free(tmp);
     return ret;

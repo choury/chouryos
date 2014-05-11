@@ -1,8 +1,21 @@
 #include <common.h>
 #include <schedule.h>
+#include <malloc.h>
+#include <signal.h>
+#include <unistd.h>
 
 void TimerInitHandler() {
     outp( 0x20, 0x20 );
+    if(PROTABLE[curpid].sighead.next){
+        struct siglist *tmp=PROTABLE[curpid].sighead.next;
+        switch(tmp->sig){
+        case SIGTERM:
+            _exit(1);
+            break;
+        }
+        PROTABLE[curpid].sighead.next=tmp->next;
+        free(tmp);
+    }
     schedule();
 }
 

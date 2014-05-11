@@ -10,6 +10,7 @@ global sbrk
 global fork
 global execve
 global message
+global kill
 global _wait
 global _exit
 global getpid
@@ -173,7 +174,21 @@ message:
     pop ebx
     leave
     ret
-
+    
+kill:
+    push ebp
+    mov ebp, esp
+    push ebx
+    push ecx
+    mov eax, 17
+    mov ebx, [ebp+8]
+    mov ecx, [ebp+12]
+    int 80
+    pop ecx
+    pop ebx
+    leave
+    ret
+    
 _wait:
     push ebp
     mov ebp, esp

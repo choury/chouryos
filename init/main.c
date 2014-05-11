@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <string.h>
+#include <signal.h>
 
 
 int socket(pid_t pid, int flags);
@@ -33,7 +35,7 @@ int main(int argc, char **argv)
                 continue;
             nargv[nargc]=NULL;
 
-            if (fork() == 0) {
+            if ((child=fork()) == 0) {
                 execve(nargv[0], nargv, environ);
                 return errno;
             } else {

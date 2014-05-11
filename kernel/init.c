@@ -124,6 +124,7 @@ void init()
     PROTABLE[curpid].status = ready;
     PROTABLE[curpid].pid = 0;
     PROTABLE[curpid].ppid = 0;
+    PROTABLE[curpid].sighead.next=NULL;
 
     GDT[UCODEI].base0_23 = 0;
     GDT[UCODEI].base24_31 = 0;

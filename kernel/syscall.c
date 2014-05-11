@@ -37,6 +37,8 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
         return sys_isatty(ebx);
     case 11:
         return sys_message(ebx,ecx);
+    case 17:
+        return sys_kill(ebx, ecx);
     case 18:
         return sys_wait((int *)ebx);
     case 19:
@@ -84,14 +86,6 @@ int sys_isatty(int fd) {
 }
 
 
-/*
- kill
- Send a signal. Minimal implementation:
- */
-int sys_kill(int pid, int sig) {
-    errno = EINVAL;
-    return (-1);
-}
 
 /*
  link

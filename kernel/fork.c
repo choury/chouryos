@@ -33,6 +33,7 @@ int sys_fork() {
     PROTABLE[newpid].pid=newpid;
     PROTABLE[newpid].ppid=curpid;
     PROTABLE[newpid].pdt=getmpage();                                  //创建新的页目录
+    PROTABLE[newpid].sighead.next=NULL;                                 //清空未处理的信号
     pagecpy(PROTABLE[newpid].pdt,PROTABLE[curpid].pdt);                  //父子进程的内存映射相同
     
     ptable *pdt_cur=mappage(PROTABLE[curpid].pdt);

@@ -32,6 +32,11 @@ typedef struct{
 
 //typedef u32 pid_t;
 
+struct siglist{
+    int sig;
+    struct siglist *next;
+};
+
 typedef struct{
     register_status reg;
     pid_t pid;
@@ -42,12 +47,11 @@ typedef struct{
     filedes file[MAX_FD];                 //打开的文件
     int  ret;                               //返回值
     DEV  waitfor;
+    struct siglist sighead;
 }process;
 
 
 #define PROTABLE    ((process *)0x100000)  //同asm中定义相同
-
-void movetouse(process *,ptable *pdt);
 
 struct pinfo{
     int argc;
@@ -58,5 +62,8 @@ struct pinfo{
 };
 
 #define PINF       ((struct pinfo *)USEBASE)
+
+
+void movetouse(process *,ptable *pdt);
 
 #endif
