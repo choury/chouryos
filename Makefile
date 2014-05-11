@@ -30,13 +30,7 @@ boot.img:
 
 
 install:all
-#	sudo mount -o umask=000 /dev/sdb1 /mnt
-#	cp boot/loader /mnt
-#	cp kernel/chouryos /mnt
-#	sudo umount /mnt
 	sudo mount -o loop,offset=1048576,umask=000 $(BUILDDIR)/hd.img /mnt
-#	cp boot/loader /mnt
-#	cp $(KNAME) /mnt
 	cp $(KNAME).elf /mnt
 	cp init/init /mnt
 	cp init/echo /mnt
@@ -45,6 +39,8 @@ install:all
 
 kernel:asm
 	$(MAKE) -C kernel
+	$(MAKE) -C lib
+	$(MAKE) -C driver
 
 asm:
 	$(MAKE) -C asm
@@ -55,6 +51,6 @@ init:asm
 
 clean:
 	@rm -f $(BUILDDIR)/*.o
-#	$(MAKE) clean -C boot
+	@rm -f $(BUILDDIR)/*.d
 	$(MAKE) clean -C init
 	@rm -f $(KNAME) $(KNAME).elf
