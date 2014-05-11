@@ -1,5 +1,6 @@
 #include <hd.h>
 #include <common.h>
+#include <schedule.h>
 
 static uint8 hdstats;
 
@@ -12,12 +13,21 @@ static int    CMD;
 void HdIntHandler() {
     outp( 0x20, 0x20 );
     outp( 0xa0, 0x20 );
+    
     hdstats = 0xff;
+    int i;
+    for(i=0;i<MAX_PROCESS;++i){
+        if(PROTABLE[i].status == waiting &&
+            PROTABLE[i].waitfor == DHardDisk){
+            unblock(i);
+        }
+    }
 }
 
 static void WaitInit() {
-    while ( hdstats == 0 );
-
+    while ( hdstats == 0 ){
+        block(curpid,DHardDisk);
+    }
     hdstats = 0;
 }
 

@@ -32,7 +32,7 @@ void schedule() {
 
 
 void block(pid_t pid,DEV waitfor){
-    if(PROTABLE[pid].status == unuse)
+    if(pid ==0 || PROTABLE[pid].status == unuse)
         return;
     PROTABLE[pid].waitfor=waitfor;
     PROTABLE[pid].status=waiting;

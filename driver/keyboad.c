@@ -9,6 +9,7 @@ static uint8  keybuff[10];
 
 
 void KeyBoadHandler(){
+    outp(0x20,0x20);
     uint8 a=inp(0x60);
     int h=keyhead;
     h=(h+1)%10;
@@ -17,13 +18,12 @@ void KeyBoadHandler(){
         keyhead=h;
     }
     int i;
-    for(i=1;i<MAX_PROCESS;++i){
+    for(i=0;i<MAX_PROCESS;++i){
         if(PROTABLE[i].status == waiting &&
             PROTABLE[i].waitfor == DTTY){
             unblock(i);
         }
     }
-    outp(0x20,0x20);
 }
 
 

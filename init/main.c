@@ -29,6 +29,8 @@ int main(int argc, char **argv)
                     flag=1;
                 }
             }
+            if(nargc == 0)
+                continue;
             nargv[nargc]=NULL;
 
             if (fork() == 0) {
