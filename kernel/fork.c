@@ -12,6 +12,8 @@
 
 int sys_fork() {
     int i,newpid;
+    
+    cli();
     for(i=1;i<MAX_PROCESS;++i){
         if(PROTABLE[i].status==unuse)break;
     }
@@ -27,14 +29,15 @@ int sys_fork() {
     memcpy(&PROTABLE[newpid].reg,prs,sizeof(register_status));                            //复制寄存器值，从父进程系统栈
 
     
-    cli();
-    PROTABLE[newpid].status=ready;
+    PROTABLE[newpid].status=waiting;
     PROTABLE[newpid].reg.eax=0;
     PROTABLE[newpid].pid=newpid;
     PROTABLE[newpid].ppid=curpid;
     PROTABLE[newpid].pdt=getmpage();                                  //创建新的页目录
     PROTABLE[newpid].sighead.next=NULL;                                 //清空未处理的信号
     pagecpy(PROTABLE[newpid].pdt,PROTABLE[curpid].pdt);                  //父子进程的内存映射相同
+    
+    sti();
     
     ptable *pdt_cur=mappage(PROTABLE[curpid].pdt);
     ptable *pdt_new=mappage(PROTABLE[newpid].pdt);
@@ -68,15 +71,16 @@ int sys_fork() {
     ptable *pte_nks=mappage(pdt_new[USEENDP].base);
     
     
-    devpage(pdt_new[USEENDP].base,1023);
-    pte_nks[1023].base=getmpage();
-    pagecpy(pte_nks[1023].base,pte_cks[1023].base);
+    devpage(pdt_new[USEENDP].base,USEENDP);
+    pte_nks[USEENDP].base=getmpage();
+    pagecpy(pte_nks[USEENDP].base,pte_cks[USEENDP].base);
     
     
     unmappage(pte_cks);
     unmappage(pte_nks);
     unmappage(pdt_cur);
     unmappage(pdt_new);
-    sti();
+    
+    PROTABLE[newpid].status=ready;
     return newpid;
 }

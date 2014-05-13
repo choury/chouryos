@@ -19,6 +19,7 @@ typedef struct{
         DEV         dev;
         pid_t       dest;
     }taget;
+    uint32      flags;
     uint32      dirnode;
     uint32      indexno;
     uint32      offset;

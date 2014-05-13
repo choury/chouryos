@@ -1,11 +1,11 @@
 #include <common.h>
 #include <process.h>
 #include <errno.h>
-#include <string.h>
+//#include <string.h>
 #include <schedule.h>
 #include <malloc.h>
+#include <memory.h>
 
-#define MIN(x,y)    ((uint32)(x)<(uint32)(y)?(uint32)(x):(uint32)(y))
 
 struct wmlist{
     pid_t from;
@@ -39,6 +39,7 @@ int sys_message(pid_t pid,uint32 flags){
     
     PROTABLE[curpid].file[fd].isused=1;
     PROTABLE[curpid].file[fd].type=MSG;
+    PROTABLE[curpid].file[fd].flags=flags;
     PROTABLE[curpid].file[fd].taget.dest=pid;
     return fd;
 }
@@ -51,10 +52,10 @@ int msg_read(pid_t from,void *buff,size_t len){
     cli();
     while(tmp){
         if(tmp->to==curpid && 
-            (tmp->from == from || curpid == 0) && 
+            (tmp->from == from || from == 0) && 
             tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
-            memcpy(buff,tmp->buff,ret);
+            umemcpy(curpid,buff,tmp->from,tmp->buff,ret);
             tmp->len=ret;
             tmp->flags=1;
             unblock(tmp->from);
@@ -94,7 +95,7 @@ int msg_write(pid_t to,const void *ptr,size_t len){
     while(tmp){
         if(tmp->from==curpid && tmp->to == to && tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
-            memcpy(tmp->buff,ptr,ret);
+            umemcpy(tmp->to,tmp->buff,curpid,ptr,ret);
             tmp->len=ret;
             tmp->flags=1;
             unblock(tmp->to);

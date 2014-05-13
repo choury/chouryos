@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#define MAX(x,y)    ((uint32)(x)>(uint32)(y)?(uint32)(x):(uint32)(y))
+
 
 
 
@@ -147,7 +147,7 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                             unmappage(pte);
                             lseek(fd, elf32_ph.p_offset, SEEK_SET);
                             read(fd, (void *)elf32_ph.p_vaddr, elf32_ph.p_filesz);
-                            heap = (void *)MAX(heap, elf32_ph.p_vaddr + elf32_ph.p_memsz);
+                            heap = (void *)MAX((uint32)heap, elf32_ph.p_vaddr + elf32_ph.p_memsz);
                         }
                     } else {
                         close(fd);

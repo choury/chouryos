@@ -14,24 +14,24 @@
 #define RESPAGE   0x500                                 //前5M空间保留
 #define MAXPAGE   0x100000                              //最多4G
 
-void getmemmap(struct Bootinfo *boot)
+void getmemmap(struct Bootinfo* boot)
 {
     memset(charbuff, 0, 80 * 25 * 2); //清屏
     memset(MMAP, 0, MAXPAGE >> 3);
     memset(MTMAP, 0xff, 1024 >> 8);
     memset(PSL, 0, 0x100000);
     if (boot->flags & (1 << 6)) {
-        struct memmap *map;
+        struct memmap* map;
         for (map = boot->mmap_addr;
                 (uint32)map < (uint32)boot->mmap_addr + boot->mmap_length;
-                map = (struct memmap *)((uint32)map + map->size + sizeof(map->size))) {
+                map = (struct memmap*)((uint32)map + map->size + sizeof(map->size))) {
             if (map->type == 1) {
                 printf("Avalable memory,addr:0x%X%08X,lenth:0x%X%08X\n",
                        map->base_addrh,
                        map->base_addr,
                        map->lengthh,
                        map->length);
-                uint8 *tmpaddr = upto(map->base_addr, PAGESIZE);
+                uint8* tmpaddr = upto(map->base_addr, PAGESIZE);
                 map->length -= (tmpaddr - map->base_addr);
                 map->base_addr = tmpaddr;
                 size_t count = map->length / PAGESIZE;
@@ -62,18 +62,20 @@ int getmpage()
     return -1;
 }
 
-void freempage(uint32 page)
+int freempage(uint32 page)
 {
     if (!isavl(MMAP, page)) {
         setavl(MMAP, page);
+        return 0;
     } else {
         printf("freempage:The page hasn't used!\n");
+        return -1;
     }
-    return;
 }
 
 
-void *mappage(uint32 page)
+
+void* mappage(uint32 page)
 {
     int i;
     for (i = 0; i < 1024; ++i) {
@@ -84,12 +86,12 @@ void *mappage(uint32 page)
     }
     TMPMAP[i].base = page;
     TMPMAP[i].P = 1;
-    void *addr = getvmaddr(MAPINDEX, i);
+    void* addr = getvmaddr(MAPINDEX, i);
     invlpg(addr);
     return addr;
 }
 
-void unmappage(void *addr)
+void unmappage(const void* addr)
 {
     if (getpagec(addr) != MAPINDEX) {
         printf("unmappage:The addr:0x%X isn't a mapped addr!\n", addr);
@@ -110,8 +112,8 @@ void unmappage(void *addr)
 
 void pagecpy(uint32 dest, uint32 src)
 {
-    char *pdest = mappage(dest);
-    char *psrc = mappage(src);
+    char* pdest = mappage(dest);
+    char* psrc = mappage(src);
     memcpy(pdest, psrc, PAGESIZE);
 
     unmappage(pdest);
@@ -120,8 +122,8 @@ void pagecpy(uint32 dest, uint32 src)
 
 void sharepage(uint32 pageca, uint16 pageia, uint32 pagecb, uint16 pageib)
 {
-    ptable *pagea = mappage(pageca);
-    ptable *pageb = mappage(pagecb);
+    ptable* pagea = mappage(pageca);
+    ptable* pageb = mappage(pagecb);
     int i, j;
     if (pagea[pageia].AVL == 1) {
         for (i = 1; PSL[i].pagec != pagea[pageia].base && i < MAX_SHRLC; ++i);
@@ -159,12 +161,12 @@ void sharepage(uint32 pageca, uint16 pageia, uint32 pagecb, uint16 pageib)
 
 void devpage(uint32 pagec, uint16 pagei)
 {
-    ptable *paged = mappage(pagec);
+    ptable* paged = mappage(pagec);
     int i, j;
     for (i = 1; PSL[i].pagec != paged[pagei].base && i < MAX_SHRLC; ++i);
     if (PSL[i].index == 2) {
         j = PSL[i].next;
-        ptable *pagef = NULL;
+        ptable* pagef = NULL;
         if (PSL[j].pagec == pagec) {
             pagef = mappage(PSL[PSL[j].next].pagec);
             pagef[PSL[PSL[j].next].index].AVL = 0;
@@ -193,4 +195,73 @@ void devpage(uint32 pagec, uint16 pagei)
 }
 
 
+void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
+{
+    if (dpid == curpid) {
+        ptable* pdt = mappage(PROTABLE[spid].pdt);
+        while (len) {
+            int count = getpagec(src);
+            int index = getpagei(src);
+            ptable* pte = mappage(pdt[count].base);
+            const void* buff = mappage(pte[index].base);
 
+            unmappage(pte);
+            int cpc = MIN(len, ((uint32)src & 0xfffff000) + PAGESIZE - (uint32)src);
+            memcpy(dest, (uint32)buff + (src - ((uint32)src & 0xfffff000)), cpc);
+            len -= cpc;
+            dest += cpc;
+            src += cpc;
+            unmappage(buff);
+        }
+        unmappage(pdt);
+        return;
+    }
+    if (spid == curpid) {
+        ptable* pdt = mappage(PROTABLE[dpid].pdt);
+        while (len) {
+            int count = getpagec(dest);
+            int index = getpagei(dest);
+            ptable* pte = mappage(pdt[count].base);
+            void* buff = mappage(pte[index].base);
+
+            unmappage(pte);
+            int cpc = MIN(len, ((uint32)dest & 0xfffff000) + PAGESIZE - (uint32)dest);
+            memcpy((uint32)buff + (dest - ((uint32)dest & 0xfffff000)), src, cpc);
+            len -= cpc;
+            dest += cpc;
+            src += cpc;
+            unmappage(buff);
+        }
+        unmappage(pdt);
+        return;
+    }
+    ptable* spdt = mappage(PROTABLE[spid].pdt);
+    ptable* dpdt = mappage(PROTABLE[dpid].pdt);
+    while (len) {
+        int scount = getpagec(src);
+        int sindex = getpagei(src);
+        ptable* spte = mappage(spdt[scount].base);
+        const void* sbuff = mappage(spte[sindex].base);
+        unmappage(spte);
+        
+        
+        int dcount = getpagec(dest);
+        int dindex = getpagei(dest);
+        ptable* dpte = mappage(dpdt[dcount].base);
+        void* dbuff = mappage(dpte[dindex].base);
+        unmappage(dpte);
+
+        int cpc = MIN(len, ((uint32)src & 0xfffff000) + PAGESIZE - (uint32)src);
+        cpc = MIN(cpc, ((uint32)dest & 0xfffff000) + PAGESIZE - (uint32)dest);
+        memcpy((uint32)dbuff + (dest - ((uint32)dest & 0xfffff000)), 
+               (uint32)sbuff + (src - ((uint32)src & 0xfffff000)), cpc);
+        len -= cpc;
+        dest += cpc;
+        src += cpc;
+        unmappage(sbuff);
+        unmappage(dbuff);
+    }
+    unmappage(spdt);
+    unmappage(dpdt);
+    return;
+}

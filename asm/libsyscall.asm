@@ -10,6 +10,7 @@ global sbrk
 global fork
 global execve
 global message
+global loadmod
 global kill
 global _wait
 global _exit
@@ -171,6 +172,17 @@ message:
     mov ecx, [ebp+12]
     int 80
     pop ecx
+    pop ebx
+    leave
+    ret
+
+loadmod:
+    push ebp
+    mov ebp, esp
+    push ebx
+    mov eax, 12
+    mov ebx, [ebp+8]
+    int 80
     pop ebx
     leave
     ret

@@ -37,6 +37,8 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
         return sys_isatty(ebx);
     case 11:
         return sys_message(ebx,ecx);
+    case 12:
+        return sys_loadmod((const char*)ebx);
     case 17:
         return sys_kill(ebx, ecx);
     case 18:

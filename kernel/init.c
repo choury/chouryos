@@ -32,12 +32,45 @@ void defultinthandle(int no, int code)
 {
     uint32 cr2 = getcr2();
     switch (no) {
+    case 1:
+        return;
     case 14:
         if(cr2 < USEBASE)
             break;
         ptable *pdt = mappage(PROTABLE[curpid].pdt);
         
         switch (code & 0xf) {
+        case 0:
+        case 2:
+            if (pdt[getpagec(cr2)].P == 0) {
+                pdt[getpagec(cr2)].base = getmpage();
+                pdt[getpagec(cr2)].PAT = 0;
+                pdt[getpagec(cr2)].D = 0;
+                pdt[getpagec(cr2)].A = 0;
+                pdt[getpagec(cr2)].PCD = 0;
+                pdt[getpagec(cr2)].PWT = 0;
+                pdt[getpagec(cr2)].U_S = 0;
+                pdt[getpagec(cr2)].R_W = 1;
+                pdt[getpagec(cr2)].P = 1;
+            }
+            
+            ptable *pte = mappage(pdt[getpagec(cr2)].base);
+            if (pte[getpagei(cr2)].P == 0) {
+                pte[getpagei(cr2)].base = getmpage();
+                pte[getpagei(cr2)].PAT = 0;
+                pte[getpagei(cr2)].D = 0;
+                pte[getpagei(cr2)].A = 0;
+                pte[getpagei(cr2)].AVL = 0;
+                pte[getpagei(cr2)].PCD = 0;
+                pte[getpagei(cr2)].PWT = 0;
+                pte[getpagei(cr2)].U_S = 0;
+                pte[getpagei(cr2)].R_W = 1;
+                pte[getpagei(cr2)].P = 1;
+            }
+            unmappage(pte);
+            unmappage(pdt);
+            invlpg(cr2);
+            return;
         case 4: 
         case 6:
             if (pdt[getpagec(cr2)].P == 0) {
@@ -52,7 +85,7 @@ void defultinthandle(int no, int code)
                 pdt[getpagec(cr2)].P = 1;
             }
             
-            ptable *pte = mappage(pdt[getpagec(cr2)].base);
+            pte = mappage(pdt[getpagec(cr2)].base);
             if (pte[getpagei(cr2)].P == 0) {
                 pte[getpagei(cr2)].base = getmpage();
                 pte[getpagei(cr2)].PAT = 0;
@@ -84,7 +117,8 @@ void defultinthandle(int no, int code)
         }
         unmappage(pdt);
     }
-    printf("The int %d happened:%d!\n", no, code);
+    register_status *prs = (register_status *)(0xffffffff - sizeof(register_status));
+    printf("[%d:0x%X] The int %d happened:%d!\n",curpid,prs->eip, no, code);
     while (1);
 }
 
@@ -126,6 +160,30 @@ void init()
     PROTABLE[curpid].ppid = 0;
     PROTABLE[curpid].sighead.next=NULL;
 
+    GDT[MCODEI].base0_23 = 0;
+    GDT[MCODEI].base24_31 = 0;
+    GDT[MCODEI].limit0_15 = 0xffff;
+    GDT[MCODEI].limit16_19 = 0xf;
+    GDT[MCODEI].S = 1;
+    GDT[MCODEI].D = 1;
+    GDT[MCODEI].L = 0;
+    GDT[MCODEI].P = 1;
+    GDT[MCODEI].G = 1;
+    GDT[MCODEI].DPL = 1;
+    GDT[MCODEI].Type = DA_E | DA_WR;
+
+    GDT[MDATAI].base0_23 = 0;
+    GDT[MDATAI].base24_31 = 0;
+    GDT[MDATAI].limit0_15 = 0xffff;
+    GDT[MDATAI].limit16_19 = 0xf;
+    GDT[MDATAI].S = 1;
+    GDT[MDATAI].D = 1;
+    GDT[MDATAI].L = 0;
+    GDT[MDATAI].P = 1;
+    GDT[MDATAI].G = 1;
+    GDT[MDATAI].DPL = 1;
+    GDT[MDATAI].Type = DA_WR;
+    
     GDT[UCODEI].base0_23 = 0;
     GDT[UCODEI].base24_31 = 0;
     GDT[UCODEI].limit0_15 = 0xffff;
@@ -136,7 +194,7 @@ void init()
     GDT[UCODEI].P = 1;
     GDT[UCODEI].G = 1;
     GDT[UCODEI].DPL = 3;
-    GDT[UCODEI].Type = DA_E | DA_WR;
+    GDT[UCODEI].Type = DA_E | DA_WR | DA_EDC;
 
     GDT[UDATAI].base0_23 = 0;
     GDT[UDATAI].base24_31 = 0;

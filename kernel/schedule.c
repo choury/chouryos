@@ -61,7 +61,8 @@ void unblock(pid_t pid){
 void switch_to( pid_t pid ) {
     if ( pid == curpid )
         return;
-    
+    if(pid == 3)
+        asm("nop");
     cli();
     if ( PROTABLE[curpid].status == running ) {
         PROTABLE[curpid].status = ready;

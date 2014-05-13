@@ -16,9 +16,14 @@
 #define KDATAI          2                           //内核数据段
 #define VGAI            3                           //显存(非扁平模式) 存在fs中
 #define TSSI            4                           //tss段
-#define UCODEI          5                           //用户代码段
-#define UDATAI          6                           //用户数据段
+#define MCODEI          5                           //用户代码段
+#define MDATAI          6                           //用户数据段
+#define UCODEI          7                           //用户代码段
+#define UDATAI          8                           //用户数据段
 
+
+#define MCODE_DT          ((MCODEI<<3)|1)          //内核模块cs
+#define MDATA_DT          ((MDATAI<<3)|1)          //内核模块ds,es,gs
 #define UCODE_DT          ((UCODEI<<3)|3)          //用户cs
 #define UDATA_DT          ((UDATAI<<3)|3)          //用户ds,es,gs
 #define KSTACK_DT         (KDATAI<<3)              //用户内核栈
@@ -53,6 +58,7 @@ extern pid_t curpid;
 #define cli()     asm volatile ("cli\n")
 #define nop()     asm volatile ("nop\n")
 #define lldt(x)   asm volatile ("lldt %0" : :"r"(x))
+#define ldcr3(x)  asm volatile ("movl %0,%%cr3": :"r"(x))
 #define invlpg(x) asm volatile ("invlpg (%0)" : :"r"(x))
 #define invlapg()\
 do {unsigned long tmpreg; \
@@ -60,7 +66,10 @@ do {unsigned long tmpreg; \
     }\
 while (0)
  
-
+#define MAX(x,y)    ((x)>(y)?(x):(y))
+#define MIN(x,y)    ((x)<(y)?(x):(y))
+    
+    
 static inline uint32 getcr2(void)
 {
     uint32 val;
