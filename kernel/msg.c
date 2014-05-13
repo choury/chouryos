@@ -1,7 +1,6 @@
 #include <common.h>
 #include <process.h>
 #include <errno.h>
-//#include <string.h>
 #include <schedule.h>
 #include <malloc.h>
 #include <memory.h>
@@ -46,7 +45,7 @@ int sys_message(pid_t pid,uint32 flags){
 
 
 //from=0 则表示接受所有进程发来的消息
-int msg_read(pid_t from,void *buff,size_t len){
+int msg_read(pid_t from,void *buff,size_t len,uint32 flags){
     struct wmlist *tmp=wmhead.next;
     struct wmlist *ptmp=&wmhead;
     cli();
@@ -88,12 +87,14 @@ int msg_read(pid_t from,void *buff,size_t len){
     return ret;
 }
 
-int msg_write(pid_t to,const void *ptr,size_t len){
+int msg_write(pid_t to,const void *ptr,size_t len,uint32 flags){
     struct wmlist *tmp=wmhead.next;
     struct wmlist *ptmp=&wmhead;
     cli();
     while(tmp){
-        if(tmp->from==curpid && tmp->to == to && tmp->flags == 0){
+        if((tmp->from==curpid || tmp->from==0) && 
+            tmp->to == to && 
+            tmp->flags == 0){
             size_t ret=MIN(len,tmp->len);
             umemcpy(tmp->to,tmp->buff,curpid,ptr,ret);
             tmp->len=ret;

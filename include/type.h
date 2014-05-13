@@ -144,7 +144,32 @@ typedef enum{
 typedef long time_t;
 
 
+#define SETSS(ss,base,limit,type,dpl,avl,s,d,l,p,g)\
+            ss.base0_23=(base)&0xffffff;\
+            ss.base24_31=(base)>>24;\
+            ss.limit0_15=(limit)&0xffff;\
+            ss.limit16_19=(limit)>>16;\
+            ss.Type=type;\
+            ss.DPL=dpl;\
+            ss.AVL=avl;\
+            ss.S=s;\
+            ss.D=d;\
+            ss.L=l;\
+            ss.P=p;\
+            ss.G=g;
 
-
+//生成一个可读写，存在的默认页面
+#define SETPT(pt,Base,us)\
+            pt.base=Base;\
+            pt.U_S=us;\
+            pt.R_W=1;\
+            pt.AVL=0;\
+            pt.PAT=0;\
+            pt.PWT=0;\
+            pt.PCD=0;\
+            pt.P=1;\
+            pt.A=0;\
+            pt.D=0;\
+            pt.G=0;
 
 #endif

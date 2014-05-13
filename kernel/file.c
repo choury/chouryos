@@ -34,6 +34,7 @@ int file_open(filedes *file,const char *path, int flags) {
         file->offset=0;
         file->curnode=file->startnode;
         file->type=NOMAL_FILE;
+        file->flags=flags;
         file->accesstime=kernel_getnowtime();
         if(flags & O_TRUNC) {
             file->length=0;

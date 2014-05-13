@@ -15,7 +15,6 @@ int main(int argc, char **argv)
     if ((child = fork()) == 0) {
         pid_t mod=loadmod("echo");
         int m=message(mod,0);
-        write(m,"what?",5);
         while (1) {
             char commad[100];
             char *nargv[20];
@@ -38,7 +37,10 @@ int main(int argc, char **argv)
             if(nargc == 0)
                 continue;
             nargv[nargc]=NULL;
-            
+            if(strcmp(nargv[0],"send")==0){
+                write(m,nargv[1],strlen(nargv[1]));
+                continue;
+            }
             if ((child=fork()) == 0) {
                 execve(nargv[0], nargv, environ);
                 return errno;

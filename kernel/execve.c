@@ -111,16 +111,7 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                                     count <= getpagec(elf32_ph.p_vaddr + elf32_ph.p_memsz);
                                     count ++) {
                                 if (pdt[count].P == 0) {
-                                    pdt[count].base = getmpage();
-                                    pdt[count].PAT = 0;
-                                    pdt[count].D = 0;
-                                    pdt[count].A = 0;
-                                    pdt[count].AVL = 0;
-                                    pdt[count].PCD = 0;
-                                    pdt[count].PWT = 0;
-                                    pdt[count].U_S = 1;
-                                    pdt[count].R_W = 1;
-                                    pdt[count].P = 1;
+                                    SETPT(pdt[count],getmpage(),1);
                                     ptable *pte = mappage(pdt[count].base);
                                     memset(pte, 0, PAGESIZE);
                                     unmappage(pte);
@@ -132,16 +123,7 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                                     count <= getpagei(elf32_ph.p_vaddr + elf32_ph.p_memsz);
                                     count ++) {
                                 if (pte[count].P == 0) {
-                                    pte[count].base = getmpage();
-                                    pte[count].PAT = 0;
-                                    pte[count].D = 0;
-                                    pte[count].A = 0;
-                                    pte[count].AVL = 0;
-                                    pte[count].PCD = 0;
-                                    pte[count].PWT = 0;
-                                    pte[count].U_S = 1;
-                                    pte[count].R_W = 1;
-                                    pte[count].P = 1;
+                                    SETPT(pte[count],getmpage(),1);
                                 }
                             }
                             unmappage(pte);

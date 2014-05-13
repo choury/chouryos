@@ -216,6 +216,8 @@ void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
         unmappage(pdt);
         return;
     }
+    
+    
     if (spid == curpid) {
         ptable* pdt = mappage(PROTABLE[dpid].pdt);
         while (len) {
@@ -235,6 +237,8 @@ void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
         unmappage(pdt);
         return;
     }
+    
+    
     ptable* spdt = mappage(PROTABLE[spid].pdt);
     ptable* dpdt = mappage(PROTABLE[dpid].pdt);
     while (len) {
