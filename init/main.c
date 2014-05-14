@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     pid_t child;
     if ((child = fork()) == 0) {
         pid_t mod=loadmod("echo");
-        int m=message(mod,0);
+        int m=message(mod,1);
         while (1) {
             char commad[100];
             char *nargv[20];
