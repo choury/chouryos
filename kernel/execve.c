@@ -152,7 +152,6 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                 memcpy(PINF,buff,(uint32)pbuff-(uint32)buff);
                 unmappage(buff);
                 freempage(envpage);
-                
                 invlapg();
                 return 0;
             } while (0);

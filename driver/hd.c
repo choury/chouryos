@@ -25,7 +25,7 @@ void HdIntHandler() {
 }
 
 static void WaitInit() {
-    while ( hdstats == 0 ){
+    if ( hdstats == 0 ){
         block(curpid,DHardDisk);
     }
     hdstats = 0;
