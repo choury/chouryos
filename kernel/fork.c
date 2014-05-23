@@ -33,22 +33,22 @@ int sys_fork() {
     PROTABLE[newpid].reg.eax=0;
     PROTABLE[newpid].pid=newpid;
     PROTABLE[newpid].ppid=curpid;
-    PROTABLE[newpid].pdt=getmpage();                                  //创建新的页目录
+    PROTABLE[newpid].pde=getmpage();                                  //创建新的页目录
     PROTABLE[newpid].sighead.next=NULL;                                 //清空未处理的信号
-    pagecpy(PROTABLE[newpid].pdt,PROTABLE[curpid].pdt);                  //父子进程的内存映射相同
+    pagecpy(PROTABLE[newpid].pde,PROTABLE[curpid].pde);                  //父子进程的内存映射相同
     
     sti();
     
-    ptable *pdt_cur=mappage(PROTABLE[curpid].pdt);
-    ptable *pdt_new=mappage(PROTABLE[newpid].pdt);
+    ptable *pde_cur=mappage(PROTABLE[curpid].pde);
+    ptable *pde_new=mappage(PROTABLE[newpid].pde);
     
     for(i=USEPAGE;i<ENDPAGE;++i){
-        if(pdt_cur[i].P){                                                     //给用户进程创建新的页框
-            pdt_new[i].base=getmpage();   
-            pagecpy(pdt_new[i].base,pdt_cur[i].base);
+        if(pde_cur[i].P){                                                     //给用户进程创建新的页框
+            pde_new[i].base=getmpage();   
+            pagecpy(pde_new[i].base,pde_cur[i].base);
         
-            ptable *pte_cur=mappage(pdt_cur[i].base);
-            ptable *pte_new=mappage(pdt_new[i].base);
+            ptable *pte_cur=mappage(pde_cur[i].base);
+            ptable *pte_new=mappage(pde_new[i].base);
             
             int j;
             for(j=0;j<ENDPAGE;++j){
@@ -58,7 +58,7 @@ int sys_fork() {
                     continue;
                 }
                 if(pte_cur[j].P){
-                    sharepage(pdt_cur[i].base,j,pdt_new[i].base,j);               //写时复制
+                    sharepage(pde_cur[i].base,j,pde_new[i].base,j);               //写时复制
                     invlpg(getvmaddr(i,j));
                 }
             }
@@ -67,19 +67,19 @@ int sys_fork() {
         }
     }
      
-    ptable *pte_cks=mappage(pdt_cur[USEENDP].base); //复制栈
-    ptable *pte_nks=mappage(pdt_new[USEENDP].base);
+    ptable *pte_cks=mappage(pde_cur[USEENDP].base); //复制栈
+    ptable *pte_nks=mappage(pde_new[USEENDP].base);
     
     
-    devpage(pdt_new[USEENDP].base,USEENDP);
+    devpage(pde_new[USEENDP].base,USEENDP);
     pte_nks[USEENDP].base=getmpage();
     pagecpy(pte_nks[USEENDP].base,pte_cks[USEENDP].base);
     
     
     unmappage(pte_cks);
     unmappage(pte_nks);
-    unmappage(pdt_cur);
-    unmappage(pdt_new);
+    unmappage(pde_cur);
+    unmappage(pde_new);
     
     PROTABLE[newpid].status=ready;
     return newpid;

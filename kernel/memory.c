@@ -198,11 +198,11 @@ void devpage(uint32 pagec, uint16 pagei)
 void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
 {
     if (dpid == curpid) {
-        ptable* pdt = mappage(PROTABLE[spid].pdt);
+        ptable* pde = mappage(PROTABLE[spid].pde);
         while (len) {
             int count = getpagec(src);
             int index = getpagei(src);
-            ptable* pte = mappage(pdt[count].base);
+            ptable* pte = mappage(pde[count].base);
             const void* buff = mappage(pte[index].base);
 
             unmappage(pte);
@@ -213,17 +213,17 @@ void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
             src += cpc;
             unmappage(buff);
         }
-        unmappage(pdt);
+        unmappage(pde);
         return;
     }
     
     
     if (spid == curpid) {
-        ptable* pdt = mappage(PROTABLE[dpid].pdt);
+        ptable* pde = mappage(PROTABLE[dpid].pde);
         while (len) {
             int count = getpagec(dest);
             int index = getpagei(dest);
-            ptable* pte = mappage(pdt[count].base);
+            ptable* pte = mappage(pde[count].base);
             void* buff = mappage(pte[index].base);
 
             unmappage(pte);
@@ -234,24 +234,24 @@ void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
             src += cpc;
             unmappage(buff);
         }
-        unmappage(pdt);
+        unmappage(pde);
         return;
     }
     
     
-    ptable* spdt = mappage(PROTABLE[spid].pdt);
-    ptable* dpdt = mappage(PROTABLE[dpid].pdt);
+    ptable* spde = mappage(PROTABLE[spid].pde);
+    ptable* dpde = mappage(PROTABLE[dpid].pde);
     while (len) {
         int scount = getpagec(src);
         int sindex = getpagei(src);
-        ptable* spte = mappage(spdt[scount].base);
+        ptable* spte = mappage(spde[scount].base);
         const void* sbuff = mappage(spte[sindex].base);
         unmappage(spte);
         
         
         int dcount = getpagec(dest);
         int dindex = getpagei(dest);
-        ptable* dpte = mappage(dpdt[dcount].base);
+        ptable* dpte = mappage(dpde[dcount].base);
         void* dbuff = mappage(dpte[dindex].base);
         unmappage(dpte);
 
@@ -265,7 +265,7 @@ void umemcpy(pid_t dpid, void* dest, pid_t spid, const void* src, size_t len)
         unmappage(sbuff);
         unmappage(dbuff);
     }
-    unmappage(spdt);
-    unmappage(dpdt);
+    unmappage(spde);
+    unmappage(dpde);
     return;
 }

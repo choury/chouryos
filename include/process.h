@@ -42,7 +42,7 @@ typedef struct{
     pid_t pid;
     pid_t ppid;
     pstatus status;
-    uint32 pdt;                              //页目录表
+    uint32 pde;                              //页目录表
     void *heap;                             //进程堆的起始地址
     filedes file[MAX_FD];                 //打开的文件
     int  ret;                               //返回值

@@ -44,7 +44,7 @@ int sys_message(pid_t pid,uint32 flags){
     PROTABLE[curpid].file[fd].isused=1;
     PROTABLE[curpid].file[fd].type=MSG;
     PROTABLE[curpid].file[fd].flags=flags;
-    PROTABLE[curpid].file[fd].taget.dest=pid;
+    PROTABLE[curpid].file[fd].target.dest=pid;
     return fd;
 }
 

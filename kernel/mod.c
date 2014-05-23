@@ -58,9 +58,9 @@ pid_t sys_loadmod(const char* filename)
                 PROTABLE[newpid].reg.eflags =0x1202;
                 PROTABLE[newpid].pid = newpid;
                 PROTABLE[newpid].ppid = 1;
-                PROTABLE[newpid].pdt = getmpage();                              //创建新的页目录
+                PROTABLE[newpid].pde = getmpage();                              //创建新的页目录
                 PROTABLE[newpid].sighead.next = NULL;
-                pagecpy(PROTABLE[newpid].pdt, PROTABLE[1].pdt);                 //复制1号进程的地址空间
+                pagecpy(PROTABLE[newpid].pde, PROTABLE[1].pde);                 //复制1号进程的地址空间
                 
                 PROTABLE[newpid].file[0].isused = 0;             //no standard input
                 PROTABLE[newpid].file[1].isused = 1;             //for standard output
@@ -72,11 +72,11 @@ pid_t sys_loadmod(const char* filename)
                 }
                 sti();
                 
-                ptable* pdt = mappage(PROTABLE[newpid].pdt);
+                ptable* pde = mappage(PROTABLE[newpid].pde);
 
                 for (i = USEPAGE; i < ENDPAGE; ++i) {
-                    if (pdt[i].P) {                                             //关闭所有页面
-                        ptable* pte = mappage(pdt[i].base);
+                    if (pde[i].P) {                                             //关闭所有页面
+                        ptable* pte = mappage(pde[i].base);
                         int j;
                         for (j = 0; j < ENDPAGE; ++j) {
                             if ((i == USEPAGE && j == 0)||
@@ -106,12 +106,12 @@ pid_t sys_loadmod(const char* filename)
                                 int count=getpagec(addr);
                                 int index=getpagei(addr);
                                 ptable *pte;
-                                if (pdt[count].P == 0) {
-                                    SETPT(pdt[count],getmpage(),0);
-                                    pte = mappage(pdt[count].base);
+                                if (pde[count].P == 0) {
+                                    SETPT(pde[count],getmpage(),0);
+                                    pte = mappage(pde[count].base);
                                     memset(pte, 0, PAGESIZE);
                                 }else{
-                                    pte = mappage(pdt[count].base);
+                                    pte = mappage(pde[count].base);
                                 }
                                 if (pte[index].P == 0) {
                                     SETPT(pte[index],getmpage(),0);
@@ -128,14 +128,14 @@ pid_t sys_loadmod(const char* filename)
                         }
                     } else {                        
                         close(fd);
-                        unmappage(pdt);
+                        unmappage(pde);
                         errno = ENOEXEC;
                         return -1;
                     }
                 }
                 
                 close(fd);
-                unmappage(pdt);
+                unmappage(pde);
                 
 
                 PROTABLE[newpid].heap = heap;

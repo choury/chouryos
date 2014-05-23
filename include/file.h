@@ -18,7 +18,7 @@ typedef struct{
     union{
         DEV         dev;
         pid_t       dest;
-    }taget;
+    }target;
     uint32      flags;
     uint32      dirnode;
     uint32      indexno;

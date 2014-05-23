@@ -21,7 +21,7 @@ int sys_write(int fd,const void *ptr,size_t len) {
     case TTY:
         return tty_write(ptr,len);
     case MSG:
-        return msg_write(PROTABLE[curpid].file[fd].taget.dest,ptr,len,PROTABLE[curpid].file[fd].flags);
+        return msg_write(PROTABLE[curpid].file[fd].target.dest,ptr,len,PROTABLE[curpid].file[fd].flags);
     case NOMAL_FILE:
         return file_write(PROTABLE[curpid].file+fd,ptr,len);
     }

@@ -49,18 +49,18 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                 if (elf32_eh.e_phoff == 0)
                     break;
                 
-                ptable *pdt = mappage(PROTABLE[curpid].pdt);
+                ptable *pde = mappage(PROTABLE[curpid].pde);
                 int i, j;
                 for (i = USEPAGE; i < USEENDP; ++i) {
-                    if (pdt[i].P) {                                                         //关闭所有共享页面
-                        ptable *pte = mappage(pdt[i].base);
+                    if (pde[i].P) {                                                         //关闭所有共享页面
+                        ptable *pte = mappage(pde[i].base);
                         for (j = 0; j < ENDPAGE; ++j) {
                             if(i==USEPAGE && j==0){
                                 continue;
                             }
                             if (pte[j].P) {
                                 if (pte[j].AVL) {
-                                    devpage(pdt[i].base, j);
+                                    devpage(pde[i].base, j);
                                 } else {
                                     freempage(pte[j].base);
                                 }
@@ -110,14 +110,14 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                             for (count = getpagec(elf32_ph.p_vaddr);
                                     count <= getpagec(elf32_ph.p_vaddr + elf32_ph.p_memsz);
                                     count ++) {
-                                if (pdt[count].P == 0) {
-                                    SETPT(pdt[count],getmpage(),1);
-                                    ptable *pte = mappage(pdt[count].base);
+                                if (pde[count].P == 0) {
+                                    SETPT(pde[count],getmpage(),1);
+                                    ptable *pte = mappage(pde[count].base);
                                     memset(pte, 0, PAGESIZE);
                                     unmappage(pte);
                                 }
                             }
-                            ptable *pte = mappage(pdt[getpagec(elf32_ph.p_vaddr)].base);
+                            ptable *pte = mappage(pde[getpagec(elf32_ph.p_vaddr)].base);
 
                             for (count = getpagei(elf32_ph.p_vaddr);
                                     count <= getpagei(elf32_ph.p_vaddr + elf32_ph.p_memsz);
@@ -133,11 +133,11 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                         }
                     } else {
                         close(fd);
-                        unmappage(pdt);
+                        unmappage(pde);
                         _exit(ENOEXEC);
                     }
                 }
-                unmappage(pdt);
+                unmappage(pde);
                 
                 register_status *prs = (register_status *)(0xffffffff - sizeof(register_status));
                 PROTABLE[curpid].heap = heap;

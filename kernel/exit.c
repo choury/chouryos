@@ -19,15 +19,15 @@ void clearsiglist(pid_t pid){
 void cleanup(pid_t pid)
 {
     clearsiglist(pid);
-    ptable *pdt = mappage(PROTABLE[pid].pdt);
+    ptable *pde = mappage(PROTABLE[pid].pde);
     int i, j;
     for (i = USEPAGE; i < USEENDP; ++i) {
-        if (pdt[i].P) {
-            ptable *pte = mappage(pdt[i].base);
+        if (pde[i].P) {
+            ptable *pte = mappage(pde[i].base);
             for (j = 0; j < ENDPAGE; ++j) {
                 if (pte[j].P) {
                     if (pte[j].AVL) {
-                        devpage(pdt[i].base, j);
+                        devpage(pde[i].base, j);
                     } else {
                         freempage(pte[j].base);
                     }
@@ -35,16 +35,16 @@ void cleanup(pid_t pid)
                 }
             }
             unmappage(pte);
-            freempage(pdt[i].base);
-            pdt[i].P = 0;
+            freempage(pde[i].base);
+            pde[i].P = 0;
         }
     }
 
-    ptable *pte = mappage(pdt[USEENDP].base);
+    ptable *pte = mappage(pde[USEENDP].base);
     for (j = 0; j < USEENDP; ++j) {
         if (pte[j].P) {
             if (pte[j].AVL) {
-                devpage(pdt[i].base, j);
+                devpage(pde[i].base, j);
             } else {
                 freempage(pte[j].base);
             }
@@ -52,7 +52,7 @@ void cleanup(pid_t pid)
         }
     }
     unmappage(pte);
-    unmappage(pdt);
+    unmappage(pde);
 }
 
 
@@ -96,13 +96,13 @@ void sys_exit(int status)
 
 void cleanchild(pid_t pid)
 {
-    ptable *pdt = mappage(PROTABLE[pid].pdt);
-    ptable *pte = mappage(pdt[USEENDP].base);
+    ptable *pde = mappage(PROTABLE[pid].pde);
+    ptable *pte = mappage(pde[USEENDP].base);
     freempage(pte[USEENDP].base);
     pte[USEENDP].P = 0;
     unmappage(pte);
-    unmappage(pdt);
-    freempage(PROTABLE[pid].pdt);
+    unmappage(pde);
+    freempage(PROTABLE[pid].pde);
     PROTABLE[pid].status = unuse;
 }
 

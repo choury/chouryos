@@ -37,51 +37,51 @@ void defultinthandle(int no, int code)
     case 14:
         if(cr2 < USEBASE)
             break;
-        ptable *pdt = mappage(PROTABLE[curpid].pdt);
+        ptable *pde = mappage(PROTABLE[curpid].pde);
         
         switch (code & 0xf) {
         case 0:
         case 2:
-            if (pdt[getpagec(cr2)].P == 0) {
-                SETPT(pdt[getpagec(cr2)],getmpage(),0);
+            if (pde[getpagec(cr2)].P == 0) {
+                SETPT(pde[getpagec(cr2)],getmpage(),0);
             }
             
-            ptable *pte = mappage(pdt[getpagec(cr2)].base);
+            ptable *pte = mappage(pde[getpagec(cr2)].base);
             if (pte[getpagei(cr2)].P == 0) {
                 SETPT(pte[getpagei(cr2)],getmpage(),0);
             }
             unmappage(pte);
-            unmappage(pdt);
+            unmappage(pde);
             invlpg(cr2);
             return;
         case 4: 
         case 6:
-            if (pdt[getpagec(cr2)].P == 0) {
-                SETPT(pdt[getpagec(cr2)],getmpage(),1);
+            if (pde[getpagec(cr2)].P == 0) {
+                SETPT(pde[getpagec(cr2)],getmpage(),1);
             }
             
-            pte = mappage(pdt[getpagec(cr2)].base);
+            pte = mappage(pde[getpagec(cr2)].base);
             if (pte[getpagei(cr2)].P == 0) {
                 SETPT(pte[getpagei(cr2)],getmpage(),1);
             }
             unmappage(pte);
-            unmappage(pdt);
+            unmappage(pde);
             invlpg(cr2);
             return;
         case 7:
-            pte = mappage(pdt[getpagec(cr2)].base);
+            pte = mappage(pde[getpagec(cr2)].base);
             if(pte[getpagei(cr2)].AVL == 1){
-                devpage(pdt[getpagec(cr2)].base,getpagei(cr2));
+                devpage(pde[getpagec(cr2)].base,getpagei(cr2));
                 uint32 newpage=getmpage();
                 pagecpy(newpage,pte[getpagei(cr2)].base);
                 pte[getpagei(cr2)].base=newpage;
             }
             unmappage(pte);
-            unmappage(pdt);
+            unmappage(pde);
             invlpg(cr2);
             return;
         }
-        unmappage(pdt);
+        unmappage(pde);
     }
     register_status *prs = (register_status *)(0xffffffff - sizeof(register_status));
     printf("[%d:0x%X] The int %d happened:%d!\n",curpid,prs->eip, no, code);
@@ -158,44 +158,44 @@ void init()
     for (i = 3; i < MAX_FD; i = i + 1) {
         PROTABLE[curpid].file[i].isused = 0;
     }
-    PROTABLE[curpid].pdt = getmpage();
+    PROTABLE[curpid].pde = getmpage();
 
-    ptable *pdt = (ptable *)(PROTABLE[curpid].pdt * PAGESIZE);
+    ptable *pde = (ptable *)(PROTABLE[curpid].pde * PAGESIZE);
     for (i = 0; i < 1024; ++i) {
-        pdt[i].P = 0;
+        pde[i].P = 0;
     }
     
     
-    SETPT(pdt[0],getmpage(),0);
-    ptable *pte = (ptable *)(pdt[0].base * PAGESIZE);
+    SETPT(pde[0],getmpage(),0);
+    ptable *pte = (ptable *)(pde[0].base * PAGESIZE);
     for (i = 0; i < 1024; ++i) {
         SETPT(pte[i],i,0);                         //内核代码数据
 
     }
     pte[0].R_W=0;                                  //idt和gdt不可写
     
-    SETPT(pdt[1],getmpage(),0);                    //4M-5M
+    SETPT(pde[1],getmpage(),0);                    //4M-5M
 
     
-    pte = (ptable *)(pdt[1].base * PAGESIZE);
+    pte = (ptable *)(pde[1].base * PAGESIZE);
     for (i = 0; i < 256; ++i) {
         SETPT(pte[i],i+1024,0);
     }
 
-    SETPT(pdt[MAPINDEX],(uint32)TMPMAP/PAGESIZE,0); //用于内核临时挂载页
+    SETPT(pde[MAPINDEX],(uint32)TMPMAP/PAGESIZE,0); //用于内核临时挂载页
     memset(TMPMAP,0,PAGESIZE);
      
-    SETPT(pdt[USEPAGE],getmpage(),1);               //process0用户空间
+    SETPT(pde[USEPAGE],getmpage(),1);               //process0用户空间
     
-    pte = (ptable *)(pdt[USEPAGE].base * PAGESIZE);
+    pte = (ptable *)(pde[USEPAGE].base * PAGESIZE);
     SETPT(pte[0],getmpage(),1);
     
     for (i = 1; i < 768; ++i) {
         SETPT(pte[i],i-(USECODE-USEBASE)/PAGESIZE,1);
     }
     
-    SETPT(pdt[USEENDP],getmpage(),1);               //process0堆栈
-    pte = (ptable *)(pdt[USEENDP].base * PAGESIZE);
+    SETPT(pde[USEENDP],getmpage(),1);               //process0堆栈
+    pte = (ptable *)(pde[USEENDP].base * PAGESIZE);
     for (i = 0; i < 1024; ++i) {
         pte[i].P = 0;
     }
@@ -209,7 +209,7 @@ void init()
 //                                          \  | | | | | |
     SETSS(GDT[TSSI],(uint32)&TSS,104,DA_ATSS,0,0,0,1,0,1,0);
     
-    movetouse(&PROTABLE[curpid], pdt);
+    movetouse(&PROTABLE[curpid], pde);
 }
 
 

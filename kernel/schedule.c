@@ -6,6 +6,7 @@
 
 void TimerInitHandler() {
     outp( 0x20, 0x20 );
+    schedule();
     if(PROTABLE[curpid].sighead.next){
         struct siglist *tmp=PROTABLE[curpid].sighead.next;
         switch(tmp->sig){
@@ -16,7 +17,6 @@ void TimerInitHandler() {
         PROTABLE[curpid].sighead.next=tmp->next;
         free(tmp);
     }
-    schedule();
 }
 
 
@@ -71,6 +71,6 @@ void switch_to( pid_t pid ) {
     pid_t last = curpid;
     curpid = pid;
     PROTABLE[curpid].status = running;
-    do_switch_to( &( PROTABLE[last].pid ),PROTABLE+curpid,PROTABLE[curpid].pdt);
+    do_switch_to( &( PROTABLE[last].pid ),PROTABLE+curpid,PROTABLE[curpid].pde);
     sti();
 }

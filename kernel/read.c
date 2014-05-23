@@ -22,7 +22,7 @@ int sys_read(int fd, void *ptr, size_t len) {
     case TTY:
         return tty_read(ptr,len);
     case MSG:
-        return msg_read(PROTABLE[curpid].file[fd].taget.dest,ptr,len,PROTABLE[curpid].file[fd].flags);
+        return msg_read(PROTABLE[curpid].file[fd].target.dest,ptr,len,PROTABLE[curpid].file[fd].flags);
     case NOMAL_FILE:
         return file_read(PROTABLE[curpid].file+fd,ptr,len);
     }
