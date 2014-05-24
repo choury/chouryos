@@ -7,7 +7,7 @@
 void TimerInitHandler() {
     outp( 0x20, 0x20 );
     schedule();
-    if(PROTABLE[curpid].sighead.next){
+    while(PROTABLE[curpid].sighead.next){
         struct siglist *tmp=PROTABLE[curpid].sighead.next;
         switch(tmp->sig){
         case SIGTERM:

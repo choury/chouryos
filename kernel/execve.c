@@ -58,12 +58,8 @@ int sys_execve(char *name, char *const argv[], char *const env[])
                             if(i==USEPAGE && j==0){
                                 continue;
                             }
-                            if (pte[j].P) {
-                                if (pte[j].AVL) {
-                                    devpage(pde[i].base, j);
-                                } else {
-                                    freempage(pte[j].base);
-                                }
+                            if (pte[j].P || pte[j].AVL) {
+                                devpage(pde[i].base, j);
                                 pte[j].P = 0;
                             }
                         }
