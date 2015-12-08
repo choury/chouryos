@@ -62,7 +62,7 @@ void sys_exit(int status)
         return;
     }
     int i;
-    for(i=0;i<MAX_PROCESS;++i){
+    for(i=0;i<MAX_FD;++i){
         close(i);
     }
     
