@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.d
 
 # Precompiled Headers
 *.gch
@@ -26,4 +27,11 @@
 *.exe
 *.out
 *.app
-build/hd.img
+*.elf
+
+build/
+*~
+*.swp
+*.out
+.browse.VC.*
+*.user
