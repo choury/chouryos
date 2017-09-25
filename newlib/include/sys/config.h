@@ -75,6 +75,10 @@
 #define _POINTER_INT short
 #endif
 
+#if defined(__m68k__) || defined(__mc68000__)
+#define _READ_WRITE_RETURN_TYPE _ssize_t
+#endif
+
 #ifdef ___AM29K__
 #define _FLOAT_RET double
 #endif
@@ -88,7 +92,6 @@
 /* we want the reentrancy structure to be returned by a function */
 #define __DYNAMIC_REENT__
 #define HAVE_GETDATE
-#define _HAVE_SYSTYPES
 #define _READ_WRITE_RETURN_TYPE _ssize_t
 #define __LARGE64_FILES 1
 /* we use some glibc header files so turn on glibc large file feature */
@@ -145,6 +148,21 @@
 #define __BUFSIZ__ 16
 #define _REENT_SMALL
 #endif
+
+#if defined __MSP430__
+#ifndef _REENT_SMALL
+#define _REENT_SMALL
+#endif
+
+#define __SMALL_BITFIELDS
+
+#ifdef __MSP430X_LARGE__
+#define _POINTER_INT long
+#else
+#define _POINTER_INT int
+#endif
+#endif
+
 #ifdef __m32c__
 #define __SMALL_BITFIELDS
 #undef INT_MAX
@@ -164,6 +182,10 @@
 #ifdef __SPU__
 #define MALLOC_ALIGNMENT 16
 #define __CUSTOM_FILE_IO__
+#endif
+
+#if defined(__or1k__) || defined(__or1knd__)
+#define __DYNAMIC_REENT__
 #endif
 
 /* This block should be kept in sync with GCC's limits.h.  The point
@@ -209,14 +231,13 @@
 
 #if defined(__CYGWIN__)
 #include <cygwin/config.h>
-#if !defined (__STRICT_ANSI__) || (__STDC_VERSION__ >= 199901L)
-#define __USE_XOPEN2K 1
-#endif
 #endif
 
 #if defined(__rtems__)
 #define __FILENAME_MAX__ 255
 #define _READ_WRITE_RETURN_TYPE _ssize_t
+#define __DYNAMIC_REENT__
+#define _REENT_GLOBAL_ATEXIT
 #endif
 
 #ifndef __EXPORT
@@ -232,6 +253,12 @@
    "int" for some time.  If not specified, "int" is defaulted.  */
 #ifndef _READ_WRITE_RETURN_TYPE
 #define _READ_WRITE_RETURN_TYPE int
+#endif
+/* Define `count' parameter of read/write routines.  In POSIX, the `count'
+   parameter is "size_t" but legacy newlib code has been using "int" for some
+   time.  If not specified, "int" is defaulted.  */
+#ifndef _READ_WRITE_BUFSIZE_TYPE
+#define _READ_WRITE_BUFSIZE_TYPE int
 #endif
 
 #ifndef __WCHAR_MAX__

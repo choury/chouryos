@@ -1,9 +1,9 @@
 
 /*
- * newlib_stubs.c
+ * syscall.c
  *
- *  Created on: 2 Nov 2010
- *      Author: nanoage.co.uk
+ *  Created on: 28 Nov 2013
+ *      Author: choury
  */
 
 
@@ -51,6 +51,7 @@ int syscall(uint32 eax,uint32 ebx,uint32 ecx,uint32 edx,uint32 esi,uint32 edi){
     case 21:
         return sys_getppid();
     }
+    errno=EINVAL;
     return -1;
 }
 
